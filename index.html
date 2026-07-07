@@ -1,113 +1,125 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRC トレーニングジム参加表明</title>
-
-    <style>
-        body{
-            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-            background:#f5f5f5;
-            margin:0;
-            padding:20px;
-        }
-
-        .container{
-            max-width:420px;
-            margin:auto;
-        }
-
-        .card{
-            background:white;
-            border-radius:15px;
-            padding:20px;
-            box-shadow:0 3px 10px rgba(0,0,0,.1);
-        }
-
-        h1{
-            font-size:24px;
-            margin:0;
-        }
-
-        .info{
-            margin-top:15px;
-            background:#eef6ff;
-            border-radius:10px;
-            padding:15px;
-            line-height:1.8;
-        }
-
-        .calendar{
-            margin-top:20px;
-            text-align:center;
-            font-size:20px;
-            padding:40px 0;
-            border:2px dashed #ccc;
-            border-radius:10px;
-            color:#888;
-        }
-
-        .footer{
-            margin-top:20px;
-            text-align:center;
-            color:#777;
-            font-size:14px;
-        }
-
-        .infoButton{
-            float:right;
-            font-size:26px;
-        }
-    </style>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SRC Portal β</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
-
 <body>
+  <div class="app-shell">
 
-<div class="container">
+    <header class="app-header">
+      <div class="brand-area">
+        <div class="logo-box">
+          <img src="images/src-logo.png" alt="SRC" class="src-logo" />
+        </div>
+        <div class="brand-text">
+          <div class="portal-title">
+            SRC Portal <span class="beta-label">β</span>
+          </div>
+          <div class="portal-subtitle">メンバーポータル</div>
+        </div>
+      </div>
 
-<div class="card">
+      <button class="help-button" id="helpButton" type="button" aria-label="使い方を表示">
+        使い方
+      </button>
+    </header>
 
-<div class="infoButton">
-ℹ️
-</div>
+    <main class="main-content">
 
-<h1>🏋️ SRC トレーニングジム</h1>
+      <section class="message-strip">
+        <p>🏃 Running Together Since 1979</p>
+      </section>
 
-<div class="info">
+      <section class="gym-card">
+        <div class="section-label">🏋️ トレーニングジム</div>
+        <h1>参加表明カレンダー</h1>
+        <p class="gym-time">19:00〜</p>
 
-🕖 19:00～
+        <div class="status-grid" aria-label="開催情報">
+          <div class="status-item">
+            <span class="status-title">開催</span>
+            <span class="status-value" id="statusText">あと3名</span>
+          </div>
+          <div class="status-item">
+            <span class="status-title">締切</span>
+            <span class="status-value">前日18:00</span>
+          </div>
+          <div class="status-item">
+            <span class="status-title">場所</span>
+            <span class="status-value">固定</span>
+          </div>
+        </div>
+      </section>
 
-<br>
+      <section class="notice-card" id="noticeCard">
+        <div class="card-header">
+          <h2>📢 本日の連絡</h2>
+        </div>
+        <p id="todayNotice">現在、連絡事項はありません。</p>
+      </section>
 
-👥 3名以上で開催
+      <section class="calendar-card">
+        <div class="calendar-header">
+          <button class="month-button" id="prevMonthButton" type="button" aria-label="前の月">‹</button>
+          <h2 id="calendarTitle">----</h2>
+          <button class="month-button" id="nextMonthButton" type="button" aria-label="次の月">›</button>
+        </div>
 
-<br>
+        <div class="weekday-row" aria-hidden="true">
+          <span>月</span>
+          <span>火</span>
+          <span>水</span>
+          <span>木</span>
+          <span>金</span>
+          <span>土</span>
+          <span>日</span>
+        </div>
 
-⏰ 参加締切：前日18:00
+        <div class="calendar-grid" id="calendarGrid">
+          <!-- app.jsで生成 -->
+        </div>
 
-</div>
+        <div class="calendar-legend">
+          <span><span class="dot dot-today"></span>今日</span>
+          <span><span class="dot dot-gym"></span>候補日</span>
+          <span><span class="dot dot-confirmed"></span>開催決定</span>
+        </div>
+      </section>
 
-<div class="calendar">
+    </main>
 
-📅
+    <footer class="app-footer">
+      <div>Version 0.2</div>
+      <div class="credit">Developed with ChatGPT</div>
+    </footer>
 
-<br><br>
+  </div>
 
-ここにカレンダーを表示します
+  <dialog class="help-dialog" id="helpDialog">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <h2>使い方</h2>
+        <button id="closeHelpButton" type="button" aria-label="閉じる">×</button>
+      </div>
 
-</div>
+      <ol class="help-list">
+        <li>参加したい日付をタップします。</li>
+        <li>自分の名前を選びます。</li>
+        <li>「参加する」を押します。</li>
+        <li>取り消す場合は、同じ日付から「参加取消」を押します。</li>
+      </ol>
 
-<div class="footer">
+      <div class="rule-box">
+        <p><strong>開催条件：</strong>3名以上で開催決定</p>
+        <p><strong>締切：</strong>前日18:00</p>
+        <p><strong>開催時間：</strong>19:00〜</p>
+      </div>
+    </div>
+  </dialog>
 
-SRC Portal Ver.0.1
-
-</div>
-
-</div>
-
-</div>
-
+  <script src="js/app.js"></script>
 </body>
 </html>
