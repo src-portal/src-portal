@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SRC Portal β</title>
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SRC Portal β</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="app-shell">
@@ -20,12 +20,29 @@
 </header>
 
 <main class="main-content" id="homeView">
+  <section class="user-card">
+    <div>
+      <div class="small-label">現在のユーザー</div>
+      <div class="current-user" id="currentUserLabel">未設定</div>
+    </div>
+    <button class="small-button" id="changeUserButton" type="button">変更</button>
+  </section>
+
   <section class="message-strip"><p>🏃 Running Together Since 1979</p></section>
 
+  <section class="menu-card">
+    <h1>SRC Portal</h1>
+    <p>まずはジムトレーニングから運用開始します。</p>
+    <div class="event-tabs">
+      <button class="event-tab active" type="button">🏋️ ジム</button>
+      <button class="event-tab disabled" type="button">🏃 ランニング<br><span>準備中</span></button>
+    </div>
+  </section>
+
   <section class="gym-card">
-    <div class="section-label">🏋️ トレーニングジム</div>
-    <h1>トレーニングジム</h1>
-    <p class="gym-time">19:00〜</p>
+    <div class="section-label">🏋️ ジムトレーニング</div>
+    <h2>好きな日を選んで参加表明</h2>
+    <p class="gym-time">19:00〜 / 3名以上で開催</p>
     <div class="status-grid">
       <div class="status-item"><span class="status-title">開催条件</span><span class="status-value">3名以上</span></div>
       <div class="status-item"><span class="status-title">締切</span><span class="status-value">前日18:00</span></div>
@@ -33,10 +50,7 @@
     </div>
   </section>
 
-  <section class="notice-card">
-    <h2>📢 本日の連絡</h2>
-    <p>現在、連絡事項はありません。</p>
-  </section>
+  <section class="notice-card"><h2>📢 本日の連絡</h2><p>現在、連絡事項はありません。</p></section>
 
   <section class="calendar-card">
     <div class="calendar-header">
@@ -48,8 +62,10 @@
     <div class="calendar-grid" id="calendarGrid"></div>
     <div class="calendar-legend">
       <span><span class="dot dot-today"></span>今日</span>
-      <span><span class="dot dot-warning"></span>あと1名</span>
-      <span><span class="dot dot-confirmed"></span>開催決定</span>
+      <span><span class="dot dot-one"></span>あと2</span>
+      <span><span class="dot dot-warning"></span>あと1</span>
+      <span><span class="dot dot-confirmed"></span>開催</span>
+      <span><span class="dot dot-me"></span>自分</span>
     </div>
   </section>
 </main>
@@ -58,24 +74,16 @@
   <section class="detail-card">
     <button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button>
     <div class="detail-date" id="detailDate">----</div>
-    <div class="detail-event">🏋️ トレーニングジム</div>
+    <div class="detail-event">🏋️ ジムトレーニング</div>
     <div class="detail-time">19:00〜</div>
-
     <div class="progress-box" id="progressBox">
       <div class="progress-text" id="progressText">あと3名で開催</div>
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     </div>
-
     <div class="participants-box">
       <h2 id="participantTitle">参加者（0名）</h2>
       <ul class="participant-list" id="participantList"></ul>
     </div>
-
-    <div class="member-select-box">
-      <label for="memberSelect">あなたの名前</label>
-      <select id="memberSelect"></select>
-    </div>
-
     <div class="action-box">
       <p class="my-status" id="myStatus">まだ参加していません。</p>
       <button class="primary-button" id="joinButton" type="button">参加する</button>
@@ -84,32 +92,35 @@
   </section>
 </main>
 
-<footer class="app-footer">
-  <div>Version 0.3</div>
-  <div class="credit">Developed with ChatGPT</div>
-</footer>
+<footer class="app-footer"><div>Version 0.3.1</div><div class="credit">Developed with ChatGPT</div></footer>
 </div>
+
+<dialog class="setup-dialog" id="setupDialog">
+  <div class="dialog-content">
+    <div class="dialog-header"><h2>お名前を選択</h2></div>
+    <p class="setup-text">初回だけ、自分の名前を選んでください。次回から自動で使用します。</p>
+    <select id="initialMemberSelect" class="full-select"></select>
+    <button class="primary-button" id="saveUserButton" type="button">この名前で開始</button>
+  </div>
+</dialog>
 
 <dialog class="help-dialog" id="helpDialog">
   <div class="dialog-content">
-    <div class="dialog-header">
-      <h2>使い方</h2>
-      <button id="closeHelpButton" type="button">×</button>
-    </div>
+    <div class="dialog-header"><h2>使い方</h2><button id="closeHelpButton" type="button">×</button></div>
     <ol class="help-list">
+      <li>初回だけ自分の名前を選びます。</li>
       <li>カレンダーの日付をタップします。</li>
-      <li>自分の名前を選びます。</li>
       <li>「参加する」を押します。</li>
       <li>取り消す場合は「参加取消」を押します。</li>
     </ol>
     <div class="rule-box">
+      <p><strong>ジム：</strong>好きな日を選択可能</p>
       <p><strong>開催条件：</strong>3名以上で開催決定</p>
       <p><strong>締切：</strong>前日18:00</p>
-      <p><strong>開催時間：</strong>19:00〜</p>
+      <p><strong>ランニング：</strong>将来追加予定</p>
     </div>
   </div>
 </dialog>
-
 <script src="js/app.js"></script>
 </body>
 </html>
