@@ -32,10 +32,41 @@
   <main class="main-content detail-view hidden" id="detailView">
     <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
   </main>
-  <footer class="app-footer"><div>Version 0.5.0</div><div class="credit">Firebase connected / Developed with ChatGPT</div></footer>
+  <footer class="app-footer"><div>Version 0.6.1</div><div class="credit">Admin mode / Firebase connected</div></footer>
 </div>
 <div class="modal-overlay hidden" id="setupModal"><div class="modal-card"><h2>お名前を選択</h2><p class="setup-text">初回だけ、自分の名前を選んでください。次回から自動で使用します。</p><div class="name-button-grid" id="nameButtonGrid"></div></div></div>
-<div class="modal-overlay hidden" id="helpModal"><div class="modal-card"><div class="dialog-header"><h2>使い方</h2><button id="closeHelpButton" type="button">×</button></div><ol class="help-list"><li>名前を選びます。</li><li>「ジム」または「ラン＆ウォーク」を選びます。</li><li>カレンダーの日付をタップします。</li><li>「参加する」または「参加取消」を押します。</li><li>Ver.0.5.0から参加状況はFirebaseで共有されます。</li></ol></div></div>
-<script type="module" src="js/app.js?v=050"></script>
+<div class="modal-overlay hidden" id="helpModal"><div class="modal-card"><div class="dialog-header"><h2>使い方</h2><button id="closeHelpButton" type="button">×</button></div><ol class="help-list"><li>名前を選びます。</li><li>「ジム」または「ラン＆ウォーク」を選びます。</li><li>カレンダーの日付をタップします。</li><li>「参加する」または「参加取消」を押します。</li><li>参加状況はFirebaseで共有されます。</li></ol></div></div>
+
+<div class="modal-overlay hidden" id="adminPinModal">
+  <div class="modal-card">
+    <div class="dialog-header">
+      <h2>👑 管理者PIN</h2>
+      <button id="closeAdminPinButton" type="button">×</button>
+    </div>
+    <p class="setup-text">管理者PINを入力してください。</p>
+    <input id="adminPinInput" class="admin-input" type="password" inputmode="numeric" placeholder="PIN">
+    <button class="primary-button" id="adminPinSubmitButton" type="button">管理者モードへ</button>
+    <p class="admin-error hidden" id="adminPinError">PINが違います。</p>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="adminMenuModal">
+  <div class="modal-card">
+    <div class="dialog-header">
+      <h2>👑 管理者メニュー</h2>
+      <button id="closeAdminMenuButton" type="button">×</button>
+    </div>
+    <div class="admin-menu-list">
+      <button class="admin-menu-button" id="adminChangeUserButton" type="button">👤 ユーザー変更</button>
+      <button class="admin-menu-button" type="button" disabled>📢 お知らせ編集（準備中）</button>
+      <button class="admin-menu-button" type="button" disabled>📅 開催日管理（準備中）</button>
+      <button class="admin-menu-button" type="button" disabled>📨 招待コード（準備中）</button>
+      <button class="admin-menu-button" id="adminFirebaseStatusButton" type="button">⚙ Firebase状態を表示</button>
+    </div>
+    <p class="setup-text">Ver.0.6.1では管理者画面の入口と土台を追加しています。</p>
+  </div>
+</div>
+
+<script type="module" src="js/app.js?v=061"></script>
 </body>
 </html>
