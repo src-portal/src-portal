@@ -92,15 +92,14 @@
   </section>
 </main>
 
-<footer class="app-footer"><div>Version 0.3.2</div><div class="credit">Developed with ChatGPT</div></footer>
+<footer class="app-footer"><div>Version 0.3.3</div><div class="credit">Developed with ChatGPT</div></footer>
 </div>
 
 <div class="modal-overlay hidden" id="setupModal">
   <div class="modal-card">
     <h2>お名前を選択</h2>
     <p class="setup-text">初回だけ、自分の名前を選んでください。次回から自動で使用します。</p>
-    <select id="initialMemberSelect" class="full-select"></select>
-    <button class="primary-button" id="saveUserButton" type="button">この名前で開始</button>
+    <div class="name-button-grid" id="nameButtonGrid"></div>
   </div>
 </div>
 
@@ -122,6 +121,6 @@
   </div>
 </div>
 
-<script src="js/app.js"></script>
+<script src="js/app.js?v=033"></script>
 </body>
 </html>
