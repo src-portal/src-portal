@@ -1,126 +1,46 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SRC Portal β</title>
-<link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SRC Portal β</title><link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="app-shell">
 <header class="app-header">
   <div class="brand-area">
     <div class="logo-box"><img src="images/src-logo.png" alt="SRC" class="src-logo"></div>
-    <div class="brand-text">
-      <div class="portal-title">SRC Portal <span class="beta-label">β</span></div>
-      <div class="portal-subtitle">メンバーポータル</div>
-    </div>
+    <div class="brand-text"><div class="portal-title">SRC Portal <span class="beta-label">β</span></div><div class="portal-subtitle">Run &amp; Walk Together Since 1979</div></div>
   </div>
   <button class="help-button" id="helpButton" type="button">使い方</button>
 </header>
-
 <main class="main-content" id="homeView">
-  <section class="user-card">
-    <div>
-      <div class="small-label">現在のユーザー</div>
-      <div class="current-user" id="currentUserLabel">未設定</div>
-    </div>
-    <button class="small-button" id="changeUserButton" type="button">変更</button>
+  <section class="user-card"><div><div class="small-label">現在のユーザー</div><div class="current-user" id="currentUserLabel">未設定</div></div><button class="small-button" id="changeUserButton" type="button">変更</button></section>
+  <section class="notice-card"><h2>📢 お知らせ</h2><p id="globalNotice">現在、連絡事項はありません。</p></section>
+  <section class="next-card"><div class="section-label">✨ あなたの次回参加予定</div><div id="nextPlanContent" class="next-plan-empty">参加予定はまだありません。</div></section>
+  <section class="event-switch-card"><div class="event-tabs"><button class="event-tab active" id="gymTab" type="button">🏋️ ジム</button><button class="event-tab" id="runTab" type="button">🏃🚶 ラン＆ウォーク</button></div></section>
+  <section class="event-info-card">
+    <div class="section-label" id="eventLabel">🏋️ ジム</div><h1 id="eventTitle">ジムトレーニング</h1><p class="event-summary" id="eventSummary">好きな日を選んで参加表明</p>
+    <div class="status-grid"><div class="status-item"><span class="status-title" id="ruleTitle1">開催条件</span><span class="status-value" id="ruleValue1">3名以上</span></div><div class="status-item"><span class="status-title">時間</span><span class="status-value" id="ruleValue2">19:00</span></div><div class="status-item"><span class="status-title">場所</span><span class="status-value" id="ruleValue3">サンフロッグ春日井</span></div></div>
   </section>
-
-  <section class="message-strip"><p>🏃 Running Together Since 1979</p></section>
-
-  <section class="menu-card">
-    <h1>SRC Portal</h1>
-    <p>まずはジムトレーニングから運用開始します。</p>
-    <div class="event-tabs">
-      <button class="event-tab active" type="button">🏋️ ジム</button>
-      <button class="event-tab disabled" type="button">🏃 ランニング<br><span>準備中</span></button>
-    </div>
-  </section>
-
-  <section class="gym-card">
-    <div class="section-label">🏋️ ジムトレーニング</div>
-    <h2>好きな日を選んで参加表明</h2>
-    <p class="gym-time">19:00〜 / 3名以上で開催</p>
-    <div class="status-grid">
-      <div class="status-item"><span class="status-title">開催条件</span><span class="status-value">3名以上</span></div>
-      <div class="status-item"><span class="status-title">締切</span><span class="status-value">前日18:00</span></div>
-      <div class="status-item"><span class="status-title">場所</span><span class="status-value">固定</span></div>
-    </div>
-  </section>
-
-  <section class="notice-card"><h2>📢 本日の連絡</h2><p>現在、連絡事項はありません。</p></section>
-
   <section class="calendar-card">
-    <div class="calendar-header">
-      <button class="month-button" id="prevMonthButton" type="button">‹</button>
-      <h2 id="calendarTitle">----</h2>
-      <button class="month-button" id="nextMonthButton" type="button">›</button>
-    </div>
+    <div class="calendar-header"><button class="month-button" id="prevMonthButton" type="button">‹</button><h2 id="calendarTitle">----</h2><button class="month-button" id="nextMonthButton" type="button">›</button></div>
     <div class="weekday-row"><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span><span>日</span></div>
-    <div class="calendar-grid" id="calendarGrid"></div>
-    <div class="calendar-legend">
-      <span><span class="dot dot-today"></span>今日</span>
-      <span><span class="dot dot-one"></span>あと2</span>
-      <span><span class="dot dot-warning"></span>あと1</span>
-      <span><span class="dot dot-confirmed"></span>開催</span>
-      <span><span class="dot dot-me"></span>自分</span>
-    </div>
+    <div class="calendar-grid" id="calendarGrid"></div><div class="calendar-legend" id="calendarLegend"></div>
   </section>
 </main>
-
 <main class="main-content detail-view hidden" id="detailView">
   <section class="detail-card">
     <button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button>
-    <div class="detail-date" id="detailDate">----</div>
-    <div class="detail-event">🏋️ ジムトレーニング</div>
-    <div class="detail-time">19:00〜</div>
-    <div class="progress-box" id="progressBox">
-      <div class="progress-text" id="progressText">あと3名で開催</div>
-      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    </div>
-    <div class="participants-box">
-      <h2 id="participantTitle">参加者（0名）</h2>
-      <ul class="participant-list" id="participantList"></ul>
-    </div>
-    <div class="action-box">
-      <p class="my-status" id="myStatus">まだ参加していません。</p>
-      <button class="primary-button" id="joinButton" type="button">参加する</button>
-      <button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button>
-    </div>
+    <div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div>
+    <div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div>
+    <div class="event-message hidden" id="eventMessage"></div>
+    <div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div>
+    <div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div>
   </section>
 </main>
-
-<footer class="app-footer"><div>Version 0.3.3</div><div class="credit">Developed with ChatGPT</div></footer>
+<footer class="app-footer"><div>Version 0.4</div><div class="credit">Developed with ChatGPT</div></footer>
 </div>
-
-<div class="modal-overlay hidden" id="setupModal">
-  <div class="modal-card">
-    <h2>お名前を選択</h2>
-    <p class="setup-text">初回だけ、自分の名前を選んでください。次回から自動で使用します。</p>
-    <div class="name-button-grid" id="nameButtonGrid"></div>
-  </div>
-</div>
-
-<div class="modal-overlay hidden" id="helpModal">
-  <div class="modal-card">
-    <div class="dialog-header"><h2>使い方</h2><button id="closeHelpButton" type="button">×</button></div>
-    <ol class="help-list">
-      <li>初回だけ自分の名前を選びます。</li>
-      <li>カレンダーの日付をタップします。</li>
-      <li>「参加する」を押します。</li>
-      <li>取り消す場合は「参加取消」を押します。</li>
-    </ol>
-    <div class="rule-box">
-      <p><strong>ジム：</strong>好きな日を選択可能</p>
-      <p><strong>開催条件：</strong>3名以上で開催決定</p>
-      <p><strong>締切：</strong>前日18:00</p>
-      <p><strong>ランニング：</strong>将来追加予定</p>
-    </div>
-  </div>
-</div>
-
-<script src="js/app.js?v=033"></script>
-</body>
-</html>
+<div class="modal-overlay hidden" id="setupModal"><div class="modal-card"><h2>お名前を選択</h2><p class="setup-text">初回だけ、自分の名前を選んでください。</p><div class="name-button-grid" id="nameButtonGrid"></div></div></div>
+<div class="modal-overlay hidden" id="helpModal"><div class="modal-card"><div class="dialog-header"><h2>使い方</h2><button id="closeHelpButton" type="button">×</button></div><ol class="help-list"><li>名前を選びます。</li><li>ジムまたはラン＆ウォークを選びます。</li><li>日付をタップします。</li><li>参加する／参加取消を押します。</li></ol><div class="rule-box"><p><strong>ジム：</strong>好きな日を選択。3名以上で開催。</p><p><strong>ラン＆ウォーク：</strong>管理者が登録した開催日に参加表明。</p><p><strong>データ：</strong>Ver.0.4ではこのスマホ内のみ保存。</p></div></div></div>
+<script src="js/app.js?v=040"></script>
+</body></html>
