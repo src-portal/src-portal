@@ -142,63 +142,14 @@
   border-color:rgba(214,69,69,.35);
 }
 
-/* Ver.0.8.3: カレンダーイベント連携 */
-.calendar-day.has-event{
-  position:relative;
-  border-color:#cfe3ff;
-}
-.calendar-day.has-event::after{
-  content:"";
-  position:absolute;
-  right:7px;
-  top:7px;
-  width:8px;
-  height:8px;
-  border-radius:999px;
-  background:var(--blue);
-}
-.calendar-day.has-event.run-event::after{
-  background:#1f9d55;
-}
-.calendar-day.has-event.cancelled-event::after{
-  background:var(--red);
-}
-.calendar-event-label{
-  margin-top:4px;
-  font-size:10px;
-  font-weight:900;
-  color:var(--blue);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.event-detail-content{
-  display:grid;
-  gap:10px;
-  margin:12px 0 16px;
-}
-.event-detail-card{
-  padding:14px;
-  border-radius:16px;
-  background:#f7f9fb;
-  border:1px solid var(--border);
-  font-weight:900;
-  line-height:1.7;
-}
-.event-detail-title{
-  font-size:18px;
-  color:var(--charcoal);
-}
-.event-detail-sub{
-  color:var(--muted);
-  font-size:14px;
-  font-weight:800;
-}
-.event-detail-memo{
-  padding:10px;
-  border-radius:12px;
-  background:#fff;
-  color:var(--muted);
-  font-size:13px;
-  font-weight:800;
-}
+/* Ver.0.8.3a: カレンダーイベント連携 */
+.day-cell.has-event{position:relative;border-color:#cfe3ff}
+.day-cell.has-event::after{content:"";position:absolute;right:7px;top:7px;width:8px;height:8px;border-radius:999px;background:var(--blue)}
+.day-cell.has-event.run-event::after{background:#1f9d55}
+.day-cell.has-event.cancelled-event::after{background:var(--red)}
+.calendar-event-label{margin-top:4px;font-size:10px;font-weight:900;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.event-detail-content{display:grid;gap:10px;margin:12px 0 16px}
+.event-detail-card{padding:14px;border-radius:16px;background:#f7f9fb;border:1px solid var(--border);font-weight:900;line-height:1.7}
+.event-detail-title{font-size:18px;color:var(--charcoal)}
+.event-detail-sub{color:var(--muted);font-size:14px;font-weight:800}
+.event-detail-memo{padding:10px;border-radius:12px;background:#fff;color:var(--muted);font-size:13px;font-weight:800}
