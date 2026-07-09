@@ -1,27 +1,30 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAsqNE9tSB2eIDtHBR8dRSVkzGFD0sKh-c",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
 document.addEventListener("DOMContentLoaded",()=>{const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus");
 const app=initializeApp(firebaseConfig);const db=getFirestore(app);const today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="gym";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
-let members=[...defaultMembers];const requiredMembers=3,storageUserKey="srcPortalCurrentUser";let currentUser=localStorage.getItem(storageUserKey)||"",attendance={};const runEvents={"2026-07-08":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-07-15":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-08-12":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-08-19":{status:"cancelled",message:"会社行事のため中止します。"}};
+let members=[...defaultMembers];
+let memberRecords=[];const requiredMembers=3,storageUserKey="srcPortalCurrentUser";let currentUser=localStorage.getItem(storageUserKey)||"",attendance={};const runEvents={"2026-07-08":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-07-15":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-08-12":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-08-19":{status:"cancelled",message:"会社行事のため中止します。"}};
 function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){e.classList.remove("hidden")}function hide(e){e.classList.add("hidden")}function eventId(type,key){return `${type}_${key}`}function eventPath(type,key){return doc(db,"attendance",eventId(type,key))}function getNames(type,key){return attendance[eventId(type,key)]||[]}function isRunDate(key){return !!runEvents[key]}function runStatus(key){return runEvents[key]?.status||""}function isToday(y,m,d){return today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d}
 onSnapshot(collection(db,"attendance"),snap=>{attendance={};snap.forEach(d=>{attendance[d.id]=d.data().participants||[]});setOnline("🟢 Firebase 接続中");renderAll();if(selectedKey)renderDetail()},err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
 onSnapshot(collection(db,"members"),snap=>{
   const loaded=[];
   snap.forEach(d=>{
     const data=d.data();
-    if(data.active!==false&&data.name){
-      loaded.push({name:data.name,order:data.order??999});
+    if(data.name){
+      loaded.push({id:d.id,name:data.name,admin:data.admin===true,active:data.active!==false,order:data.order??999});
     }
   });
-  if(loaded.length>0){
-    members=loaded.sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"ja")).map(m=>m.name);
-    renderNameButtons();
-    renderAll();
-    if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))renderAdminMembers();
+  memberRecords=loaded.sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"ja"));
+  const activeMembers=memberRecords.filter(m=>m.active!==false);
+  if(activeMembers.length>0){
+    members=activeMembers.map(m=>m.name);
   }
+  renderNameButtons();
+  renderAll();
+  if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))renderAdminMembers();
 },err=>{
   console.error("members read error",err);
 });
@@ -85,6 +88,10 @@ const adminSeedMembersButton=document.getElementById("adminSeedMembersButton");
 const closeAdminMemberButton=document.getElementById("closeAdminMemberButton");
 const closeInvitePreviewButton=document.getElementById("closeInvitePreviewButton");
 const memberAdminList=document.getElementById("memberAdminList");
+const newMemberNameInput=document.getElementById("newMemberNameInput");
+const newMemberAdminCheck=document.getElementById("newMemberAdminCheck");
+const addMemberButton=document.getElementById("addMemberButton");
+const addMemberError=document.getElementById("addMemberError");
 
 
 const initialMembers=[
@@ -126,13 +133,83 @@ async function seedMembers(){
 
 function renderAdminMembers(){
   memberAdminList.innerHTML="";
-  members.forEach(name=>{
+  const list=memberRecords.length>0?memberRecords:members.map((name,i)=>({name,admin:false,active:true,order:i+1}));
+  if(list.length===0){
     const div=document.createElement("div");
     div.className="member-admin-item";
-    div.textContent=`😊 ${name}`;
+    div.textContent="メンバーが登録されていません。";
+    memberAdminList.appendChild(div);
+    return;
+  }
+  list.forEach(m=>{
+    const div=document.createElement("div");
+    div.className="member-admin-item";
+    const main=document.createElement("div");
+    const title=document.createElement("div");
+    title.className="member-admin-main";
+    title.textContent=`😊 ${m.name}`;
+    const sub=document.createElement("div");
+    sub.className="member-admin-sub";
+    sub.textContent=`order: ${m.order ?? "-"} / ${m.active===false ? "無効" : "有効"}`;
+    main.appendChild(title);
+    main.appendChild(sub);
+    div.appendChild(main);
+    if(m.admin){
+      const badge=document.createElement("span");
+      badge.className="member-admin-badge";
+      badge.textContent="管理者";
+      div.appendChild(badge);
+    }
     memberAdminList.appendChild(div);
   });
 }
+
+function makeMemberId(name){
+  const base=name.trim().toLowerCase().replace(/[\s　]+/g,"_").replace(/[()（）]/g,"").replace(/[^a-z0-9_\-]/g,"");
+  return base || `member_${Date.now()}`;
+}
+
+async function getNextMemberOrder(){
+  try{
+    const snap=await getDocs(collection(db,"members"));
+    let maxOrder=0;
+    snap.forEach(d=>{
+      const order=Number(d.data().order||0);
+      if(order>maxOrder)maxOrder=order;
+    });
+    return maxOrder+1;
+  }catch(e){
+    console.error(e);
+    return memberRecords.length+1;
+  }
+}
+
+async function addMember(){
+  const name=newMemberNameInput.value.trim();
+  if(!name){
+    addMemberError.classList.remove("hidden");
+    return;
+  }
+  addMemberError.classList.add("hidden");
+  const id=makeMemberId(name);
+  const order=await getNextMemberOrder();
+  try{
+    await setDoc(doc(db,"members",id),{
+      name,
+      admin:newMemberAdminCheck.checked,
+      active:true,
+      order,
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    newMemberNameInput.value="";
+    newMemberAdminCheck.checked=false;
+    alert("メンバーを追加しました。");
+  }catch(e){
+    console.error(e);
+    alert("メンバー追加に失敗しました。Firestoreルールを確認してください。");
+  }
+}
+
 adminMemberListButton.onclick=()=>{
   renderAdminMembers();
   show(adminMemberModal);
@@ -141,6 +218,7 @@ adminInvitePreviewButton.onclick=()=>show(invitePreviewModal);
 adminSeedMembersButton.onclick=seedMembers;
 closeAdminMemberButton.onclick=()=>hide(adminMemberModal);
 closeInvitePreviewButton.onclick=()=>hide(invitePreviewModal);
+addMemberButton.onclick=addMember;
 
 
 
