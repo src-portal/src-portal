@@ -34,3 +34,15 @@
 .member-toggle-button{border:1px solid var(--border);border-radius:999px;background:#fff;color:var(--text);padding:6px 8px;font-size:12px;font-weight:900}
 .member-toggle-button.on{background:var(--blue-soft);color:var(--blue);border-color:#cfe3ff}
 .member-toggle-button.off{background:#fcebea;color:var(--red);border-color:rgba(214,69,69,.35)}
+
+/* Ver.0.7.4: メンバー編集・並び替え */
+.member-admin-item{align-items:flex-start}
+.member-admin-actions{min-width:112px}
+.member-edit-box{width:100%;margin-top:10px;padding:12px;border-radius:14px;background:#fff;border:1px solid var(--border)}
+.member-edit-row{display:grid;gap:8px;margin-top:8px}
+.member-edit-row input[type="text"]{width:100%;padding:11px;border:1px solid var(--border);border-radius:12px;font:inherit}
+.member-edit-checks{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0;color:var(--muted);font-weight:800}
+.member-small-button{border:1px solid var(--border);border-radius:999px;background:#fff;color:var(--text);padding:6px 8px;font-size:12px;font-weight:900}
+.member-small-button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.member-order-buttons{display:flex;gap:6px}
+.member-admin-card-left{flex:1 1 auto;min-width:0}
