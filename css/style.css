@@ -104,3 +104,40 @@
 .next-event-cancelled .next-event-title{
   color:var(--red);
 }
+
+/* Ver.0.8.2: イベント編集・削除 */
+.event-admin-actions{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.event-edit-box{
+  margin-top:10px;
+  padding:12px;
+  border-radius:14px;
+  background:#fff;
+  border:1px solid var(--border);
+}
+.event-edit-box .admin-input{
+  margin:5px 0 8px;
+}
+.event-small-button{
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:#fff;
+  color:var(--text);
+  padding:6px 9px;
+  font-size:12px;
+  font-weight:900;
+}
+.event-small-button.primary{
+  background:var(--blue);
+  color:#fff;
+  border-color:var(--blue);
+}
+.event-small-button.danger{
+  background:#fcebea;
+  color:var(--red);
+  border-color:rgba(214,69,69,.35);
+}
