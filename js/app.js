@@ -141,25 +141,84 @@ function renderAdminMembers(){
     memberAdminList.appendChild(div);
     return;
   }
-  list.forEach(m=>{
+  list.forEach((m,index)=>{
     const div=document.createElement("div");
     div.className="member-admin-item";
 
-    const main=document.createElement("div");
+    const left=document.createElement("div");
+    left.className="member-admin-card-left";
+
     const title=document.createElement("div");
     title.className="member-admin-main";
     title.textContent=`😊 ${m.name}`;
 
     const sub=document.createElement("div");
     sub.className="member-admin-sub";
-    sub.textContent=`order: ${m.order ?? "-"} / ${m.active===false ? "無効" : "有効"}`;
+    sub.textContent=`order: ${m.order ?? "-"} / ${m.active===false ? "無効" : "有効"} / ${m.admin ? "管理者" : "一般"}`;
 
-    main.appendChild(title);
-    main.appendChild(sub);
-    div.appendChild(main);
+    left.appendChild(title);
+    left.appendChild(sub);
+
+    const editBox=document.createElement("div");
+    editBox.className="member-edit-box hidden";
+
+    const editRow=document.createElement("div");
+    editRow.className="member-edit-row";
+
+    const nameInput=document.createElement("input");
+    nameInput.type="text";
+    nameInput.value=m.name;
+    nameInput.placeholder="メンバー名";
+
+    const checks=document.createElement("div");
+    checks.className="member-edit-checks";
+
+    const adminLabel=document.createElement("label");
+    const adminCheck=document.createElement("input");
+    adminCheck.type="checkbox";
+    adminCheck.checked=m.admin===true;
+    adminLabel.appendChild(adminCheck);
+    adminLabel.appendChild(document.createTextNode(" 管理者"));
+
+    const activeLabel=document.createElement("label");
+    const activeCheck=document.createElement("input");
+    activeCheck.type="checkbox";
+    activeCheck.checked=m.active!==false;
+    activeLabel.appendChild(activeCheck);
+    activeLabel.appendChild(document.createTextNode(" 有効"));
+
+    checks.appendChild(adminLabel);
+    checks.appendChild(activeLabel);
+
+    const saveBtn=document.createElement("button");
+    saveBtn.type="button";
+    saveBtn.className="member-small-button primary";
+    saveBtn.textContent="保存";
+    saveBtn.onclick=()=>saveMemberEdit(m.id,nameInput.value,adminCheck.checked,activeCheck.checked);
+
+    const cancelBtn=document.createElement("button");
+    cancelBtn.type="button";
+    cancelBtn.className="member-small-button";
+    cancelBtn.textContent="キャンセル";
+    cancelBtn.onclick=()=>editBox.classList.add("hidden");
+
+    editRow.appendChild(nameInput);
+    editRow.appendChild(checks);
+    editRow.appendChild(saveBtn);
+    editRow.appendChild(cancelBtn);
+    editBox.appendChild(editRow);
+    left.appendChild(editBox);
+
+    div.appendChild(left);
 
     const actions=document.createElement("div");
     actions.className="member-admin-actions";
+
+    const editBtn=document.createElement("button");
+    editBtn.type="button";
+    editBtn.className="member-small-button";
+    editBtn.textContent="編集";
+    editBtn.onclick=()=>editBox.classList.toggle("hidden");
 
     const adminBtn=document.createElement("button");
     adminBtn.type="button";
@@ -173,8 +232,30 @@ function renderAdminMembers(){
     activeBtn.textContent=m.active===false ? "無効" : "有効";
     activeBtn.onclick=()=>toggleMemberFlag(m.id,"active",m.active===false);
 
+    const orderBox=document.createElement("div");
+    orderBox.className="member-order-buttons";
+
+    const upBtn=document.createElement("button");
+    upBtn.type="button";
+    upBtn.className="member-small-button";
+    upBtn.textContent="↑";
+    upBtn.disabled=index===0;
+    upBtn.onclick=()=>moveMember(m,index,-1);
+
+    const downBtn=document.createElement("button");
+    downBtn.type="button";
+    downBtn.className="member-small-button";
+    downBtn.textContent="↓";
+    downBtn.disabled=index===list.length-1;
+    downBtn.onclick=()=>moveMember(m,index,1);
+
+    orderBox.appendChild(upBtn);
+    orderBox.appendChild(downBtn);
+
+    actions.appendChild(editBtn);
     actions.appendChild(adminBtn);
     actions.appendChild(activeBtn);
+    actions.appendChild(orderBox);
     div.appendChild(actions);
 
     memberAdminList.appendChild(div);
@@ -194,6 +275,50 @@ async function toggleMemberFlag(memberId,field,value){
   }catch(e){
     console.error(e);
     alert("メンバー情報の更新に失敗しました。Firestoreルールを確認してください。");
+  }
+}
+
+async function saveMemberEdit(memberId,name,admin,active){
+  const cleanName=name.trim();
+  if(!memberId){
+    alert("このメンバーはFirestoreのIDがないため変更できません。");
+    return;
+  }
+  if(!cleanName){
+    alert("メンバー名を入力してください。");
+    return;
+  }
+  try{
+    await updateDoc(doc(db,"members",memberId),{
+      name:cleanName,
+      admin,
+      active,
+      updatedAt:serverTimestamp()
+    });
+    alert("メンバー情報を保存しました。");
+  }catch(e){
+    console.error(e);
+    alert("メンバー情報の保存に失敗しました。Firestoreルールを確認してください。");
+  }
+}
+
+async function moveMember(member,index,direction){
+  const target=memberRecords[index+direction];
+  if(!member||!target||!member.id||!target.id)return;
+  try{
+    const currentOrder=member.order??index+1;
+    const targetOrder=target.order??index+direction+1;
+    await updateDoc(doc(db,"members",member.id),{
+      order:targetOrder,
+      updatedAt:serverTimestamp()
+    });
+    await updateDoc(doc(db,"members",target.id),{
+      order:currentOrder,
+      updatedAt:serverTimestamp()
+    });
+  }catch(e){
+    console.error(e);
+    alert("表示順の変更に失敗しました。Firestoreルールを確認してください。");
   }
 }
 
