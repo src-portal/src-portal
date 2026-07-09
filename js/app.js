@@ -23,7 +23,6 @@ const adminPinSubmitButton=document.getElementById("adminPinSubmitButton");
 const closeAdminPinButton=document.getElementById("closeAdminPinButton");
 const closeAdminMenuButton=document.getElementById("closeAdminMenuButton");
 const adminChangeUserButton=document.getElementById("adminChangeUserButton");
-const adminFirebaseStatusButton=document.getElementById("adminFirebaseStatusButton");
 const versionAdminTrigger=document.getElementById("versionAdminTrigger");
 
 let adminPressTimer=null;
@@ -58,9 +57,32 @@ adminChangeUserButton.onclick=()=>{
   hide(adminMenuModal);
   requireName(true);
 };
-adminFirebaseStatusButton.onclick=()=>{
-  connectionCard.classList.remove("hidden");
-  setOnline("🟢 Firebase 接続中");
+
+const adminMemberModal=document.getElementById("adminMemberModal");
+const invitePreviewModal=document.getElementById("invitePreviewModal");
+const adminMemberListButton=document.getElementById("adminMemberListButton");
+const adminInvitePreviewButton=document.getElementById("adminInvitePreviewButton");
+const closeAdminMemberButton=document.getElementById("closeAdminMemberButton");
+const closeInvitePreviewButton=document.getElementById("closeInvitePreviewButton");
+const memberAdminList=document.getElementById("memberAdminList");
+
+function renderAdminMembers(){
+  memberAdminList.innerHTML="";
+  members.forEach(name=>{
+    const div=document.createElement("div");
+    div.className="member-admin-item";
+    div.textContent=`😊 ${name}`;
+    memberAdminList.appendChild(div);
+  });
+}
+adminMemberListButton.onclick=()=>{
+  renderAdminMembers();
+  show(adminMemberModal);
 };
+adminInvitePreviewButton.onclick=()=>show(invitePreviewModal);
+closeAdminMemberButton.onclick=()=>hide(adminMemberModal);
+closeInvitePreviewButton.onclick=()=>hide(invitePreviewModal);
+
+
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
