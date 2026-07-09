@@ -144,24 +144,57 @@ function renderAdminMembers(){
   list.forEach(m=>{
     const div=document.createElement("div");
     div.className="member-admin-item";
+
     const main=document.createElement("div");
     const title=document.createElement("div");
     title.className="member-admin-main";
     title.textContent=`😊 ${m.name}`;
+
     const sub=document.createElement("div");
     sub.className="member-admin-sub";
     sub.textContent=`order: ${m.order ?? "-"} / ${m.active===false ? "無効" : "有効"}`;
+
     main.appendChild(title);
     main.appendChild(sub);
     div.appendChild(main);
-    if(m.admin){
-      const badge=document.createElement("span");
-      badge.className="member-admin-badge";
-      badge.textContent="管理者";
-      div.appendChild(badge);
-    }
+
+    const actions=document.createElement("div");
+    actions.className="member-admin-actions";
+
+    const adminBtn=document.createElement("button");
+    adminBtn.type="button";
+    adminBtn.className=`member-toggle-button ${m.admin ? "on" : ""}`;
+    adminBtn.textContent=m.admin ? "管理者ON" : "管理者OFF";
+    adminBtn.onclick=()=>toggleMemberFlag(m.id,"admin",!m.admin);
+
+    const activeBtn=document.createElement("button");
+    activeBtn.type="button";
+    activeBtn.className=`member-toggle-button ${m.active===false ? "off" : "on"}`;
+    activeBtn.textContent=m.active===false ? "無効" : "有効";
+    activeBtn.onclick=()=>toggleMemberFlag(m.id,"active",m.active===false);
+
+    actions.appendChild(adminBtn);
+    actions.appendChild(activeBtn);
+    div.appendChild(actions);
+
     memberAdminList.appendChild(div);
   });
+}
+
+async function toggleMemberFlag(memberId,field,value){
+  if(!memberId){
+    alert("このメンバーはFirestoreのIDがないため変更できません。");
+    return;
+  }
+  try{
+    await updateDoc(doc(db,"members",memberId),{
+      [field]:value,
+      updatedAt:serverTimestamp()
+    });
+  }catch(e){
+    console.error(e);
+    alert("メンバー情報の更新に失敗しました。Firestoreルールを確認してください。");
+  }
 }
 
 function makeMemberId(name){
