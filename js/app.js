@@ -62,9 +62,48 @@ const adminMemberModal=document.getElementById("adminMemberModal");
 const invitePreviewModal=document.getElementById("invitePreviewModal");
 const adminMemberListButton=document.getElementById("adminMemberListButton");
 const adminInvitePreviewButton=document.getElementById("adminInvitePreviewButton");
+const adminSeedMembersButton=document.getElementById("adminSeedMembersButton");
 const closeAdminMemberButton=document.getElementById("closeAdminMemberButton");
 const closeInvitePreviewButton=document.getElementById("closeInvitePreviewButton");
 const memberAdminList=document.getElementById("memberAdminList");
+
+
+const initialMembers=[
+  {id:"horibe",name:"堀部",admin:true,active:true,order:1},
+  {id:"hidaka",name:"日高",admin:false,active:true,order:2},
+  {id:"kitatsuji",name:"北辻",admin:false,active:true,order:3},
+  {id:"zhu",name:"朱",admin:false,active:true,order:4},
+  {id:"kondo_yu",name:"近藤(夕)",admin:false,active:true,order:5},
+  {id:"zhu_jie",name:"ZHU Jie",admin:false,active:true,order:6},
+  {id:"takemura",name:"竹村",admin:false,active:true,order:7},
+  {id:"iwashita",name:"岩下",admin:false,active:true,order:8},
+  {id:"nonomura",name:"野々村",admin:false,active:true,order:9},
+  {id:"fujiyoshi",name:"藤吉",admin:false,active:true,order:10},
+  {id:"ikeda",name:"池田",admin:false,active:true,order:11},
+  {id:"ito_dai",name:"伊東(大)",admin:false,active:true,order:12},
+  {id:"sakai_koto",name:"酒井(琴)",admin:false,active:true,order:13},
+  {id:"taki",name:"滝",admin:false,active:true,order:14}
+];
+
+async function seedMembers(){
+  if(!confirm("初期メンバーをFirestoreに登録します。よろしいですか？")) return;
+
+  try{
+    for(const m of initialMembers){
+      await setDoc(doc(db,"members",m.id),{
+        name:m.name,
+        admin:m.admin,
+        active:m.active,
+        order:m.order,
+        updatedAt:serverTimestamp()
+      },{merge:true});
+    }
+    alert("初期メンバー登録が完了しました。");
+  }catch(e){
+    console.error(e);
+    alert("初期メンバー登録に失敗しました。Firestoreルールを確認してください。");
+  }
+}
 
 function renderAdminMembers(){
   memberAdminList.innerHTML="";
@@ -80,6 +119,7 @@ adminMemberListButton.onclick=()=>{
   show(adminMemberModal);
 };
 adminInvitePreviewButton.onclick=()=>show(invitePreviewModal);
+adminSeedMembersButton.onclick=seedMembers;
 closeAdminMemberButton.onclick=()=>hide(adminMemberModal);
 closeInvitePreviewButton.onclick=()=>hide(invitePreviewModal);
 
