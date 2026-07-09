@@ -27,3 +27,10 @@
 .member-admin-main{font-weight:900}
 .member-admin-sub{margin-top:3px;font-size:12px;color:var(--muted);font-weight:800}
 .member-admin-badge{flex:0 0 auto;padding:4px 8px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:12px;font-weight:900}
+
+/* Ver.0.7.3: Build表示・メンバー切替 */
+.build-info{margin-top:4px;color:var(--muted);font-size:11px;font-weight:800}
+.member-admin-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.member-toggle-button{border:1px solid var(--border);border-radius:999px;background:#fff;color:var(--text);padding:6px 8px;font-size:12px;font-weight:900}
+.member-toggle-button.on{background:var(--blue-soft);color:var(--blue);border-color:#cfe3ff}
+.member-toggle-button.off{background:#fcebea;color:var(--red);border-color:rgba(214,69,69,.35)}
