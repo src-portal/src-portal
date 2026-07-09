@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded",()=>{const $=id=>document.getElemen
 const app=initializeApp(firebaseConfig);const db=getFirestore(app);const today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="gym";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
 let members=[...defaultMembers];
 let memberRecords=[];
-let eventRecords=[];const requiredMembers=3,storageUserKey="srcPortalCurrentUser";let currentUser=localStorage.getItem(storageUserKey)||"",attendance={};const runEvents={"2026-07-08":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-07-15":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-08-12":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-08-19":{status:"cancelled",message:"会社行事のため中止します。"}};
+let eventRecords=[];
+let selectedEvent=null;const requiredMembers=3,storageUserKey="srcPortalCurrentUser";let currentUser=localStorage.getItem(storageUserKey)||"",attendance={};const runEvents={"2026-07-08":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-07-15":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-08-12":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-08-19":{status:"cancelled",message:"会社行事のため中止します。"}};
 function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){e.classList.remove("hidden")}function hide(e){e.classList.add("hidden")}function eventId(type,key){return `${type}_${key}`}function eventPath(type,key){return doc(db,"attendance",eventId(type,key))}function getNames(type,key){return attendance[eventId(type,key)]||[]}function isRunDate(key){return !!runEvents[key]}function runStatus(key){return runEvents[key]?.status||""}function isToday(y,m,d){return today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d}
 onSnapshot(collection(db,"attendance"),snap=>{attendance={};snap.forEach(d=>{attendance[d.id]=d.data().participants||[]});setOnline("🟢 Firebase 接続中");renderAll();if(selectedKey)renderDetail()},err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
 onSnapshot(collection(db,"members"),snap=>{
@@ -46,6 +47,7 @@ onSnapshot(collection(db,"events"),snap=>{
   });
   eventRecords=loaded.sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.type||"").localeCompare(b.type||""));
   renderNextEventPublic();
+  renderCalendar();
   if(eventManageModal&&!eventManageModal.classList.contains("hidden"))renderAdminEvents();
 },err=>{
   console.error("events read error",err);
@@ -54,6 +56,17 @@ onSnapshot(collection(db,"events"),snap=>{
 async function joinEvent(){if(!currentUser){requireName(true);return}try{await setDoc(eventPath(currentType,selectedKey),{type:currentType,date:selectedKey,participants:arrayUnion(currentUser),updatedAt:serverTimestamp()},{merge:true})}catch(e){alert("参加登録に失敗しました。Firestoreのルールを確認してください。");console.error(e)}}async function cancelEvent(){if(!currentUser||!selectedKey)return;try{await updateDoc(eventPath(currentType,selectedKey),{participants:arrayRemove(currentUser),updatedAt:serverTimestamp()})}catch(e){alert("参加取消に失敗しました。");console.error(e)}}
 function updateUser(){currentUserLabel.textContent=currentUser?`😊 ${currentUser}`:"未設定"}function renderNameButtons(){nameButtonGrid.innerHTML="";members.forEach(name=>{const b=document.createElement("button");b.type="button";b.className="name-choice-button";b.textContent=`😊 ${name}`;b.onclick=()=>{currentUser=name;localStorage.setItem(storageUserKey,name);updateUser();hide(setupModal);renderAll()};nameButtonGrid.appendChild(b)})}function requireName(force=false){if(force||!currentUser){renderNameButtons();show(setupModal)}}
 function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent="サンフロッグ春日井";eventTime.textContent="19:00〜";ruleTitle.textContent="開催条件";ruleValue.textContent="3名以上で開催"}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="基本 第2・第3水曜。開催日は管理者が変更可能。";eventPlace.textContent="落合公園";eventTime.textContent="19:00〜";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者が設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderNextEventPublic()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span><span class="dot dot-me"></span>自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span><span class="dot dot-me"></span>自分</span>'}
+
+function eventsByDate(dateStr){
+  return eventRecords.filter(ev=>ev.date===dateStr);
+}
+
+function primaryEventForDate(dateStr){
+  const events=eventsByDate(dateStr);
+  if(events.length===0)return null;
+  return events.sort((a,b)=>(a.time||"").localeCompare(b.time||""))[0];
+}
+
 function renderCalendar(){calendarGrid.innerHTML="";calendarTitle.textContent=`${currentYear}年${currentMonth+1}月`;for(let i=0;i<blank(currentYear,currentMonth);i++){const e=document.createElement("div");e.className="day-cell empty";calendarGrid.appendChild(e)}const days=new Date(currentYear,currentMonth+1,0).getDate();for(let d=1;d<=days;d++){const key=toKey(currentYear,currentMonth,d),names=getNames(currentType,key),count=names.length;const cell=document.createElement("button");cell.type="button";cell.className="day-cell";if(isToday(currentYear,currentMonth,d))cell.classList.add("today");if(currentType==="gym"){if(count===1)cell.classList.add("one");if(count===2)cell.classList.add("warn");if(count>=requiredMembers)cell.classList.add("confirmed")}else{if(!isRunDate(key))cell.classList.add("disabled");else if(runStatus(key)==="cancelled")cell.classList.add("cancelled");else cell.classList.add("confirmed")}if(currentUser&&names.includes(currentUser))cell.classList.add("me");let note="";if(currentType==="gym")note=count>=3?"開催":count===2?"あと1":count===1?"あと2":"";else note=isRunDate(key)?(runStatus(key)==="cancelled"?"中止":"開催"):"";const me=currentUser&&names.includes(currentUser)?"✓ ":"";cell.innerHTML=`<span class="day-number">${me}${d}</span><span class="day-note">${note}</span>`;cell.onclick=()=>{if(currentType==="run"&&!isRunDate(key))return;openDetail(key)};calendarGrid.appendChild(cell)}}
 
 function getUpcomingEvents(){
@@ -144,6 +157,10 @@ const newMemberNameInput=document.getElementById("newMemberNameInput");
 const newMemberAdminCheck=document.getElementById("newMemberAdminCheck");
 const addMemberButton=document.getElementById("addMemberButton");
 const addMemberError=document.getElementById("addMemberError");
+const eventDetailModal=document.getElementById("eventDetailModal");
+const closeEventDetailButton=document.getElementById("closeEventDetailButton");
+const eventDetailContent=document.getElementById("eventDetailContent");
+const eventDetailJoinButton=document.getElementById("eventDetailJoinButton");
 const eventManageModal=document.getElementById("eventManageModal");
 const adminEventManageButton=document.getElementById("adminEventManageButton");
 const closeEventManageButton=document.getElementById("closeEventManageButton");
@@ -196,6 +213,37 @@ async function seedMembers(){
   }
 }
 
+
+
+function showEventDetail(ev){
+  selectedEvent=ev;
+  if(!eventDetailContent)return;
+
+  const statusText=ev.status==="cancelled"?"中止":"開催予定";
+  const statusIcon=ev.status==="cancelled"?"🔴":"🟢";
+  const label=ev.type==="run"?"🏃 ラン＆ウォーク":"🏋️ ジム";
+
+  eventDetailContent.innerHTML=`
+    <div class="event-detail-card">
+      <div class="event-detail-title">${statusIcon} ${label} ${statusText}</div>
+      <div class="event-detail-sub">📅 ${fmt(ev.date)}<br>🕖 ${ev.time||"19:00"}<br>📍 ${ev.place||"-"}</div>
+      ${ev.memo?`<div class="event-detail-memo">📝 ${ev.memo}</div>`:""}
+    </div>
+  `;
+  show(eventDetailModal);
+}
+
+function openSelectedEventAttendance(){
+  if(!selectedEvent)return;
+  type=selectedEvent.type==="run"?"run":"gym";
+  selectedDate=new Date(selectedEvent.date);
+  selectedKey=docId(type,selectedDate);
+  hide(eventDetailModal);
+  renderTabs();
+  renderCalendar();
+  renderDetail();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 
 function eventTypeLabel(type){
   return type==="run"?"ラン＆ウォーク":"ジム";
@@ -609,6 +657,8 @@ adminMemberListButton.onclick=()=>{
   renderAdminMembers();
   show(adminMemberModal);
 };
+closeEventDetailButton.onclick=()=>hide(eventDetailModal);
+eventDetailJoinButton.onclick=openSelectedEventAttendance;
 adminEventManageButton.onclick=()=>{
   renderAdminEvents();
   show(eventManageModal);
