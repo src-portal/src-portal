@@ -46,3 +46,14 @@
 .member-small-button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
 .member-order-buttons{display:flex;gap:6px}
 .member-admin-card-left{flex:1 1 auto;min-width:0}
+
+/* Ver.0.8.0: イベント管理 */
+.event-admin-box{margin:14px 0;padding:14px;border-radius:16px;background:#f7f9fb;border:1px solid var(--border)}
+.admin-form-label{display:block;margin-top:10px;color:var(--muted);font-size:12px;font-weight:900}
+.admin-textarea{min-height:78px;resize:vertical}
+.event-admin-list{display:grid;gap:8px;margin:14px 0}
+.event-admin-item{padding:11px 12px;border-radius:14px;background:#f7f9fb;font-weight:900}
+.event-admin-title{font-weight:900}
+.event-admin-sub{margin-top:4px;color:var(--muted);font-size:12px;font-weight:800;line-height:1.5}
+.event-status-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:11px;font-weight:900}
+.event-status-badge.cancelled{background:#fcebea;color:var(--red)}
