@@ -23,6 +23,12 @@
     <section class="connection-card hidden" id="connectionCard"><span id="connectionStatus">🟡 Firebase 接続確認中</span></section>
     <section class="user-card"><div><div class="small-label">現在のユーザー</div><div class="current-user" id="currentUserLabel">未設定</div></div><button class="small-button" id="changeUserButton" type="button">変更</button></section>
     <section class="notice-card"><h2>📢 お知らせ</h2><p id="globalNotice">現在、連絡事項はありません。</p></section>
+    
+    <section class="next-event-card" id="nextEventCard">
+      <div class="section-label">📅 次回イベント</div>
+      <div id="nextEventContent" class="next-event-empty">登録されたイベントはまだありません。</div>
+    </section>
+
     <section class="next-card"><div class="section-label">✨ あなたの次回参加予定</div><div id="nextPlanContent" class="next-plan-empty">参加予定はまだありません。</div></section>
     <section class="event-switch-card"><div class="event-tabs"><button class="event-tab active" id="gymTab" type="button">🏋️ ジム</button><button class="event-tab" id="runTab" type="button">🏃 ラン＆ウォーク</button></div></section>
     <section class="event-info-card"><h1 id="eventTitle">ジムトレーニング</h1><p class="event-summary" id="eventSummary">好きな日を選んで参加表明</p><div class="event-main-info"><div>📍 <span id="eventPlace">サンフロッグ春日井</span></div><div>🕖 <span id="eventTime">19:00〜</span></div></div><div class="rule-strip"><div class="rule-title" id="ruleTitle">開催条件</div><div class="rule-value" id="ruleValue">3名以上で開催</div></div></section>
@@ -32,7 +38,7 @@
   <main class="main-content detail-view hidden" id="detailView">
     <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
   </main>
-  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.8.0</button><div class="build-info" id="buildInfo">Build 2026/07/09 09:01</div>
+  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.8.1</button><div class="build-info" id="buildInfo">Build 2026/07/09 18:35 JST</div>
   <div class="credit">Admin mode / Firebase connected</div></footer>
 </div>
 <div class="modal-overlay hidden" id="setupModal"><div class="modal-card"><h2>お名前を選択</h2><p class="setup-text">初回だけ、自分の名前を選んでください。次回から自動で使用します。</p><div class="name-button-grid" id="nameButtonGrid"></div></div></div>
@@ -157,6 +163,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=080"></script>
+<script type="module" src="js/app.js?v=081"></script>
 </body>
 </html>
