@@ -13,7 +13,8 @@ function setType(type){currentType=type;gymTab.classList.toggle("active",type===
 function renderCalendar(){calendarGrid.innerHTML="";calendarTitle.textContent=`${currentYear}年${currentMonth+1}月`;for(let i=0;i<blank(currentYear,currentMonth);i++){const e=document.createElement("div");e.className="day-cell empty";calendarGrid.appendChild(e)}const days=new Date(currentYear,currentMonth+1,0).getDate();for(let d=1;d<=days;d++){const key=toKey(currentYear,currentMonth,d),names=getNames(currentType,key),count=names.length;const cell=document.createElement("button");cell.type="button";cell.className="day-cell";if(isToday(currentYear,currentMonth,d))cell.classList.add("today");if(currentType==="gym"){if(count===1)cell.classList.add("one");if(count===2)cell.classList.add("warn");if(count>=requiredMembers)cell.classList.add("confirmed")}else{if(!isRunDate(key))cell.classList.add("disabled");else if(runStatus(key)==="cancelled")cell.classList.add("cancelled");else cell.classList.add("confirmed")}if(currentUser&&names.includes(currentUser))cell.classList.add("me");let note="";if(currentType==="gym")note=count>=3?"開催":count===2?"あと1":count===1?"あと2":"";else note=isRunDate(key)?(runStatus(key)==="cancelled"?"中止":"開催"):"";const me=currentUser&&names.includes(currentUser)?"✓ ":"";cell.innerHTML=`<span class="day-number">${me}${d}</span><span class="day-note">${note}</span>`;cell.onclick=()=>{if(currentType==="run"&&!isRunDate(key))return;openDetail(key)};calendarGrid.appendChild(cell)}}
 function renderNextPlan(){if(!currentUser){nextPlanContent.className="next-plan-empty";nextPlanContent.textContent="名前を選択すると表示されます。";return}let plans=[];Object.keys(attendance).forEach(id=>{const [type,...rest]=id.split("_");const key=rest.join("_");if((attendance[id]||[]).includes(currentUser))plans.push({type,key})});plans=plans.filter(p=>new Date(p.key)>=new Date(today.getFullYear(),today.getMonth(),today.getDate())).sort((a,b)=>a.key.localeCompare(b.key));if(plans.length===0){nextPlanContent.className="next-plan-empty";nextPlanContent.textContent="参加予定はまだありません。";return}const p=plans[0],label=p.type==="gym"?"🏋️ ジム":"🏃 ラン＆ウォーク",place=p.type==="gym"?"サンフロッグ春日井":"落合公園";nextPlanContent.className="next-plan-item";nextPlanContent.innerHTML=`${label}<br>📅 ${fmt(p.key)}<br>🕖 19:00<br>📍 ${place}`}
 function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderDetail();window.scrollTo({top:0,behavior:"smooth"})}function renderDetail(){const names=getNames(currentType,selectedKey),count=names.length;detailDate.textContent=fmt(selectedKey);detailEvent.textContent=currentType==="gym"?"🏋️ ジムトレーニング":"🏃 ラン＆ウォーク";detailTime.textContent="19:00〜";detailPlace.textContent=currentType==="gym"?"📍 サンフロッグ春日井":"📍 落合公園";participantTitle.textContent=`参加者（${count}名）`;participantList.innerHTML="";if(count===0){const li=document.createElement("li");li.className="empty-message";li.textContent="まだ参加者はいません。";participantList.appendChild(li)}else names.forEach(n=>{const li=document.createElement("li");li.textContent=`😊 ${n}`;if(n===currentUser)li.classList.add("me");participantList.appendChild(li)});eventMessage.classList.add("hidden");progressBox.classList.remove("confirmed","cancelled");progressBar.style.display="block";if(currentType==="gym"){const remain=Math.max(requiredMembers-count,0),rate=Math.min(count/requiredMembers,1)*100;progressFill.style.width=`${rate}%`;if(count>=requiredMembers){progressBox.classList.add("confirmed");progressText.textContent=`🟢 開催決定（${count}名参加）`}else progressText.textContent=`🟡 あと${remain}名で開催`}else{progressFill.style.width="100%";progressBar.style.display="none";const ev=runEvents[selectedKey];if(ev.status==="cancelled"){progressBox.classList.add("cancelled");progressText.textContent="🔴 中止";eventMessage.textContent=ev.message;eventMessage.classList.remove("hidden")}else{progressBox.classList.add("confirmed");progressText.textContent="🟢 開催予定";eventMessage.textContent=ev.message;eventMessage.classList.remove("hidden")}}updateButtons()}function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
-joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);changeUserButton.onclick=()=>requireName(true);gymTab.onclick=()=>setType("gym");runTab.onclick=()=>setType("run");
+joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);changeUserButton.style.display="none";
+changeUserButton.onclick=()=>{};gymTab.onclick=()=>setType("gym");runTab.onclick=()=>setType("run");
 const adminPin="1979";
 const adminPinModal=document.getElementById("adminPinModal");
 const adminMenuModal=document.getElementById("adminMenuModal");
@@ -62,48 +63,9 @@ const adminMemberModal=document.getElementById("adminMemberModal");
 const invitePreviewModal=document.getElementById("invitePreviewModal");
 const adminMemberListButton=document.getElementById("adminMemberListButton");
 const adminInvitePreviewButton=document.getElementById("adminInvitePreviewButton");
-const adminSeedMembersButton=document.getElementById("adminSeedMembersButton");
 const closeAdminMemberButton=document.getElementById("closeAdminMemberButton");
 const closeInvitePreviewButton=document.getElementById("closeInvitePreviewButton");
 const memberAdminList=document.getElementById("memberAdminList");
-
-
-const initialMembers=[
-  {id:"horibe",name:"堀部",admin:true,active:true,order:1},
-  {id:"hidaka",name:"日高",admin:false,active:true,order:2},
-  {id:"kitatsuji",name:"北辻",admin:false,active:true,order:3},
-  {id:"zhu",name:"朱",admin:false,active:true,order:4},
-  {id:"kondo_yu",name:"近藤(夕)",admin:false,active:true,order:5},
-  {id:"zhu_jie",name:"ZHU Jie",admin:false,active:true,order:6},
-  {id:"takemura",name:"竹村",admin:false,active:true,order:7},
-  {id:"iwashita",name:"岩下",admin:false,active:true,order:8},
-  {id:"nonomura",name:"野々村",admin:false,active:true,order:9},
-  {id:"fujiyoshi",name:"藤吉",admin:false,active:true,order:10},
-  {id:"ikeda",name:"池田",admin:false,active:true,order:11},
-  {id:"ito_dai",name:"伊東(大)",admin:false,active:true,order:12},
-  {id:"sakai_koto",name:"酒井(琴)",admin:false,active:true,order:13},
-  {id:"taki",name:"滝",admin:false,active:true,order:14}
-];
-
-async function seedMembers(){
-  if(!confirm("初期メンバーをFirestoreに登録します。よろしいですか？")) return;
-
-  try{
-    for(const m of initialMembers){
-      await setDoc(doc(db,"members",m.id),{
-        name:m.name,
-        admin:m.admin,
-        active:m.active,
-        order:m.order,
-        updatedAt:serverTimestamp()
-      },{merge:true});
-    }
-    alert("初期メンバー登録が完了しました。");
-  }catch(e){
-    console.error(e);
-    alert("初期メンバー登録に失敗しました。Firestoreルールを確認してください。");
-  }
-}
 
 function renderAdminMembers(){
   memberAdminList.innerHTML="";
@@ -119,7 +81,6 @@ adminMemberListButton.onclick=()=>{
   show(adminMemberModal);
 };
 adminInvitePreviewButton.onclick=()=>show(invitePreviewModal);
-adminSeedMembersButton.onclick=seedMembers;
 closeAdminMemberButton.onclick=()=>hide(adminMemberModal);
 closeInvitePreviewButton.onclick=()=>hide(invitePreviewModal);
 
