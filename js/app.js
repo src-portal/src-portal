@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-import { firebaseConfig } from "./firebase-config.js";
+const firebaseConfig={apiKey:"AIzaSyAsqNE9tSB2eIDtHBR8dRSVkzGFD0sKh-c",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
 document.addEventListener("DOMContentLoaded",()=>{const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus");
 const app=initializeApp(firebaseConfig);const db=getFirestore(app);const today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="gym";const members=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];const requiredMembers=3,storageUserKey="srcPortalCurrentUser";let currentUser=localStorage.getItem(storageUserKey)||"",attendance={};const runEvents={"2026-07-08":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-07-15":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-08-12":{status:"scheduled",message:"通常どおり開催予定です。"},"2026-08-19":{status:"cancelled",message:"会社行事のため中止します。"}};
@@ -13,10 +13,7 @@ function setType(type){currentType=type;gymTab.classList.toggle("active",type===
 function renderCalendar(){calendarGrid.innerHTML="";calendarTitle.textContent=`${currentYear}年${currentMonth+1}月`;for(let i=0;i<blank(currentYear,currentMonth);i++){const e=document.createElement("div");e.className="day-cell empty";calendarGrid.appendChild(e)}const days=new Date(currentYear,currentMonth+1,0).getDate();for(let d=1;d<=days;d++){const key=toKey(currentYear,currentMonth,d),names=getNames(currentType,key),count=names.length;const cell=document.createElement("button");cell.type="button";cell.className="day-cell";if(isToday(currentYear,currentMonth,d))cell.classList.add("today");if(currentType==="gym"){if(count===1)cell.classList.add("one");if(count===2)cell.classList.add("warn");if(count>=requiredMembers)cell.classList.add("confirmed")}else{if(!isRunDate(key))cell.classList.add("disabled");else if(runStatus(key)==="cancelled")cell.classList.add("cancelled");else cell.classList.add("confirmed")}if(currentUser&&names.includes(currentUser))cell.classList.add("me");let note="";if(currentType==="gym")note=count>=3?"開催":count===2?"あと1":count===1?"あと2":"";else note=isRunDate(key)?(runStatus(key)==="cancelled"?"中止":"開催"):"";const me=currentUser&&names.includes(currentUser)?"✓ ":"";cell.innerHTML=`<span class="day-number">${me}${d}</span><span class="day-note">${note}</span>`;cell.onclick=()=>{if(currentType==="run"&&!isRunDate(key))return;openDetail(key)};calendarGrid.appendChild(cell)}}
 function renderNextPlan(){if(!currentUser){nextPlanContent.className="next-plan-empty";nextPlanContent.textContent="名前を選択すると表示されます。";return}let plans=[];Object.keys(attendance).forEach(id=>{const [type,...rest]=id.split("_");const key=rest.join("_");if((attendance[id]||[]).includes(currentUser))plans.push({type,key})});plans=plans.filter(p=>new Date(p.key)>=new Date(today.getFullYear(),today.getMonth(),today.getDate())).sort((a,b)=>a.key.localeCompare(b.key));if(plans.length===0){nextPlanContent.className="next-plan-empty";nextPlanContent.textContent="参加予定はまだありません。";return}const p=plans[0],label=p.type==="gym"?"🏋️ ジム":"🏃 ラン＆ウォーク",place=p.type==="gym"?"サンフロッグ春日井":"落合公園";nextPlanContent.className="next-plan-item";nextPlanContent.innerHTML=`${label}<br>📅 ${fmt(p.key)}<br>🕖 19:00<br>📍 ${place}`}
 function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderDetail();window.scrollTo({top:0,behavior:"smooth"})}function renderDetail(){const names=getNames(currentType,selectedKey),count=names.length;detailDate.textContent=fmt(selectedKey);detailEvent.textContent=currentType==="gym"?"🏋️ ジムトレーニング":"🏃 ラン＆ウォーク";detailTime.textContent="19:00〜";detailPlace.textContent=currentType==="gym"?"📍 サンフロッグ春日井":"📍 落合公園";participantTitle.textContent=`参加者（${count}名）`;participantList.innerHTML="";if(count===0){const li=document.createElement("li");li.className="empty-message";li.textContent="まだ参加者はいません。";participantList.appendChild(li)}else names.forEach(n=>{const li=document.createElement("li");li.textContent=`😊 ${n}`;if(n===currentUser)li.classList.add("me");participantList.appendChild(li)});eventMessage.classList.add("hidden");progressBox.classList.remove("confirmed","cancelled");progressBar.style.display="block";if(currentType==="gym"){const remain=Math.max(requiredMembers-count,0),rate=Math.min(count/requiredMembers,1)*100;progressFill.style.width=`${rate}%`;if(count>=requiredMembers){progressBox.classList.add("confirmed");progressText.textContent=`🟢 開催決定（${count}名参加）`}else progressText.textContent=`🟡 あと${remain}名で開催`}else{progressFill.style.width="100%";progressBar.style.display="none";const ev=runEvents[selectedKey];if(ev.status==="cancelled"){progressBox.classList.add("cancelled");progressText.textContent="🔴 中止";eventMessage.textContent=ev.message;eventMessage.classList.remove("hidden")}else{progressBox.classList.add("confirmed");progressText.textContent="🟢 開催予定";eventMessage.textContent=ev.message;eventMessage.classList.remove("hidden")}}updateButtons()}function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
-joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);changeUserButton.onclick=()=>requireName(true);gymTab.onclick=()=>setType("gym");runTab.onclick=()=>setType("run");renderNameButtons();updateUser();renderAll();requireName(false)
-
-let adminTapCount=0;
-let adminTapTimer=null;
+joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);changeUserButton.onclick=()=>requireName(true);gymTab.onclick=()=>setType("gym");runTab.onclick=()=>setType("run");
 const adminPin="1979";
 const adminPinModal=document.getElementById("adminPinModal");
 const adminMenuModal=document.getElementById("adminMenuModal");
@@ -27,20 +24,25 @@ const closeAdminPinButton=document.getElementById("closeAdminPinButton");
 const closeAdminMenuButton=document.getElementById("closeAdminMenuButton");
 const adminChangeUserButton=document.getElementById("adminChangeUserButton");
 const adminFirebaseStatusButton=document.getElementById("adminFirebaseStatusButton");
-const portalTitleEl=document.querySelector(".portal-title");
+const versionAdminTrigger=document.getElementById("versionAdminTrigger");
 
-portalTitleEl.addEventListener("click",()=>{
-  adminTapCount++;
-  clearTimeout(adminTapTimer);
-  adminTapTimer=setTimeout(()=>adminTapCount=0,1600);
-  if(adminTapCount>=7){
-    adminTapCount=0;
-    adminPinInput.value="";
-    adminPinError.classList.add("hidden");
-    show(adminPinModal);
-    setTimeout(()=>adminPinInput.focus(),100);
-  }
+let adminPressTimer=null;
+function openAdminPin(){
+  adminPinInput.value="";
+  adminPinError.classList.add("hidden");
+  show(adminPinModal);
+  setTimeout(()=>adminPinInput.focus(),100);
+}
+versionAdminTrigger.addEventListener("touchstart",()=>{
+  adminPressTimer=setTimeout(openAdminPin,2000);
+},{passive:true});
+versionAdminTrigger.addEventListener("touchend",()=>clearTimeout(adminPressTimer));
+versionAdminTrigger.addEventListener("touchcancel",()=>clearTimeout(adminPressTimer));
+versionAdminTrigger.addEventListener("mousedown",()=>{
+  adminPressTimer=setTimeout(openAdminPin,2000);
 });
+versionAdminTrigger.addEventListener("mouseup",()=>clearTimeout(adminPressTimer));
+versionAdminTrigger.addEventListener("mouseleave",()=>clearTimeout(adminPressTimer));
 
 adminPinSubmitButton.onclick=()=>{
   if(adminPinInput.value===adminPin){
@@ -61,5 +63,4 @@ adminFirebaseStatusButton.onclick=()=>{
   setOnline("🟢 Firebase 接続中");
 };
 
-renderNameButtons(); updateUser(); renderAll(); requireName(false);
-});
+renderNameButtons();updateUser();renderAll();requireName(false)});
