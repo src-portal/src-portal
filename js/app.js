@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAsqNE9tSB2eIDtHBR8dRSVkzGFD0sKh-c",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
@@ -229,10 +229,99 @@ function renderAdminEvents(){
     sub.className="event-admin-sub";
     sub.innerHTML=`${ev.time||"19:00"} / ${ev.place||"-"}<br>${ev.memo||""}`;
 
+    const actions=document.createElement("div");
+    actions.className="event-admin-actions";
+
+    const editBtn=document.createElement("button");
+    editBtn.type="button";
+    editBtn.className="event-small-button";
+    editBtn.textContent="編集";
+
+    const deleteBtn=document.createElement("button");
+    deleteBtn.type="button";
+    deleteBtn.className="event-small-button danger";
+    deleteBtn.textContent="削除";
+    deleteBtn.onclick=()=>deleteEvent(ev.id);
+
+    const editBox=document.createElement("div");
+    editBox.className="event-edit-box hidden";
+
+    editBox.innerHTML=`
+      <label class="admin-form-label">タイトル</label>
+      <input class="admin-input event-edit-title" type="text" value="${escapeHtml(ev.title||eventTypeLabel(ev.type))}">
+      <label class="admin-form-label">開始時刻</label>
+      <input class="admin-input event-edit-time" type="time" value="${ev.time||"19:00"}">
+      <label class="admin-form-label">場所</label>
+      <input class="admin-input event-edit-place" type="text" value="${escapeHtml(ev.place||"")}">
+      <label class="admin-form-label">状態</label>
+      <select class="admin-input event-edit-status">
+        <option value="scheduled" ${ev.status!=="cancelled"?"selected":""}>開催予定</option>
+        <option value="cancelled" ${ev.status==="cancelled"?"selected":""}>中止</option>
+      </select>
+      <label class="admin-form-label">メモ</label>
+      <textarea class="admin-input admin-textarea event-edit-memo">${escapeHtml(ev.memo||"")}</textarea>
+      <button class="event-small-button primary event-save-button" type="button">保存</button>
+      <button class="event-small-button event-cancel-button" type="button">キャンセル</button>
+    `;
+
+    editBox.querySelector(".event-save-button").onclick=()=>saveEventEdit(ev.id,editBox);
+    editBox.querySelector(".event-cancel-button").onclick=()=>editBox.classList.add("hidden");
+    editBtn.onclick=()=>editBox.classList.toggle("hidden");
+
+    actions.appendChild(editBtn);
+    actions.appendChild(deleteBtn);
+
     div.appendChild(title);
     div.appendChild(sub);
+    div.appendChild(actions);
+    div.appendChild(editBox);
     eventAdminList.appendChild(div);
   });
+}
+
+function escapeHtml(value){
+  return String(value)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+async function saveEventEdit(eventId,editBox){
+  if(!eventId)return;
+  const title=editBox.querySelector(".event-edit-title").value.trim();
+  const time=editBox.querySelector(".event-edit-time").value||"19:00";
+  const place=editBox.querySelector(".event-edit-place").value.trim();
+  const status=editBox.querySelector(".event-edit-status").value;
+  const memo=editBox.querySelector(".event-edit-memo").value.trim();
+
+  try{
+    await updateDoc(doc(db,"events",eventId),{
+      title,
+      time,
+      place,
+      status,
+      memo,
+      updatedAt:serverTimestamp()
+    });
+    alert("イベントを保存しました。");
+  }catch(e){
+    console.error(e);
+    alert("イベント保存に失敗しました。Firestoreルールを確認してください。");
+  }
+}
+
+async function deleteEvent(eventId){
+  if(!eventId)return;
+  if(!confirm("このイベントを削除します。よろしいですか？"))return;
+  try{
+    await deleteDoc(doc(db,"events",eventId));
+    alert("イベントを削除しました。");
+  }catch(e){
+    console.error(e);
+    alert("イベント削除に失敗しました。Firestoreルールを確認してください。");
+  }
 }
 
 function fillEventDefaults(){
