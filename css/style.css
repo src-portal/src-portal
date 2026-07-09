@@ -6,3 +6,7 @@
 .admin-menu-list{display:grid;gap:10px;margin:14px 0}
 .admin-menu-button{width:100%;border:1px solid var(--border);border-radius:16px;background:#fff;color:var(--text);padding:14px 16px;font-weight:900;text-align:left}
 .admin-menu-button:disabled{opacity:.45;background:#f7f9fb}
+
+.member-admin-list{display:grid;gap:8px;margin:14px 0}
+.member-admin-item{padding:11px 12px;border-radius:14px;background:#f7f9fb;font-weight:900}
+.invite-preview-box{margin-top:12px;padding:14px;border-radius:16px;background:var(--blue-soft);font-weight:900;line-height:1.7}
