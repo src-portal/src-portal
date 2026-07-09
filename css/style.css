@@ -18,3 +18,12 @@
 #changeUserButton{
   display:none!important;
 }
+
+/* Ver.0.7.2: メンバー管理 */
+.member-add-box{margin:14px 0;padding:14px;border-radius:16px;background:#f7f9fb;border:1px solid var(--border)}
+.member-add-title{font-weight:900;margin-bottom:8px}
+.admin-check-label{display:flex;align-items:center;gap:8px;margin:8px 0 4px;color:var(--muted);font-weight:800}
+.member-admin-item{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.member-admin-main{font-weight:900}
+.member-admin-sub{margin-top:3px;font-size:12px;color:var(--muted);font-weight:800}
+.member-admin-badge{flex:0 0 auto;padding:4px 8px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:12px;font-weight:900}
