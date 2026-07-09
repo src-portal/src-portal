@@ -13,3 +13,8 @@
 
 /* Ver.0.6.4: Firebase接続表示は通常非表示 */
 .connection-card{display:none!important}
+
+/* Ver.0.7.1: 通常画面のユーザー変更ボタンは非表示 */
+#changeUserButton{
+  display:none!important;
+}
