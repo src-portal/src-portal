@@ -153,3 +153,33 @@
 .event-detail-title{font-size:18px;color:var(--charcoal)}
 .event-detail-sub{color:var(--muted);font-size:14px;font-weight:800}
 .event-detail-memo{padding:10px;border-radius:12px;background:#fff;color:var(--muted);font-size:13px;font-weight:800}
+
+/* Ver.0.8.3b: ラン＆ウォーク表示改善 */
+.day-cell.disabled.has-event{
+  opacity:1;
+  color:var(--text);
+  background:#f7fff9;
+  border-color:#b8e6c8;
+}
+.day-cell.disabled.has-event .day-number,
+.day-cell.disabled.has-event .day-note,
+.day-cell.disabled.has-event .calendar-event-label{
+  color:var(--text);
+  opacity:1;
+}
+.day-cell.run-event .calendar-event-label{
+  color:#147a3d;
+}
+.day-cell.has-event .calendar-event-label{
+  display:block;
+  margin-top:5px;
+  padding:2px 5px;
+  border-radius:999px;
+  background:#fff;
+  color:var(--blue);
+  font-size:10px;
+  font-weight:900;
+}
+.day-cell.disabled.has-event::after{
+  opacity:1;
+}
