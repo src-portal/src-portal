@@ -57,6 +57,27 @@ async function joinEvent(){if(!currentUser){requireName(true);return}try{await s
 function updateUser(){currentUserLabel.textContent=currentUser?`😊 ${currentUser}`:"未設定"}function renderNameButtons(){nameButtonGrid.innerHTML="";members.forEach(name=>{const b=document.createElement("button");b.type="button";b.className="name-choice-button";b.textContent=`😊 ${name}`;b.onclick=()=>{currentUser=name;localStorage.setItem(storageUserKey,name);updateUser();hide(setupModal);renderAll()};nameButtonGrid.appendChild(b)})}function requireName(force=false){if(force||!currentUser){renderNameButtons();show(setupModal)}}
 function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent="サンフロッグ春日井";eventTime.textContent="19:00〜";ruleTitle.textContent="開催条件";ruleValue.textContent="3名以上で開催"}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="基本 第2・第3水曜。開催日は管理者が変更可能。";eventPlace.textContent="落合公園";eventTime.textContent="19:00〜";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者が設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderNextEventPublic()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span><span class="dot dot-me"></span>自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span><span class="dot dot-me"></span>自分</span>'}
 
+
+function hasRunEvent(key){
+  return eventRecords.some(ev=>ev.type==="run"&&ev.date===key&&ev.status!=="cancelled");
+}
+
+function runEventStatusForDate(key){
+  const ev=eventRecords.find(ev=>ev.type==="run"&&ev.date===key);
+  if(ev&&ev.status==="cancelled")return "cancelled";
+  if(ev)return "scheduled";
+  return null;
+}
+
+function isRunAvailableDate(key){
+  return isRunDate(key)||!!runEventStatusForDate(key);
+}
+
+function runDisplayStatus(key){
+  const evStatus=runEventStatusForDate(key);
+  return evStatus||runStatus(key);
+}
+
 function eventsByDate(dateStr){
   return eventRecords.filter(ev=>ev.date===dateStr&&(ev.type===currentType||!ev.type));
 }
@@ -91,8 +112,8 @@ function renderCalendar(){
       if(count===2)cell.classList.add("warn");
       if(count>=requiredMembers)cell.classList.add("confirmed");
     }else{
-      if(!isRunDate(key))cell.classList.add("disabled");
-      else if(runStatus(key)==="cancelled")cell.classList.add("cancelled");
+      if(!isRunAvailableDate(key))cell.classList.add("disabled");
+      else if(runDisplayStatus(key)==="cancelled")cell.classList.add("cancelled");
       else cell.classList.add("confirmed");
     }
 
@@ -112,7 +133,7 @@ function renderCalendar(){
     }else if(currentType==="gym"){
       note=count>=3?"開催":count===2?"あと1":count===1?"あと2":"";
     }else{
-      note=isRunDate(key)?(runStatus(key)==="cancelled"?"中止":"開催"):"";
+      note=isRunAvailableDate(key)?(runDisplayStatus(key)==="cancelled"?"中止":"開催"):"";
     }
 
     const me=currentUser&&names.includes(currentUser)?"✓ ":"";
@@ -120,7 +141,7 @@ function renderCalendar(){
     cell.innerHTML=`<span class="day-number">${me}${d}</span><span class="day-note">${note}</span>${eventLabel}`;
 
     cell.onclick=()=>{
-      if(currentType==="run"&&!isRunDate(key)&&dayEvents.length===0)return;
+      if(currentType==="run"&&!isRunAvailableDate(key)&&dayEvents.length===0)return;
       if(primaryEvent)showEventDetail(primaryEvent);
       else openDetail(key);
     };
