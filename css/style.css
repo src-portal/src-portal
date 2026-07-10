@@ -318,3 +318,36 @@
 .announcement-admin-sub{margin-top:5px;color:var(--muted);font-size:13px;line-height:1.5;white-space:pre-wrap}
 .announcement-admin-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
 .announcement-edit-box{margin-top:10px;padding:12px;border-radius:14px;background:#fff;border:1px solid var(--border)}
+
+/* Ver.0.8.7a: お知らせUI改善 */
+.announcement-card{
+  padding:14px 16px;
+}
+.announcement-list{
+  gap:8px;
+  margin-top:8px;
+}
+.announcement-item{
+  padding:11px 12px;
+}
+.announcement-item-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+.announcement-item-title{
+  min-width:0;
+  font-size:16px;
+  line-height:1.35;
+}
+.announcement-item-date{
+  flex:0 0 auto;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.announcement-item-body{
+  margin-top:4px;
+}
