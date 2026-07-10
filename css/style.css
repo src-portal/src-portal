@@ -183,3 +183,22 @@
 .day-cell.disabled.has-event::after{
   opacity:1;
 }
+
+/* Ver.0.8.4: events完全統一 */
+.day-cell.no-event{
+  opacity:.42;
+  background:#f3f4f6;
+  color:var(--muted);
+  cursor:default;
+}
+.day-cell.no-event:hover{
+  transform:none;
+  box-shadow:none;
+}
+.day-cell.has-event{
+  opacity:1;
+}
+.event-admin-box .secondary-button{
+  width:100%;
+  margin-top:8px;
+}
