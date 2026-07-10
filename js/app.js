@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAsqNE9tSB2eIDtHBR8dRSVkzGFD0sKh-c",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
@@ -180,7 +180,11 @@ function renderNextEventPublic(){
 }
 
 function renderNextPlan(){if(!currentUser){nextPlanContent.className="next-plan-empty";nextPlanContent.textContent="名前を選択すると表示されます。";return}let plans=[];Object.keys(attendance).forEach(id=>{const [type,...rest]=id.split("_");const key=rest.join("_");if((attendance[id]||[]).includes(currentUser))plans.push({type,key})});plans=plans.filter(p=>new Date(p.key)>=new Date(today.getFullYear(),today.getMonth(),today.getDate())).sort((a,b)=>a.key.localeCompare(b.key));if(plans.length===0){nextPlanContent.className="next-plan-empty";nextPlanContent.textContent="参加予定はまだありません。";return}const p=plans[0],label=p.type==="gym"?"🏋️ ジム":"🏃 ラン＆ウォーク",place=p.type==="gym"?"サンフロッグ春日井":"落合公園";nextPlanContent.className="next-plan-item";nextPlanContent.innerHTML=`${label}<br>📅 ${fmt(p.key)}<br>🕖 19:00<br>📍 ${place}`}
-function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderDetail();window.scrollTo({top:0,behavior:"smooth"})}function renderDetail(){const names=getNames(currentType,selectedKey),count=names.length;detailDate.textContent=fmt(selectedKey);detailEvent.textContent=currentType==="gym"?"🏋️ ジムトレーニング":"🏃 ラン＆ウォーク";detailTime.textContent="19:00〜";detailPlace.textContent=currentType==="gym"?"📍 サンフロッグ春日井":"📍 落合公園";participantTitle.textContent=`参加者（${count}名）`;participantList.innerHTML="";if(count===0){const li=document.createElement("li");li.className="empty-message";li.textContent="まだ参加者はいません。";participantList.appendChild(li)}else names.forEach(n=>{const li=document.createElement("li");li.textContent=`😊 ${n}`;if(n===currentUser)li.classList.add("me");participantList.appendChild(li)});eventMessage.classList.add("hidden");progressBox.classList.remove("confirmed","cancelled");progressBar.style.display="block";if(currentType==="gym"){const remain=Math.max(requiredMembers-count,0),rate=Math.min(count/requiredMembers,1)*100;progressFill.style.width=`${rate}%`;if(count>=requiredMembers){progressBox.classList.add("confirmed");progressText.textContent=`🟢 開催決定（${count}名参加）`}else progressText.textContent=`🟡 あと${remain}名で開催`}else{progressFill.style.width="100%";progressBar.style.display="none";const ev=runEvents[selectedKey];if(ev.status==="cancelled"){progressBox.classList.add("cancelled");progressText.textContent="🔴 中止";eventMessage.textContent=ev.message;eventMessage.classList.remove("hidden")}else{progressBox.classList.add("confirmed");progressText.textContent="🟢 開催予定";eventMessage.textContent=ev.message;eventMessage.classList.remove("hidden")}}updateButtons()}function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
+function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderDetail();window.scrollTo({top:0,behavior:"smooth"})}function renderDetail(){const names=getNames(currentType,selectedKey),count=names.length;detailDate.textContent=fmt(selectedKey);detailEvent.textContent=currentType==="gym"?"🏋️ ジムトレーニング":"🏃 ラン＆ウォーク";detailTime.textContent="19:00〜";detailPlace.textContent=currentType==="gym"?"📍 サンフロッグ春日井":"📍 落合公園";participantTitle.textContent=`参加者（${count}名）`;participantList.innerHTML="";if(count===0){const li=document.createElement("li");li.className="empty-message";li.textContent="まだ参加者はいません。";participantList.appendChild(li)}else names.forEach(n=>{const li=document.createElement("li");li.textContent=`😊 ${n}`;if(n===currentUser)li.classList.add("me");participantList.appendChild(li)});eventMessage.classList.add("hidden");progressBox.classList.remove("confirmed","cancelled");progressBar.style.display="block";if(currentType==="gym"){const remain=Math.max(requiredMembers-count,0),rate=Math.min(count/requiredMembers,1)*100;progressFill.style.width=`${rate}%`;if(count>=requiredMembers){progressBox.classList.add("confirmed");progressText.textContent=`🟢 開催決定（${count}名参加）`}else progressText.textContent=`🟡 あと${remain}名で開催`}else{progressFill.style.width="100%";progressBar.style.display="none";const legacyEv=runEvents[selectedKey]||{};
+const managedEv=eventRecords.find(ev=>ev.type==="run"&&ev.date===selectedKey)||{};
+const evStatus=managedEv.status||legacyEv.status||"scheduled";
+const evMessage=managedEv.memo||legacyEv.message||"";
+if(evStatus==="cancelled"){progressBox.classList.add("cancelled");progressText.textContent="🔴 中止";eventMessage.textContent=evMessage;if(evMessage)eventMessage.classList.remove("hidden")}else{progressBox.classList.add("confirmed");progressText.textContent="🟢 開催予定";eventMessage.textContent=evMessage;if(evMessage)eventMessage.classList.remove("hidden")}}updateButtons()}function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
 joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);changeUserButton.style.display="none";changeUserButton.onclick=()=>{};gymTab.onclick=()=>setType("gym");runTab.onclick=()=>setType("run");
 const adminPin="1979";
 const adminPinModal=document.getElementById("adminPinModal");
@@ -376,7 +380,7 @@ function renderAdminEvents(){
     deleteBtn.type="button";
     deleteBtn.className="event-small-button danger";
     deleteBtn.textContent="削除";
-    deleteBtn.onclick=()=>deleteEvent(ev.id);
+    deleteBtn.onclick=()=>deleteEvent(ev);
 
     const editBox=document.createElement("div");
     editBox.className="event-edit-box hidden";
@@ -447,12 +451,18 @@ async function saveEventEdit(eventId,editBox){
   }
 }
 
-async function deleteEvent(eventId){
-  if(!eventId)return;
-  if(!confirm("このイベントを削除します。よろしいですか？"))return;
+async function deleteEvent(ev){
+  if(!ev||!ev.id)return;
+  const hasParticipants=(attendance[eventId(ev.type,ev.date)]||[]).length>0;
+  const message=hasParticipants?"このイベントを削除します。参加データも同時に削除されます。よろしいですか？":"このイベントを削除します。よろしいですか？";
+  if(!confirm(message))return;
   try{
-    await deleteDoc(doc(db,"events",eventId));
-    alert("イベントを削除しました。");
+    const batch=writeBatch(db);
+    batch.delete(doc(db,"events",ev.id));
+    batch.delete(doc(db,"attendance",eventId(ev.type,ev.date)));
+    await batch.commit();
+    if(selectedEvent&&selectedEvent.id===ev.id){selectedEvent=null;hide(eventDetailModal)}
+    alert("イベントと参加データを削除しました。");
   }catch(e){
     console.error(e);
     alert("イベント削除に失敗しました。Firestoreルールを確認してください。");
