@@ -209,3 +209,14 @@
 .past-events-details summary{cursor:pointer;font-weight:900;color:var(--charcoal);user-select:none}
 .past-events-details[open] summary{margin-bottom:10px}
 .past-events-details .event-admin-list{margin-bottom:0}
+
+/* Ver.0.8.6: カレンダー視認性改善 */
+.day-cell{position:relative}
+.day-cell.today{border:3px solid #2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.14)}
+.day-cell.me::before{content:"⭐";position:absolute;top:3px;right:4px;font-size:12px;line-height:1;z-index:2}
+.day-cell.me .day-number{padding-right:10px}
+.day-cell .day-number{font-weight:900}
+.day-cell .day-note{margin-top:2px}
+.participant-list li.me::before{content:"⭐ "}
+.participant-list li.me{font-weight:900}
+@media (max-width:480px){.day-cell.me::before{top:2px;right:3px;font-size:11px}}
