@@ -434,7 +434,6 @@ const eventStatusInput=document.getElementById("eventStatusInput");
 const eventMemoInput=document.getElementById("eventMemoInput");
 const addEventButton=document.getElementById("addEventButton");
 const addEventError=document.getElementById("addEventError");
-const migrateLegacyRunEventsButton=document.getElementById("migrateLegacyRunEventsButton");
 
 
 const initialMembers=[
@@ -477,30 +476,7 @@ async function seedMembers(){
 
 
 
-const legacyRunEventsForMigration=[
-  {id:"run_2026-07-08",type:"run",date:"2026-07-08",title:"ラン＆ウォーク",time:"19:00",place:"落合公園",status:"scheduled",memo:"通常どおり開催予定です。"},
-  {id:"run_2026-07-15",type:"run",date:"2026-07-15",title:"ラン＆ウォーク",time:"19:00",place:"落合公園",status:"scheduled",memo:"通常どおり開催予定です。"},
-  {id:"run_2026-08-12",type:"run",date:"2026-08-12",title:"ラン＆ウォーク",time:"19:00",place:"落合公園",status:"scheduled",memo:"通常どおり開催予定です。"},
-  {id:"run_2026-08-19",type:"run",date:"2026-08-19",title:"ラン＆ウォーク",time:"19:00",place:"落合公園",status:"cancelled",memo:"会社行事のため中止します。"}
-];
-
-async function migrateLegacyRunEvents(){
-  if(!confirm("以前の固定ラン日程4件をeventsへ移行します。既に登録済みのイベントは変更しません。よろしいですか？"))return;
-
-  let created=0;
-  let skipped=0;
-
-  try{
-    for(const ev of legacyRunEventsForMigration){
-      const ref=doc(db,"events",ev.id);
-      const snap=await getDoc(ref);
-
-      if(snap.exists()){
-        skipped++;
-        continue;
-      }
-
-      await setDoc(ref,{
+await setDoc(ref,{
         type:ev.type,
         date:ev.date,
         title:ev.title,
@@ -996,7 +972,6 @@ adminEventManageButton.onclick=()=>{
 closeEventManageButton.onclick=()=>hide(eventManageModal);
 eventTypeInput.onchange=fillEventDefaults;
 addEventButton.onclick=addEvent;
-migrateLegacyRunEventsButton.onclick=migrateLegacyRunEvents;
 adminInvitePreviewButton.onclick=()=>show(invitePreviewModal);
 adminSeedMembersButton.onclick=seedMembers;
 closeAdminMemberButton.onclick=()=>hide(adminMemberModal);
