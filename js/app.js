@@ -496,12 +496,56 @@ async function seedMembers(){
 
 
 
+
+function formatAnnouncementDate(timestamp){
+  if(!timestamp)return "";
+  const date=timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  if(Number.isNaN(date.getTime()))return "";
+  const y=date.getFullYear();
+  const m=String(date.getMonth()+1).padStart(2,"0");
+  const d=String(date.getDate()).padStart(2,"0");
+  return `${y}/${m}/${d}`;
+}
+
 function renderAnnouncementsPublic(){
   if(!announcementList)return;
+
   const active=announcementRecords.filter(a=>a.enabled).slice(0,3);
-  if(active.length===0){announcementList.className="announcement-empty";announcementList.textContent="現在のお知らせはありません。";return;}
-  announcementList.className="announcement-list";announcementList.innerHTML="";
-  active.forEach(a=>{const item=document.createElement("div");item.className="announcement-item";const title=document.createElement("div");title.className="announcement-item-title";title.textContent=a.title||"お知らせ";const body=document.createElement("div");body.className="announcement-item-body";body.textContent=a.body||"";item.appendChild(title);if(a.body)item.appendChild(body);announcementList.appendChild(item);});
+
+  if(active.length===0){
+    announcementList.className="announcement-empty";
+    announcementList.textContent="現在のお知らせはありません。";
+    return;
+  }
+
+  announcementList.className="announcement-list";
+  announcementList.innerHTML="";
+
+  active.forEach(a=>{
+    const item=document.createElement("div");
+    item.className="announcement-item";
+
+    const head=document.createElement("div");
+    head.className="announcement-item-head";
+
+    const title=document.createElement("div");
+    title.className="announcement-item-title";
+    title.textContent=a.title||"お知らせ";
+
+    const date=document.createElement("div");
+    date.className="announcement-item-date";
+    date.textContent=formatAnnouncementDate(a.updatedAt||a.createdAt);
+
+    const body=document.createElement("div");
+    body.className="announcement-item-body";
+    body.textContent=a.body||"";
+
+    head.appendChild(title);
+    if(date.textContent)head.appendChild(date);
+    item.appendChild(head);
+    if(a.body)item.appendChild(body);
+    announcementList.appendChild(item);
+  });
 }
 
 function renderAdminAnnouncements(){
