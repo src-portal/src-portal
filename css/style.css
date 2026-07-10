@@ -202,3 +202,10 @@
   width:100%;
   margin-top:8px;
 }
+
+/* Ver.0.8.5: イベント一覧整理 */
+.event-section-title{margin:16px 0 8px;font-weight:900;color:var(--charcoal)}
+.past-events-details{margin:16px 0;padding:12px;border-radius:16px;background:#f7f9fb;border:1px solid var(--border)}
+.past-events-details summary{cursor:pointer;font-weight:900;color:var(--charcoal);user-select:none}
+.past-events-details[open] summary{margin-bottom:10px}
+.past-events-details .event-admin-list{margin-bottom:0}
