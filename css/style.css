@@ -277,8 +277,29 @@
   font-size:15px;
 }
 
-/* Ver.0.8.6b: UI最終調整 */
-.day-number{display:inline-flex;align-items:center;justify-content:center;gap:0;white-space:nowrap;font-size:17px;font-weight:900;line-height:1}
-.my-day-star{display:inline-block;flex:0 0 auto;margin-right:0;font-size:10px;line-height:1}
-.day-note{margin-top:1px;line-height:1.1}
-.day-cell.run-event::after,.day-cell.cancelled-event::after{display:none!important}
+/* Ver.0.8.6c: UI最終調整・修正版 */
+.day-number{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+  white-space:nowrap;
+  font-size:17px;
+  font-weight:900;
+  line-height:1;
+}
+.my-day-star{
+  display:inline-block;
+  flex:0 0 auto;
+  margin-right:0;
+  font-size:10px;
+  line-height:1;
+}
+.day-note{
+  margin-top:1px;
+  line-height:1.1;
+}
+.day-cell.run-event::after,
+.day-cell.cancelled-event::after{
+  display:none !important;
+}
