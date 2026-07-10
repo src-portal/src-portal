@@ -8,6 +8,7 @@ const app=initializeApp(firebaseConfig);const db=getFirestore(app);const today=n
 let members=[...defaultMembers];
 let memberRecords=[];
 let eventRecords=[];
+let announcementRecords=[];
 let selectedEvent=null;const requiredMembers=3,storageUserKey="srcPortalCurrentUser";let currentUser=localStorage.getItem(storageUserKey)||"",attendance={};
 function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){e.classList.remove("hidden")}function hide(e){e.classList.add("hidden")}function eventId(type,key){return `${type}_${key}`}function eventPath(type,key){return doc(db,"attendance",eventId(type,key))}function getNames(type,key){return attendance[eventId(type,key)]||[]}function isToday(y,m,d){return today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d}
 onSnapshot(collection(db,"attendance"),snap=>{attendance={};snap.forEach(d=>{attendance[d.id]=d.data().participants||[]});setOnline("🟢 Firebase 接続中");renderAll();if(selectedKey)renderDetail()},err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
@@ -30,6 +31,13 @@ onSnapshot(collection(db,"members"),snap=>{
 },err=>{
   console.error("members read error",err);
 });
+onSnapshot(collection(db,"announcements"),snap=>{
+  const loaded=[];
+  snap.forEach(d=>{const data=d.data();loaded.push({id:d.id,title:data.title||"",body:data.body||"",enabled:data.enabled!==false,createdAt:data.createdAt||null,updatedAt:data.updatedAt||null});});
+  announcementRecords=loaded.sort((a,b)=>{const ta=a.updatedAt?.seconds||a.createdAt?.seconds||0;const tb=b.updatedAt?.seconds||b.createdAt?.seconds||0;return tb-ta;});
+  renderAnnouncementsPublic();
+  if(announcementManageModal&&!announcementManageModal.classList.contains("hidden"))renderAdminAnnouncements();
+},err=>{console.error("announcements read error",err);});
 onSnapshot(collection(db,"events"),snap=>{
   const loaded=[];
   snap.forEach(d=>{
@@ -98,7 +106,7 @@ async function cancelEvent(){
 }
 
 function updateUser(){currentUserLabel.textContent=currentUser?`😊 ${currentUser}`:"未設定"}function renderNameButtons(){nameButtonGrid.innerHTML="";members.forEach(name=>{const b=document.createElement("button");b.type="button";b.className="name-choice-button";b.textContent=`😊 ${name}`;b.onclick=()=>{currentUser=name;localStorage.setItem(storageUserKey,name);updateUser();hide(setupModal);renderAll()};nameButtonGrid.appendChild(b)})}function requireName(force=false){if(force||!currentUser){renderNameButtons();show(setupModal)}}
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent="サンフロッグ春日井";eventTime.textContent="19:00〜";ruleTitle.textContent="開催条件";ruleValue.textContent="3名以上で開催"}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent="落合公園";eventTime.textContent="19:00〜";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者が設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderNextEventPublic()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent="サンフロッグ春日井";eventTime.textContent="19:00〜";ruleTitle.textContent="開催条件";ruleValue.textContent="3名以上で開催"}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent="落合公園";eventTime.textContent="19:00〜";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者が設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderNextEventPublic();renderAnnouncementsPublic()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -414,6 +422,17 @@ const newMemberNameInput=document.getElementById("newMemberNameInput");
 const newMemberAdminCheck=document.getElementById("newMemberAdminCheck");
 const addMemberButton=document.getElementById("addMemberButton");
 const addMemberError=document.getElementById("addMemberError");
+const announcementCard=document.getElementById("announcementCard");
+const announcementList=document.getElementById("announcementList");
+const announcementManageModal=document.getElementById("announcementManageModal");
+const adminAnnouncementManageButton=document.getElementById("adminAnnouncementManageButton");
+const closeAnnouncementManageButton=document.getElementById("closeAnnouncementManageButton");
+const announcementTitleInput=document.getElementById("announcementTitleInput");
+const announcementBodyInput=document.getElementById("announcementBodyInput");
+const announcementEnabledInput=document.getElementById("announcementEnabledInput");
+const addAnnouncementButton=document.getElementById("addAnnouncementButton");
+const addAnnouncementError=document.getElementById("addAnnouncementError");
+const announcementAdminList=document.getElementById("announcementAdminList");
 const eventDetailModal=document.getElementById("eventDetailModal");
 const closeEventDetailButton=document.getElementById("closeEventDetailButton");
 const eventDetailContent=document.getElementById("eventDetailContent");
@@ -476,6 +495,28 @@ async function seedMembers(){
 
 
 
+
+function renderAnnouncementsPublic(){
+  if(!announcementList)return;
+  const active=announcementRecords.filter(a=>a.enabled).slice(0,3);
+  if(active.length===0){announcementList.className="announcement-empty";announcementList.textContent="現在のお知らせはありません。";return;}
+  announcementList.className="announcement-list";announcementList.innerHTML="";
+  active.forEach(a=>{const item=document.createElement("div");item.className="announcement-item";const title=document.createElement("div");title.className="announcement-item-title";title.textContent=a.title||"お知らせ";const body=document.createElement("div");body.className="announcement-item-body";body.textContent=a.body||"";item.appendChild(title);if(a.body)item.appendChild(body);announcementList.appendChild(item);});
+}
+
+function renderAdminAnnouncements(){
+  announcementAdminList.innerHTML="";
+  if(announcementRecords.length===0){const div=document.createElement("div");div.className="announcement-admin-item";div.textContent="お知らせはまだ登録されていません。";announcementAdminList.appendChild(div);return;}
+  announcementRecords.forEach(a=>{const div=document.createElement("div");div.className="announcement-admin-item";const title=document.createElement("div");title.className="event-admin-title";title.textContent=`${a.enabled?"🟢":"⚪"} ${a.title||"お知らせ"}`;const body=document.createElement("div");body.className="announcement-admin-sub";body.textContent=a.body||"";const actions=document.createElement("div");actions.className="announcement-admin-actions";const editBtn=document.createElement("button");editBtn.type="button";editBtn.className="event-small-button";editBtn.textContent="編集";const toggleBtn=document.createElement("button");toggleBtn.type="button";toggleBtn.className="event-small-button";toggleBtn.textContent=a.enabled?"非表示にする":"表示する";toggleBtn.onclick=()=>toggleAnnouncement(a.id,!a.enabled);const deleteBtn=document.createElement("button");deleteBtn.type="button";deleteBtn.className="event-small-button danger";deleteBtn.textContent="削除";deleteBtn.onclick=()=>deleteAnnouncement(a.id);const editBox=document.createElement("div");editBox.className="announcement-edit-box hidden";editBox.innerHTML=`<label class="admin-form-label">タイトル</label><input class="admin-input announcement-edit-title" type="text" value="${escapeHtml(a.title||"")}"><label class="admin-form-label">本文</label><textarea class="admin-input admin-textarea announcement-edit-body">${escapeHtml(a.body||"")}</textarea><label class="announcement-check-label"><input class="announcement-edit-enabled" type="checkbox" ${a.enabled?"checked":""}> 表示する</label><button class="event-small-button primary announcement-save-button" type="button">保存</button><button class="event-small-button announcement-cancel-button" type="button">キャンセル</button>`;editBox.querySelector(".announcement-save-button").onclick=()=>saveAnnouncementEdit(a.id,editBox);editBox.querySelector(".announcement-cancel-button").onclick=()=>editBox.classList.add("hidden");editBtn.onclick=()=>editBox.classList.toggle("hidden");actions.appendChild(editBtn);actions.appendChild(toggleBtn);actions.appendChild(deleteBtn);div.appendChild(title);if(a.body)div.appendChild(body);div.appendChild(actions);div.appendChild(editBox);announcementAdminList.appendChild(div);});
+}
+
+async function addAnnouncement(){const title=announcementTitleInput.value.trim();const body=announcementBodyInput.value.trim();if(!title&&!body){addAnnouncementError.classList.remove("hidden");return;}addAnnouncementError.classList.add("hidden");try{const id=`announcement_${Date.now()}`;await setDoc(doc(db,"announcements",id),{title:title||"お知らせ",body,enabled:announcementEnabledInput.checked,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});announcementTitleInput.value="";announcementBodyInput.value="";announcementEnabledInput.checked=true;alert("お知らせを追加しました。");}catch(e){console.error(e);alert("お知らせの追加に失敗しました。Firestoreルールを確認してください。");}}
+
+async function saveAnnouncementEdit(id,editBox){const title=editBox.querySelector(".announcement-edit-title").value.trim();const body=editBox.querySelector(".announcement-edit-body").value.trim();const enabled=editBox.querySelector(".announcement-edit-enabled").checked;if(!title&&!body){alert("タイトルまたは本文を入力してください。");return;}try{await updateDoc(doc(db,"announcements",id),{title:title||"お知らせ",body,enabled,updatedAt:serverTimestamp()});alert("お知らせを保存しました。");}catch(e){console.error(e);alert("お知らせの保存に失敗しました。");}}
+
+async function toggleAnnouncement(id,enabled){try{await updateDoc(doc(db,"announcements",id),{enabled,updatedAt:serverTimestamp()});}catch(e){console.error(e);alert("表示状態の変更に失敗しました。");}}
+
+async function deleteAnnouncement(id){if(!confirm("このお知らせを削除します。よろしいですか？"))return;try{await deleteDoc(doc(db,"announcements",id));alert("お知らせを削除しました。");}catch(e){console.error(e);alert("お知らせの削除に失敗しました。");}}
 
 function showEventDetail(ev){
   selectedEvent=ev;
@@ -946,6 +987,9 @@ adminMemberListButton.onclick=()=>{
 };
 closeEventDetailButton.onclick=()=>hide(eventDetailModal);
 eventDetailJoinButton.onclick=openSelectedEventAttendance;
+adminAnnouncementManageButton.onclick=()=>{renderAdminAnnouncements();show(announcementManageModal);};
+closeAnnouncementManageButton.onclick=()=>hide(announcementManageModal);
+addAnnouncementButton.onclick=addAnnouncement;
 adminEventManageButton.onclick=()=>{
   renderAdminEvents();
   show(eventManageModal);
