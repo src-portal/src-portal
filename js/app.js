@@ -317,11 +317,16 @@ function showEventDetail(ev){
 function openSelectedEventAttendance(){
   if(!selectedEvent)return;
   currentType=selectedEvent.type==="run"?"run":"gym";
-  selectedKey=eventId(currentType,selectedEvent.date);
+  selectedKey=selectedEvent.date;
+
+  const [y,m]=selectedEvent.date.split("-").map(Number);
+  currentYear=y;
+  currentMonth=m-1;
+
   hide(eventDetailModal);
   hide(homeView);
   show(detailView);
-  renderTabs();
+  setType(currentType);
   renderCalendar();
   renderDetail();
   window.scrollTo({top:0,behavior:"smooth"});
