@@ -59,14 +59,16 @@ async function joinEvent(){
     return;
   }
 
-  const ev=primaryEventForDate(selectedKey,currentType);
-  if(!ev){
-    alert("この日のイベントは登録されていません。");
-    return;
-  }
-  if(ev.status==="cancelled"){
-    alert("中止イベントには参加登録できません。");
-    return;
+  if(currentType==="run"){
+    const ev=primaryEventForDate(selectedKey,"run");
+    if(!ev){
+      alert("この日のラン＆ウォークイベントは登録されていません。");
+      return;
+    }
+    if(ev.status==="cancelled"){
+      alert("中止イベントには参加登録できません。");
+      return;
+    }
   }
 
   try{
@@ -125,57 +127,57 @@ function renderCalendar(){
     const key=toKey(currentYear,currentMonth,d);
     const names=getNames(currentType,key);
     const count=names.length;
-    const dayEvents=eventsByDate(key,currentType);
-    const primaryEvent=dayEvents[0]||null;
+    const runEventsForDay=eventsByDate(key,"run");
+    const runEvent=runEventsForDay[0]||null;
 
     const cell=document.createElement("button");
     cell.type="button";
     cell.className="day-cell";
 
     if(isToday(currentYear,currentMonth,d))cell.classList.add("today");
-
-    if(!primaryEvent){
-      cell.classList.add("no-event","disabled");
-    }else{
-      cell.classList.add("has-event");
-
-      if(primaryEvent.status==="cancelled"){
-        cell.classList.add("cancelled","cancelled-event");
-      }else if(currentType==="gym"){
-        if(count===1)cell.classList.add("one");
-        if(count===2)cell.classList.add("warn");
-        if(count>=requiredMembers)cell.classList.add("confirmed");
-      }else{
-        cell.classList.add("confirmed","run-event");
-      }
-    }
-
     if(currentUser&&names.includes(currentUser))cell.classList.add("me");
 
     let note="";
-    if(primaryEvent){
-      if(primaryEvent.status==="cancelled"){
-        note="中止";
-      }else if(currentType==="gym"){
-        note=count>=requiredMembers?"開催":count===2?"あと1":count===1?"あと2":"受付";
+    let eventLabel="";
+
+    if(currentType==="gym"){
+      // Gym: any date can be selected. 3 participants confirms.
+      if(count===1)cell.classList.add("one");
+      if(count===2)cell.classList.add("warn");
+      if(count>=requiredMembers)cell.classList.add("confirmed");
+
+      note=count>=requiredMembers
+        ? "開催"
+        : count===2
+          ? "あと1"
+          : count===1
+            ? "あと2"
+            : "";
+
+      cell.onclick=()=>openDetail(key);
+    }else{
+      // Run & Walk: only registered events can be selected.
+      if(!runEvent){
+        cell.classList.add("no-event","disabled");
+        cell.disabled=true;
       }else{
-        note="開催";
+        cell.classList.add("has-event","run-event");
+
+        if(runEvent.status==="cancelled"){
+          cell.classList.add("cancelled","cancelled-event");
+          note="中止";
+        }else{
+          cell.classList.add("confirmed");
+          note="開催";
+        }
+
+        eventLabel=`<span class="calendar-event-label">${escapeHtml(runEvent.title||eventTypeLabel(runEvent.type))}</span>`;
+        cell.onclick=()=>showEventDetail(runEvent);
       }
     }
 
     const me=currentUser&&names.includes(currentUser)?"✓ ":"";
-    const eventLabel=primaryEvent
-      ?`<span class="calendar-event-label">${escapeHtml(primaryEvent.title||eventTypeLabel(primaryEvent.type))}</span>`
-      :"";
-
     cell.innerHTML=`<span class="day-number">${me}${d}</span><span class="day-note">${note}</span>${eventLabel}`;
-
-    if(primaryEvent){
-      cell.onclick=()=>showEventDetail(primaryEvent);
-    }else{
-      cell.disabled=true;
-    }
-
     calendarGrid.appendChild(cell);
   }
 }
@@ -226,14 +228,31 @@ function renderNextPlan(){
     const type=id.slice(0,underscore);
     const key=id.slice(underscore+1);
     const participants=attendance[id]||[];
-    const ev=primaryEventForDate(key,type);
 
-    if(participants.includes(currentUser)&&key>=todayKey&&ev){
-      plans.push({type,key,ev});
+    if(!participants.includes(currentUser)||key<todayKey)return;
+
+    if(type==="gym"){
+      plans.push({
+        type,
+        key,
+        time:"19:00",
+        place:"サンフロッグ春日井"
+      });
+      return;
+    }
+
+    const ev=primaryEventForDate(key,"run");
+    if(ev){
+      plans.push({
+        type,
+        key,
+        time:ev.time||"19:00",
+        place:ev.place||"落合公園"
+      });
     }
   });
 
-  plans.sort((a,b)=>a.key.localeCompare(b.key)||(a.ev.time||"").localeCompare(b.ev.time||""));
+  plans.sort((a,b)=>a.key.localeCompare(b.key)||(a.time||"").localeCompare(b.time||""));
 
   if(plans.length===0){
     nextPlanContent.className="next-plan-empty";
@@ -244,7 +263,7 @@ function renderNextPlan(){
   const p=plans[0];
   const label=p.type==="gym"?"🏋️ ジム":"🏃 ラン＆ウォーク";
   nextPlanContent.className="next-plan-item";
-  nextPlanContent.innerHTML=`${label}<br>📅 ${fmt(p.key)}<br>🕖 ${p.ev.time||"19:00"}<br>📍 ${escapeHtml(p.ev.place||"-")}`;
+  nextPlanContent.innerHTML=`${label}<br>📅 ${fmt(p.key)}<br>🕖 ${p.time}<br>📍 ${escapeHtml(p.place)}`;
 }
 
 function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderDetail();window.scrollTo({top:0,behavior:"smooth"})}function renderDetail(){
@@ -672,19 +691,13 @@ async function deleteEvent(ev){
 }
 
 function fillEventDefaults(){
-  const type=eventTypeInput.value;
-  if(type==="run"){
-    if(!eventTitleInput.value)eventTitleInput.value="ラン＆ウォーク";
-    if(!eventPlaceInput.value)eventPlaceInput.value="落合公園";
-  }else{
-    if(!eventTitleInput.value)eventTitleInput.value="ジムトレーニング";
-    if(!eventPlaceInput.value)eventPlaceInput.value="サンフロッグ春日井";
-  }
+  if(!eventTitleInput.value)eventTitleInput.value="ラン＆ウォーク";
+  if(!eventPlaceInput.value)eventPlaceInput.value="落合公園";
   if(!eventTimeInput.value)eventTimeInput.value="19:00";
 }
 
 async function addEvent(){
-  const type=eventTypeInput.value;
+  const type="run";
   const date=eventDateInput.value;
   if(!type||!date){
     addEventError.classList.remove("hidden");
