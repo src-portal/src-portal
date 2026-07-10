@@ -436,6 +436,7 @@ const addEventButton=document.getElementById("addEventButton");
 const addEventError=document.getElementById("addEventError");
 
 
+
 const initialMembers=[
   {id:"horibe",name:"堀部",admin:true,active:true,order:1},
   {id:"hidaka",name:"日高",admin:false,active:true,order:2},
@@ -475,26 +476,6 @@ async function seedMembers(){
 
 
 
-
-await setDoc(ref,{
-        type:ev.type,
-        date:ev.date,
-        title:ev.title,
-        time:ev.time,
-        place:ev.place,
-        status:ev.status,
-        memo:ev.memo,
-        updatedAt:serverTimestamp()
-      });
-      created++;
-    }
-
-    alert(`移行が完了しました。追加 ${created}件 / 登録済み ${skipped}件`);
-  }catch(e){
-    console.error(e);
-    alert("固定ラン日程の移行に失敗しました。Firestoreルールを確認してください。");
-  }
-}
 
 function showEventDetail(ev){
   selectedEvent=ev;
@@ -972,6 +953,7 @@ adminEventManageButton.onclick=()=>{
 closeEventManageButton.onclick=()=>hide(eventManageModal);
 eventTypeInput.onchange=fillEventDefaults;
 addEventButton.onclick=addEvent;
+
 adminInvitePreviewButton.onclick=()=>show(invitePreviewModal);
 adminSeedMembersButton.onclick=seedMembers;
 closeAdminMemberButton.onclick=()=>hide(adminMemberModal);
