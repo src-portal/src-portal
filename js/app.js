@@ -385,6 +385,9 @@ const eventManageModal=document.getElementById("eventManageModal");
 const adminEventManageButton=document.getElementById("adminEventManageButton");
 const closeEventManageButton=document.getElementById("closeEventManageButton");
 const eventAdminList=document.getElementById("eventAdminList");
+const pastEventsDetails=document.getElementById("pastEventsDetails");
+const pastEventCount=document.getElementById("pastEventCount");
+const pastEventAdminList=document.getElementById("pastEventAdminList");
 const eventTypeInput=document.getElementById("eventTypeInput");
 const eventDateInput=document.getElementById("eventDateInput");
 const eventTitleInput=document.getElementById("eventTitleInput");
@@ -522,80 +525,99 @@ function eventTypeLabel(type){
 
 function renderAdminEvents(){
   eventAdminList.innerHTML="";
-  if(eventRecords.length===0){
+  pastEventAdminList.innerHTML="";
+
+  const todayKey=toKey(today.getFullYear(),today.getMonth(),today.getDate());
+  const upcoming=eventRecords
+    .filter(ev=>ev.date>=todayKey)
+    .sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.time||"").localeCompare(b.time||""));
+  const past=eventRecords
+    .filter(ev=>ev.date<todayKey)
+    .sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.time||"").localeCompare(a.time||""));
+
+  pastEventCount.textContent=String(past.length);
+
+  if(upcoming.length===0){
     const div=document.createElement("div");
     div.className="event-admin-item";
-    div.textContent="イベントはまだ登録されていません。";
+    div.textContent="今後のイベントは登録されていません。";
     eventAdminList.appendChild(div);
-    return;
+  }else{
+    upcoming.forEach(ev=>eventAdminList.appendChild(createEventAdminItem(ev)));
   }
 
-  eventRecords.slice().sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.time||"").localeCompare(b.time||"")).forEach(ev=>{
+  if(past.length===0){
     const div=document.createElement("div");
     div.className="event-admin-item";
+    div.textContent="終了したイベントはありません。";
+    pastEventAdminList.appendChild(div);
+  }else{
+    past.forEach(ev=>pastEventAdminList.appendChild(createEventAdminItem(ev)));
+  }
+}
 
-    const title=document.createElement("div");
-    title.className="event-admin-title";
+function createEventAdminItem(ev){
+  const div=document.createElement("div");
+  div.className="event-admin-item";
 
-    const badge=document.createElement("span");
-    badge.className=`event-status-badge ${ev.status==="cancelled"?"cancelled":""}`;
-    badge.textContent=ev.status==="cancelled"?"中止":"開催予定";
+  const title=document.createElement("div");
+  title.className="event-admin-title";
 
-    title.textContent=`${ev.type==="run"?"🏃":"🏋️"} ${ev.date} ${ev.title||eventTypeLabel(ev.type)}`;
-    title.appendChild(badge);
+  const badge=document.createElement("span");
+  badge.className=`event-status-badge ${ev.status==="cancelled"?"cancelled":""}`;
+  badge.textContent=ev.status==="cancelled"?"中止":"開催予定";
 
-    const sub=document.createElement("div");
-    sub.className="event-admin-sub";
-    sub.innerHTML=`${ev.time||"19:00"} / ${ev.place||"-"}<br>${ev.memo||""}`;
+  title.textContent=`${ev.type==="run"?"🏃":"🏋️"} ${ev.date} ${ev.title||eventTypeLabel(ev.type)}`;
+  title.appendChild(badge);
 
-    const actions=document.createElement("div");
-    actions.className="event-admin-actions";
+  const sub=document.createElement("div");
+  sub.className="event-admin-sub";
+  sub.innerHTML=`${ev.time||"19:00"} / ${escapeHtml(ev.place||"-")}<br>${escapeHtml(ev.memo||"")}`;
 
-    const editBtn=document.createElement("button");
-    editBtn.type="button";
-    editBtn.className="event-small-button";
-    editBtn.textContent="編集";
+  const actions=document.createElement("div");
+  actions.className="event-admin-actions";
 
-    const deleteBtn=document.createElement("button");
-    deleteBtn.type="button";
-    deleteBtn.className="event-small-button danger";
-    deleteBtn.textContent="削除";
-    deleteBtn.onclick=()=>deleteEvent(ev);
+  const editBtn=document.createElement("button");
+  editBtn.type="button";
+  editBtn.className="event-small-button";
+  editBtn.textContent="編集";
 
-    const editBox=document.createElement("div");
-    editBox.className="event-edit-box hidden";
+  const deleteBtn=document.createElement("button");
+  deleteBtn.type="button";
+  deleteBtn.className="event-small-button danger";
+  deleteBtn.textContent="削除";
+  deleteBtn.onclick=()=>deleteEvent(ev);
 
-    editBox.innerHTML=`
-      <label class="admin-form-label">タイトル</label>
-      <input class="admin-input event-edit-title" type="text" value="${escapeHtml(ev.title||eventTypeLabel(ev.type))}">
-      <label class="admin-form-label">開始時刻</label>
-      <input class="admin-input event-edit-time" type="time" value="${ev.time||"19:00"}">
-      <label class="admin-form-label">場所</label>
-      <input class="admin-input event-edit-place" type="text" value="${escapeHtml(ev.place||"")}">
-      <label class="admin-form-label">状態</label>
-      <select class="admin-input event-edit-status">
-        <option value="scheduled" ${ev.status!=="cancelled"?"selected":""}>開催予定</option>
-        <option value="cancelled" ${ev.status==="cancelled"?"selected":""}>中止</option>
-      </select>
-      <label class="admin-form-label">メモ</label>
-      <textarea class="admin-input admin-textarea event-edit-memo">${escapeHtml(ev.memo||"")}</textarea>
-      <button class="event-small-button primary event-save-button" type="button">保存</button>
-      <button class="event-small-button event-cancel-button" type="button">キャンセル</button>
-    `;
+  const editBox=document.createElement("div");
+  editBox.className="event-edit-box hidden";
+  editBox.innerHTML=`
+    <label class="admin-form-label">タイトル</label>
+    <input class="admin-input event-edit-title" type="text" value="${escapeHtml(ev.title||eventTypeLabel(ev.type))}">
+    <label class="admin-form-label">開始時刻</label>
+    <input class="admin-input event-edit-time" type="time" value="${ev.time||"19:00"}">
+    <label class="admin-form-label">場所</label>
+    <input class="admin-input event-edit-place" type="text" value="${escapeHtml(ev.place||"")}">
+    <label class="admin-form-label">状態</label>
+    <select class="admin-input event-edit-status">
+      <option value="scheduled" ${ev.status!=="cancelled"?"selected":""}>開催予定</option>
+      <option value="cancelled" ${ev.status==="cancelled"?"selected":""}>中止</option>
+    </select>
+    <label class="admin-form-label">メモ</label>
+    <textarea class="admin-input admin-textarea event-edit-memo">${escapeHtml(ev.memo||"")}</textarea>
+    <button class="event-small-button primary event-save-button" type="button">保存</button>
+    <button class="event-small-button event-cancel-button" type="button">キャンセル</button>`;
 
-    editBox.querySelector(".event-save-button").onclick=()=>saveEventEdit(ev.id,editBox);
-    editBox.querySelector(".event-cancel-button").onclick=()=>editBox.classList.add("hidden");
-    editBtn.onclick=()=>editBox.classList.toggle("hidden");
+  editBox.querySelector(".event-save-button").onclick=()=>saveEventEdit(ev.id,editBox);
+  editBox.querySelector(".event-cancel-button").onclick=()=>editBox.classList.add("hidden");
+  editBtn.onclick=()=>editBox.classList.toggle("hidden");
 
-    actions.appendChild(editBtn);
-    actions.appendChild(deleteBtn);
-
-    div.appendChild(title);
-    div.appendChild(sub);
-    div.appendChild(actions);
-    div.appendChild(editBox);
-    eventAdminList.appendChild(div);
-  });
+  actions.appendChild(editBtn);
+  actions.appendChild(deleteBtn);
+  div.appendChild(title);
+  div.appendChild(sub);
+  div.appendChild(actions);
+  div.appendChild(editBox);
+  return div;
 }
 
 function escapeHtml(value){
