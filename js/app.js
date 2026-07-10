@@ -176,7 +176,7 @@ function renderCalendar(){
       }
     }
 
-    const me=currentUser&&names.includes(currentUser)?"✓ ":"";
+    const me="";
     cell.innerHTML=`<span class="day-number">${me}${d}</span><span class="day-note">${note}</span>${eventLabel}`;
     calendarGrid.appendChild(cell);
   }
@@ -300,7 +300,7 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
   }else{
     names.forEach(name=>{
       const li=document.createElement("li");
-      li.textContent=`😊 ${name}`;
+      li.textContent=name===currentUser?name:`😊 ${name}`;
       if(name===currentUser)li.classList.add("me");
       participantList.appendChild(li);
     });
