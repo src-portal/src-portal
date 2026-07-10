@@ -267,14 +267,27 @@ function renderNextPlan(){
 }
 
 function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderDetail();window.scrollTo({top:0,behavior:"smooth"})}function renderDetail(){
-  const ev=primaryEventForDate(selectedKey,currentType);
+  const ev=currentType==="run"
+    ? primaryEventForDate(selectedKey,"run")
+    : null;
+
   const names=getNames(currentType,selectedKey);
   const count=names.length;
 
   detailDate.textContent=fmt(selectedKey);
-  detailEvent.textContent=currentType==="gym"?"🏋️ ジムトレーニング":"🏃 ラン＆ウォーク";
-  detailTime.textContent=ev?.time?`${ev.time}〜`:"19:00〜";
-  detailPlace.textContent=`📍 ${ev?.place||(currentType==="gym"?"サンフロッグ春日井":"落合公園")}`;
+  detailEvent.textContent=currentType==="gym"
+    ? "🏋️ ジムトレーニング"
+    : "🏃 ラン＆ウォーク";
+
+  detailTime.textContent=currentType==="gym"
+    ? "19:00〜"
+    : (ev?.time ? `${ev.time}〜` : "19:00〜");
+
+  detailPlace.textContent=`📍 ${
+    currentType==="gym"
+      ? "サンフロッグ春日井"
+      : (ev?.place||"落合公園")
+  }`;
 
   participantTitle.textContent=`参加者（${count}名）`;
   participantList.innerHTML="";
@@ -297,6 +310,22 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
   progressBox.classList.remove("confirmed","cancelled");
   progressBar.style.display="block";
 
+  if(currentType==="gym"){
+    const remain=Math.max(requiredMembers-count,0);
+    const rate=Math.min(count/requiredMembers,1)*100;
+    progressFill.style.width=`${rate}%`;
+
+    if(count>=requiredMembers){
+      progressBox.classList.add("confirmed");
+      progressText.textContent=`🟢 開催決定（${count}名参加）`;
+    }else{
+      progressText.textContent=`🟡 あと${remain}名で開催`;
+    }
+
+    updateButtons();
+    return;
+  }
+
   if(!ev){
     progressBar.style.display="none";
     progressText.textContent="イベントは登録されていません。";
@@ -310,20 +339,6 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
     progressBar.style.display="none";
     progressBox.classList.add("cancelled");
     progressText.textContent="🔴 中止";
-    eventMessage.textContent=ev.memo||"";
-    if(ev.memo)eventMessage.classList.remove("hidden");
-  }else if(currentType==="gym"){
-    const remain=Math.max(requiredMembers-count,0);
-    const rate=Math.min(count/requiredMembers,1)*100;
-    progressFill.style.width=`${rate}%`;
-
-    if(count>=requiredMembers){
-      progressBox.classList.add("confirmed");
-      progressText.textContent=`🟢 開催決定（${count}名参加）`;
-    }else{
-      progressText.textContent=`🟡 あと${remain}名で開催`;
-    }
-
     eventMessage.textContent=ev.memo||"";
     if(ev.memo)eventMessage.classList.remove("hidden");
   }else{
