@@ -4,13 +4,46 @@ import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, arrayRemo
 const firebaseConfig={apiKey:"AIzaSyAsqNE9tSB2eIDtHBR8dRSVkzGFD0sKh-c",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
 document.addEventListener("DOMContentLoaded",()=>{const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),nextEventContent=$("nextEventContent"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus");
-const app=initializeApp(firebaseConfig);const db=getFirestore(app);const today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="gym";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
+const app=initializeApp(firebaseConfig);const db=getFirestore(app);const today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
 let members=[...defaultMembers];
 let memberRecords=[];
 let eventRecords=[];
 let announcementRecords=[];
-let selectedEvent=null;const requiredMembers=3,storageUserKey="srcPortalCurrentUser";let currentUser=localStorage.getItem(storageUserKey)||"",attendance={};
+let selectedEvent=null;
+const defaultSystemSettings={
+  run:{time:"19:00",place:"落合公園"},
+  gym:{time:"19:00",place:"サンフロッグ春日井",minParticipants:3,deadlineLabel:"前日18:00"}
+};
+let systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
+let requiredMembers=systemSettings.gym.minParticipants;
+const storageUserKey="srcPortalCurrentUser";let currentUser=localStorage.getItem(storageUserKey)||"",attendance={};
 function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){e.classList.remove("hidden")}function hide(e){e.classList.add("hidden")}function eventId(type,key){return `${type}_${key}`}function eventPath(type,key){return doc(db,"attendance",eventId(type,key))}function getNames(type,key){return attendance[eventId(type,key)]||[]}function isToday(y,m,d){return today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d}
+onSnapshot(doc(db,"settings","system"),snap=>{
+  if(snap.exists()){
+    const data=snap.data()||{};
+    systemSettings={
+      run:{time:data.run?.time||defaultSystemSettings.run.time,place:data.run?.place||defaultSystemSettings.run.place},
+      gym:{
+        time:data.gym?.time||defaultSystemSettings.gym.time,
+        place:data.gym?.place||defaultSystemSettings.gym.place,
+        minParticipants:Number(data.gym?.minParticipants)||defaultSystemSettings.gym.minParticipants,
+        deadlineLabel:data.gym?.deadlineLabel||defaultSystemSettings.gym.deadlineLabel
+      }
+    };
+  }else{
+    systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
+  }
+  requiredMembers=systemSettings.gym.minParticipants;
+  applySystemSettingsToInputs();
+  setType(currentType);
+  if(selectedKey)renderDetail();
+},err=>{
+  console.error("settings read error",err);
+  systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
+  requiredMembers=systemSettings.gym.minParticipants;
+  setType(currentType);
+});
+
 onSnapshot(collection(db,"attendance"),snap=>{attendance={};snap.forEach(d=>{attendance[d.id]=d.data().participants||[]});setOnline("🟢 Firebase 接続中");renderAll();if(selectedKey)renderDetail()},err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
 onSnapshot(collection(db,"members"),snap=>{
   const loaded=[];
@@ -106,7 +139,28 @@ async function cancelEvent(){
 }
 
 function updateUser(){currentUserLabel.textContent=currentUser?`😊 ${currentUser}`:"未設定"}function renderNameButtons(){nameButtonGrid.innerHTML="";members.forEach(name=>{const b=document.createElement("button");b.type="button";b.className="name-choice-button";b.textContent=`😊 ${name}`;b.onclick=()=>{currentUser=name;localStorage.setItem(storageUserKey,name);updateUser();hide(setupModal);renderAll()};nameButtonGrid.appendChild(b)})}function requireName(force=false){if(force||!currentUser){renderNameButtons();show(setupModal)}}
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent="サンフロッグ春日井";eventTime.textContent="19:00〜";ruleTitle.textContent="開催条件";ruleValue.textContent="3名以上で開催"}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent="落合公園";eventTime.textContent="19:00〜";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者が設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderNextEventPublic();renderAnnouncementsPublic()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){
+  currentType=type;
+  gymTab.classList.toggle("active",type==="gym");
+  runTab.classList.toggle("active",type==="run");
+  if(type==="gym"){
+    eventTitle.textContent="ジムトレーニング";
+    eventSummary.textContent="好きな日を選んで参加表明";
+    eventPlace.textContent=systemSettings.gym.place;
+    eventTime.textContent=`${systemSettings.gym.time}〜`;
+    ruleTitle.textContent="開催条件";
+    ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`;
+  }else{
+    eventTitle.textContent="ラン＆ウォーク";
+    eventSummary.textContent="イベント管理で登録された開催日を表示します。";
+    eventPlace.textContent=systemSettings.run.place;
+    eventTime.textContent=`${systemSettings.run.time}〜`;
+    ruleTitle.textContent="開催状態";
+    ruleValue.textContent="管理者がイベントごとに設定";
+  }
+  renderAll();
+}
+function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderNextEventPublic();renderAnnouncementsPublic()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -245,8 +299,8 @@ function renderNextPlan(){
       plans.push({
         type,
         key,
-        time:"19:00",
-        place:"サンフロッグ春日井"
+        time:systemSettings.gym.time,
+        place:systemSettings.gym.place
       });
       return;
     }
@@ -257,7 +311,7 @@ function renderNextPlan(){
         type,
         key,
         time:ev.time||"19:00",
-        place:ev.place||"落合公園"
+        place:ev.place||systemSettings.run.place
       });
     }
   });
@@ -290,13 +344,13 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
     : "🏃 ラン＆ウォーク";
 
   detailTime.textContent=currentType==="gym"
-    ? "19:00〜"
+    ? `${systemSettings.gym.time}〜`
     : (ev?.time ? `${ev.time}〜` : "19:00〜");
 
   detailPlace.textContent=`📍 ${
     currentType==="gym"
-      ? "サンフロッグ春日井"
-      : (ev?.place||"落合公園")
+      ? systemSettings.gym.place
+      : (ev?.place||systemSettings.run.place)
   }`;
 
   participantTitle.textContent=`参加者（${count}名）`;
@@ -365,7 +419,7 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
 }
 
 function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
-joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);changeUserButton.style.display="none";changeUserButton.onclick=()=>{};gymTab.onclick=()=>setType("gym");runTab.onclick=()=>setType("run");
+joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);changeUserButton.style.display="none";changeUserButton.onclick=()=>{};gymTab.onclick=()=>setType("run");runTab.onclick=()=>setType("run");
 const adminPin="1979";
 const adminPinModal=document.getElementById("adminPinModal");
 const adminMenuModal=document.getElementById("adminMenuModal");
@@ -422,6 +476,17 @@ const newMemberNameInput=document.getElementById("newMemberNameInput");
 const newMemberAdminCheck=document.getElementById("newMemberAdminCheck");
 const addMemberButton=document.getElementById("addMemberButton");
 const addMemberError=document.getElementById("addMemberError");
+const systemSettingsModal=document.getElementById("systemSettingsModal");
+const adminSystemSettingsButton=document.getElementById("adminSystemSettingsButton");
+const closeSystemSettingsButton=document.getElementById("closeSystemSettingsButton");
+const settingsRunTime=document.getElementById("settingsRunTime");
+const settingsRunPlace=document.getElementById("settingsRunPlace");
+const settingsGymTime=document.getElementById("settingsGymTime");
+const settingsGymPlace=document.getElementById("settingsGymPlace");
+const settingsGymMinParticipants=document.getElementById("settingsGymMinParticipants");
+const settingsGymDeadline=document.getElementById("settingsGymDeadline");
+const saveSystemSettingsButton=document.getElementById("saveSystemSettingsButton");
+const systemSettingsError=document.getElementById("systemSettingsError");
 const announcementCard=document.getElementById("announcementCard");
 const announcementList=document.getElementById("announcementList");
 const announcementManageModal=document.getElementById("announcementManageModal");
@@ -505,6 +570,45 @@ function formatAnnouncementDate(timestamp){
   const m=String(date.getMonth()+1).padStart(2,"0");
   const d=String(date.getDate()).padStart(2,"0");
   return `${y}/${m}/${d}`;
+}
+
+
+function applySystemSettingsToInputs(){
+  if(!settingsRunTime)return;
+  settingsRunTime.value=systemSettings.run.time;
+  settingsRunPlace.value=systemSettings.run.place;
+  settingsGymTime.value=systemSettings.gym.time;
+  settingsGymPlace.value=systemSettings.gym.place;
+  settingsGymMinParticipants.value=String(systemSettings.gym.minParticipants);
+  settingsGymDeadline.value=systemSettings.gym.deadlineLabel;
+}
+
+async function saveSystemSettings(){
+  const runTime=settingsRunTime.value||"19:00";
+  const runPlace=settingsRunPlace.value.trim();
+  const gymTime=settingsGymTime.value||"19:00";
+  const gymPlace=settingsGymPlace.value.trim();
+  const minParticipants=Number(settingsGymMinParticipants.value);
+  const deadlineLabel=settingsGymDeadline.value.trim();
+
+  if(!runPlace||!gymPlace||!Number.isInteger(minParticipants)||minParticipants<1||!deadlineLabel){
+    systemSettingsError.classList.remove("hidden");
+    return;
+  }
+  systemSettingsError.classList.add("hidden");
+
+  try{
+    await setDoc(doc(db,"settings","system"),{
+      run:{time:runTime,place:runPlace},
+      gym:{time:gymTime,place:gymPlace,minParticipants,deadlineLabel},
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    alert("システム設定を保存しました。");
+    hide(systemSettingsModal);
+  }catch(e){
+    console.error(e);
+    alert("システム設定の保存に失敗しました。Firestoreルールを確認してください。");
+  }
 }
 
 function renderAnnouncementsPublic(){
@@ -752,8 +856,8 @@ async function deleteEvent(ev){
 
 function fillEventDefaults(){
   if(!eventTitleInput.value)eventTitleInput.value="ラン＆ウォーク";
-  if(!eventPlaceInput.value)eventPlaceInput.value="落合公園";
-  if(!eventTimeInput.value)eventTimeInput.value="19:00";
+  if(!eventPlaceInput.value)eventPlaceInput.value=systemSettings.run.place;
+  if(!eventTimeInput.value)eventTimeInput.value=systemSettings.run.time;
 }
 
 async function addEvent(){
@@ -772,7 +876,7 @@ async function addEvent(){
       type,
       date,
       title:eventTitleInput.value.trim()||eventTypeLabel(type),
-      time:eventTimeInput.value||"19:00",
+      time:eventTimeInput.value||systemSettings.run.time,
       place:eventPlaceInput.value.trim(),
       status:eventStatusInput.value||"scheduled",
       memo:eventMemoInput.value.trim(),
@@ -1031,6 +1135,12 @@ adminMemberListButton.onclick=()=>{
 };
 closeEventDetailButton.onclick=()=>hide(eventDetailModal);
 eventDetailJoinButton.onclick=openSelectedEventAttendance;
+adminSystemSettingsButton.onclick=()=>{
+  applySystemSettingsToInputs();
+  show(systemSettingsModal);
+};
+closeSystemSettingsButton.onclick=()=>hide(systemSettingsModal);
+saveSystemSettingsButton.onclick=saveSystemSettings;
 adminAnnouncementManageButton.onclick=()=>{renderAdminAnnouncements();show(announcementManageModal);};
 closeAnnouncementManageButton.onclick=()=>hide(announcementManageModal);
 addAnnouncementButton.onclick=addAnnouncement;
