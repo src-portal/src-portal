@@ -1124,6 +1124,10 @@ adminAnnouncementManageButton.onclick=()=>{renderAdminAnnouncements();show(annou
 closeAnnouncementManageButton.onclick=()=>hide(announcementManageModal);
 addAnnouncementButton.onclick=addAnnouncement;
 adminEventManageButton.onclick=()=>{
+  // システム設定の最新値を、新規イベント入力欄へ毎回反映する
+  eventTimeInput.value=systemSettings.run.time;
+  eventPlaceInput.value=systemSettings.run.place;
+  if(!eventTitleInput.value)eventTitleInput.value="ラン＆ウォーク";
   renderAdminEvents();
   show(eventManageModal);
 };
