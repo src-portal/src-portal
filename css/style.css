@@ -416,16 +416,13 @@
   padding:6px 9px;
   font-size:10px;
 }
-
-/* Ver.0.9.0 Help Button Fix */
-.app-header.app-header-image{
-  position:relative;
-}
+/* Ver.0.9.0d Help Button Position */
+.app-header.app-header-image{position:relative}
 .header-help-button{
   position:absolute;
   right:8px;
-  top:8px;
-  bottom:auto;
+  bottom:8px;
+  top:auto;
   z-index:20;
   display:inline-flex;
   align-items:center;
@@ -441,15 +438,7 @@
   line-height:1;
   box-shadow:0 4px 12px rgba(0,0,0,.28);
 }
-.header-help-button.hidden{
-  display:none;
-}
+.header-help-button.hidden{display:none}
 @media(min-width:600px){
-  .header-help-button{
-    right:12px;
-    top:12px;
-    min-height:34px;
-    padding:8px 13px;
-    font-size:12px;
-  }
+  .header-help-button{right:12px;bottom:12px;min-height:34px;padding:8px 13px;font-size:12px}
 }
