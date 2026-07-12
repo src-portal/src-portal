@@ -447,3 +447,60 @@
 .app-header.app-header-image{position:sticky;top:0;z-index:100}
 .dashboard-next-event{width:100%;appearance:none;-webkit-appearance:none;font-family:inherit;color:inherit;text-align:left;cursor:pointer}
 .dashboard-next-event:active{transform:scale(.99)}
+
+/* Ver.0.9.0g Header */
+html,body{
+  margin:0;
+  padding:0;
+}
+body{
+  background:#f4f6f8;
+}
+.app-header.app-header-image{
+  position:sticky;
+  top:0;
+  z-index:100;
+  display:block;
+  width:100%;
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  border-radius:0;
+  background:#07101c;
+  aspect-ratio:1474 / 357;
+}
+.header-banner-image{
+  display:block;
+  width:100%;
+  height:100%;
+  margin:0;
+  padding:0;
+  object-fit:cover;
+  object-position:center;
+}
+/* 画像内の「使い方」ボタン上に透明な実ボタンを重ねる */
+.header-help-button{
+  position:absolute;
+  right:1.2%;
+  bottom:5.5%;
+  top:auto;
+  z-index:20;
+  width:18.5%;
+  height:25%;
+  min-width:86px;
+  min-height:32px;
+  padding:0;
+  border:0;
+  border-radius:999px;
+  background:transparent;
+  color:transparent;
+  font-size:0;
+  box-shadow:none;
+}
+.header-help-button:focus-visible{
+  outline:3px solid rgba(23,130,255,.95);
+  outline-offset:-3px;
+}
+.header-help-button:active{
+  background:rgba(255,255,255,.08);
+}
