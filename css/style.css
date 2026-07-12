@@ -376,3 +376,79 @@
 .day-cell.past-day:hover{
   transform:none;
 }
+
+/* Ver.0.9.0: SRC Dashboard */
+.dashboard-card{
+  margin-bottom:14px;
+  padding:16px;
+  border-radius:22px;
+  background:linear-gradient(145deg,#0d2238,#143a5f);
+  color:#fff;
+  box-shadow:var(--shadow);
+}
+.dashboard-heading{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
+.dashboard-card .section-label{
+  color:#fff;
+}
+.dashboard-subtitle{
+  margin-top:3px;
+  color:rgba(255,255,255,.7);
+  font-size:12px;
+  font-weight:700;
+}
+.dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+}
+.dashboard-stat{
+  min-width:0;
+  padding:12px 10px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:15px;
+  background:rgba(255,255,255,.08);
+  text-align:center;
+}
+.dashboard-icon{
+  font-size:18px;
+  line-height:1;
+}
+.dashboard-value{
+  margin-top:5px;
+  font-size:24px;
+  font-weight:950;
+  line-height:1.05;
+}
+.dashboard-label{
+  margin-top:4px;
+  color:rgba(255,255,255,.74);
+  font-size:11px;
+  font-weight:800;
+}
+.dashboard-next-event{
+  margin-top:10px;
+  padding:11px 12px;
+  border-radius:15px;
+  background:rgba(255,255,255,.1);
+}
+.dashboard-next-label{
+  color:rgba(255,255,255,.72);
+  font-size:12px;
+  font-weight:800;
+}
+.dashboard-next-value{
+  margin-top:4px;
+  font-size:14px;
+  font-weight:900;
+  line-height:1.45;
+}
+@media (min-width:600px){
+  .dashboard-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+}
