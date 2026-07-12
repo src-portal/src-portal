@@ -452,3 +452,50 @@
     grid-template-columns:repeat(4,minmax(0,1fr));
   }
 }
+
+/* Ver.0.9.0 final header */
+.app-header.app-header-image{
+  position:sticky;
+  top:0;
+  z-index:10;
+  display:block;
+  padding:0;
+  overflow:hidden;
+  background:#07101c;
+  box-shadow:0 6px 18px rgba(0,0,0,.22);
+  aspect-ratio:1536 / 620;
+}
+.header-banner-image{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+}
+.header-help-button{
+  position:absolute;
+  right:2.2%;
+  bottom:8%;
+  border:2px solid #1782ff;
+  border-radius:999px;
+  background:rgba(7,16,28,.9);
+  color:#fff;
+  padding:9px 15px;
+  font-size:13px;
+  font-weight:900;
+  line-height:1;
+  box-shadow:0 6px 16px rgba(0,0,0,.30);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+}
+.header-help-button:active{
+  transform:scale(.97);
+}
+@media(max-width:420px){
+  .header-help-button{
+    right:2%;
+    bottom:7%;
+    padding:7px 11px;
+    font-size:11px;
+  }
+}
