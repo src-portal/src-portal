@@ -19,6 +19,17 @@ let requiredMembers=systemSettings.gym.minParticipants;
 const storageUserKey="srcPortalCurrentUser";
 let currentUser=localStorage.getItem(storageUserKey)||"",attendance={};
 function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){e.classList.remove("hidden")}function hide(e){e.classList.add("hidden")}function eventId(type,key){return `${type}_${key}`}function eventPath(type,key){return doc(db,"attendance",eventId(type,key))}function getNames(type,key){return attendance[eventId(type,key)]||[]}function isToday(y,m,d){return today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d}
+function todayKeyJST(){
+  const parts=new Intl.DateTimeFormat("en-CA",{
+    timeZone:"Asia/Tokyo",
+    year:"numeric",
+    month:"2-digit",
+    day:"2-digit"
+  }).formatToParts(new Date());
+  const values=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+function isPastKey(key){return Boolean(key)&&key<todayKeyJST()}
 
 onSnapshot(doc(db,"settings","system"),snap=>{
   const data=snap.exists()?snap.data():{};
@@ -93,6 +104,10 @@ onSnapshot(collection(db,"events"),snap=>{
 });
 
 async function joinEvent(){
+  if(isPastKey(selectedKey)){
+    alert("過去の日付には参加登録できません。");
+    return;
+  }
   if(!currentUser){
     requireName(true);
     return;
@@ -124,6 +139,10 @@ async function joinEvent(){
 }
 
 async function cancelEvent(){
+  if(isPastKey(selectedKey)){
+    alert("過去の日付の参加取消はできません。");
+    return;
+  }
   if(!currentUser||!selectedKey)return;
   try{
     await updateDoc(eventPath(currentType,selectedKey),{
@@ -172,6 +191,7 @@ function renderCalendar(){
     const cell=document.createElement("button");
     cell.type="button";
     cell.className="day-cell";
+    if(isPastKey(key))cell.classList.add("past-day");
 
     if(isToday(currentYear,currentMonth,d))cell.classList.add("today");
     if(currentUser&&names.includes(currentUser))cell.classList.add("me");
@@ -314,6 +334,7 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
 
   const names=getNames(currentType,selectedKey);
   const count=names.length;
+  const isPast=isPastKey(selectedKey);
 
   detailDate.textContent=fmt(selectedKey);
   detailEvent.textContent=currentType==="gym"
@@ -364,6 +385,15 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
       progressText.textContent=`🟡 あと${remain}名で開催`;
     }
 
+    if(isPast){
+      eventMessage.textContent="過去の日付のため、参加・取消はできません。";
+      eventMessage.classList.remove("hidden");
+      joinButton.classList.add("hidden");
+      cancelButton.classList.add("hidden");
+      myStatus.textContent="";
+      return;
+    }
+
     eventMessage.textContent=`参加締切表示：${systemSettings.gym.deadlineLabel}（表示のみ）`;
     eventMessage.classList.remove("hidden");
     updateButtons();
@@ -392,6 +422,15 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
     progressText.textContent="🟢 開催予定";
     eventMessage.textContent=ev.memo||"";
     if(ev.memo)eventMessage.classList.remove("hidden");
+  }
+
+  if(isPast){
+    eventMessage.textContent="過去のイベントのため、参加・取消はできません。";
+    eventMessage.classList.remove("hidden");
+    joinButton.classList.add("hidden");
+    cancelButton.classList.add("hidden");
+    myStatus.textContent="";
+    return;
   }
 
   updateButtons();
