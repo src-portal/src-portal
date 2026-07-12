@@ -8,15 +8,9 @@
 </head>
 <body>
 <div class="app-shell">
-  <header class="app-header">
-    <div class="brand-area">
-      <div class="logo-box"><img src="images/src-logo.png" alt="SRC" class="src-logo"></div>
-      <div class="brand-text">
-        <div class="portal-title">SRC Portal <span class="beta-label">β</span></div>
-        <div class="portal-subtitle">Run &amp; Walk Together Since 1979</div>
-      </div>
-    </div>
-    <button class="help-button" id="helpButton" type="button">使い方</button>
+  <header class="app-header app-header-image">
+    <img src="images/src-header-final.jpg" alt="SRC Keep Moving Forward — Run Walk Gym Together" class="header-banner-image">
+    <button class="help-button header-help-button" id="helpButton" type="button">👟 使い方</button>
   </header>
 
   <main class="main-content" id="homeView">
@@ -85,7 +79,7 @@
   <main class="main-content detail-view hidden" id="detailView">
     <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
   </main>
-  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.0</button><div class="build-info" id="buildInfo">Build 2026/07/12 16:38 JST</div>
+  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.0</button><div class="build-info" id="buildInfo">Build 2026/07/12 17:06 JST</div>
   <div class="credit">Admin mode / Firebase connected</div></footer>
 </div>
 <div class="modal-overlay hidden" id="setupModal"><div class="modal-card"><h2>お名前を選択</h2><p class="setup-text">初回だけ、自分の名前を選んでください。次回から自動で使用します。</p><div class="name-button-grid" id="nameButtonGrid"></div></div></div>
@@ -283,6 +277,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=090-20260712"></script>
+<script type="module" src="js/app.js?v=090-final-header-20260712"></script>
 </body>
 </html>
