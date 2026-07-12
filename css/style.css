@@ -393,3 +393,26 @@
 .dashboard-card-smart .dashboard-next-value{margin-top:2px;color:#152239;font-size:12px;font-weight:900;line-height:1.35}.dashboard-card-smart .dashboard-next-arrow{color:#1673e6;font-size:28px;line-height:1}
 @media(max-width:420px){.dashboard-card.dashboard-card-smart{padding:12px;border-radius:18px}.dashboard-card-smart .dashboard-grid{gap:6px}.dashboard-card-smart .dashboard-stat{padding:8px 3px;border-radius:14px}.dashboard-card-smart .dashboard-icon{width:34px;height:34px;margin-bottom:5px;font-size:18px}.dashboard-card-smart .dashboard-label{min-height:26px;font-size:9px}.dashboard-card-smart .dashboard-value{font-size:18px}.dashboard-card-smart .dashboard-next-event{padding:9px 10px}.dashboard-card-smart .dashboard-next-icon{font-size:24px}.dashboard-card-smart .dashboard-next-value{font-size:11px}}
 
+/* Ver.0.9.0 Smart Header Fix */
+.app-header.app-header-image{
+  position:relative;
+  top:auto;
+  aspect-ratio:1536 / 476;
+  max-height:none;
+  padding:0;
+  overflow:hidden;
+}
+.header-banner-image{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
+  background:#07101c;
+}
+.header-help-button{
+  right:1.5%;
+  bottom:6%;
+  padding:6px 9px;
+  font-size:10px;
+}
