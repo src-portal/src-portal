@@ -176,20 +176,43 @@ function monthlyAttendanceTotal(type){
     .reduce((sum,[,participants])=>sum+(Array.isArray(participants)?participants.length:0),0);
 }
 
-const dashboardAnimatedValues=new Map();
+const dashboardAnimationState=new Map();
+
 function animateDashboardNumber(element,target,suffix){
   if(!element)return;
-  const n=Number(target)||0,finalText=`${n}${suffix}`;
-  if(n<=0){element.textContent=finalText;dashboardAnimatedValues.set(element.id,n);return;}
-  if(dashboardAnimatedValues.get(element.id)===n&&element.textContent===finalText)return;
-  const duration=600,start=performance.now();
-  function step(now){
-    const p=Math.min((now-start)/duration,1),e=1-Math.pow(1-p,3);
-    element.textContent=`${Math.round(n*e)}${suffix}`;
-    if(p<1)requestAnimationFrame(step);else{element.textContent=finalText;dashboardAnimatedValues.set(element.id,n);}
+  const endValue=Number(target)||0;
+  const finalText=`${endValue}${suffix}`;
+
+  if(endValue<=0){
+    element.textContent=finalText;
+    dashboardAnimationState.set(element.id,endValue);
+    return;
   }
-  requestAnimationFrame(step);
+
+  if(dashboardAnimationState.get(element.id)===endValue){
+    element.textContent=finalText;
+    return;
+  }
+
+  const duration=600;
+  const startTime=performance.now();
+
+  function update(now){
+    const progress=Math.min((now-startTime)/duration,1);
+    const eased=1-Math.pow(1-progress,3);
+    element.textContent=`${Math.round(endValue*eased)}${suffix}`;
+
+    if(progress<1){
+      requestAnimationFrame(update);
+    }else{
+      element.textContent=finalText;
+      dashboardAnimationState.set(element.id,endValue);
+    }
+  }
+
+  requestAnimationFrame(update);
 }
+
 function renderDashboard(){
   if(!dashboardMemberCount)return;
 
@@ -502,10 +525,6 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
 function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
 joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);changeUserButton.style.display="none";changeUserButton.onclick=()=>{};gymTab.onclick=()=>setType("gym");
 runTab.onclick=()=>setType("run");
-dashboardMembersButton.onclick=()=>show(memberSelectModal);
-dashboardRunButton.onclick=()=>{setType("run");document.querySelector(".event-switch-card")?.scrollIntoView({behavior:"smooth",block:"start"});};
-dashboardGymButton.onclick=()=>{setType("gym");document.querySelector(".event-switch-card")?.scrollIntoView({behavior:"smooth",block:"start"});};
-dashboardAnnouncementButton.onclick=()=>document.getElementById("announcementCard")?.scrollIntoView({behavior:"smooth",block:"start"});
 document.getElementById("dashboardNextEventButton").onclick=()=>{
   setType("run");
   const target=document.querySelector(".event-switch-card");
@@ -1266,3 +1285,22 @@ addMemberButton.onclick=addMember;
 
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
+
+// Ver.0.9.0i Dashboard card handlers
+dashboardMembersButton.addEventListener("click",()=>{
+  show(memberSelectModal);
+});
+
+dashboardRunButton.addEventListener("click",()=>{
+  setType("run");
+  document.querySelector(".event-switch-card")?.scrollIntoView({behavior:"smooth",block:"start"});
+});
+
+dashboardGymButton.addEventListener("click",()=>{
+  setType("gym");
+  document.querySelector(".event-switch-card")?.scrollIntoView({behavior:"smooth",block:"start"});
+});
+
+dashboardAnnouncementButton.addEventListener("click",()=>{
+  document.getElementById("announcementCard")?.scrollIntoView({behavior:"smooth",block:"start"});
+});
