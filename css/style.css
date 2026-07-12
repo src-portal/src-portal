@@ -367,3 +367,12 @@
   font-size:12px;
   line-height:1.5;
 }
+
+/* Ver.0.8.9: 過去日付の誤操作防止 */
+.day-cell.past-day{
+  opacity:.48;
+  filter:grayscale(.25);
+}
+.day-cell.past-day:hover{
+  transform:none;
+}
