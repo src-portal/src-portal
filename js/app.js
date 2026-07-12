@@ -486,7 +486,13 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
 }
 
 function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
-joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);changeUserButton.style.display="none";changeUserButton.onclick=()=>{};gymTab.onclick=()=>setType("gym");runTab.onclick=()=>setType("run");
+joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);changeUserButton.style.display="none";changeUserButton.onclick=()=>{};gymTab.onclick=()=>setType("gym");
+runTab.onclick=()=>setType("run");
+dashboardNextEventButton.onclick=()=>{
+  setType("run");
+  const target=document.querySelector(".event-switch-card");
+  if(target)target.scrollIntoView({behavior:"smooth",block:"start"});
+};
 const adminPin="1979";
 const adminPinModal=document.getElementById("adminPinModal");
 const adminMenuModal=document.getElementById("adminMenuModal");
@@ -559,6 +565,7 @@ const dashboardRunCount=document.getElementById("dashboardRunCount");
 const dashboardGymCount=document.getElementById("dashboardGymCount");
 const dashboardAnnouncementCount=document.getElementById("dashboardAnnouncementCount");
 const dashboardNextEvent=document.getElementById("dashboardNextEvent");
+const dashboardNextEventButton=document.getElementById("dashboardNextEventButton");
 const announcementCard=document.getElementById("announcementCard");
 const announcementList=document.getElementById("announcementList");
 const announcementManageModal=document.getElementById("announcementManageModal");
