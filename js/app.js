@@ -176,6 +176,20 @@ function monthlyAttendanceTotal(type){
     .reduce((sum,[,participants])=>sum+(Array.isArray(participants)?participants.length:0),0);
 }
 
+const dashboardAnimatedValues=new Map();
+function animateDashboardNumber(element,target,suffix){
+  if(!element)return;
+  const n=Number(target)||0,finalText=`${n}${suffix}`;
+  if(n<=0){element.textContent=finalText;dashboardAnimatedValues.set(element.id,n);return;}
+  if(dashboardAnimatedValues.get(element.id)===n&&element.textContent===finalText)return;
+  const duration=600,start=performance.now();
+  function step(now){
+    const p=Math.min((now-start)/duration,1),e=1-Math.pow(1-p,3);
+    element.textContent=`${Math.round(n*e)}${suffix}`;
+    if(p<1)requestAnimationFrame(step);else{element.textContent=finalText;dashboardAnimatedValues.set(element.id,n);}
+  }
+  requestAnimationFrame(step);
+}
 function renderDashboard(){
   if(!dashboardMemberCount)return;
 
@@ -189,10 +203,10 @@ function renderDashboard(){
   const upcoming=getUpcomingEvents().filter(ev=>ev.status!=="cancelled");
   const nextEvent=upcoming[0]||getUpcomingEvents()[0]||null;
 
-  dashboardMemberCount.textContent=`${activeMemberCount}名`;
-  dashboardRunCount.textContent=`${runCount}名`;
-  dashboardGymCount.textContent=`${gymCount}名`;
-  dashboardAnnouncementCount.textContent=`${activeAnnouncementCount}件`;
+  animateDashboardNumber(dashboardMemberCount,activeMemberCount,"名");
+  animateDashboardNumber(dashboardRunCount,runCount,"名");
+  animateDashboardNumber(dashboardGymCount,gymCount,"名");
+  animateDashboardNumber(dashboardAnnouncementCount,activeAnnouncementCount,"件");
 
   if(!nextEvent){
     dashboardNextEvent.textContent="現在、開催予定のイベントはありません。";
@@ -488,6 +502,10 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
 function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
 joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);changeUserButton.style.display="none";changeUserButton.onclick=()=>{};gymTab.onclick=()=>setType("gym");
 runTab.onclick=()=>setType("run");
+dashboardMembersButton.onclick=()=>show(memberSelectModal);
+dashboardRunButton.onclick=()=>{setType("run");document.querySelector(".event-switch-card")?.scrollIntoView({behavior:"smooth",block:"start"});};
+dashboardGymButton.onclick=()=>{setType("gym");document.querySelector(".event-switch-card")?.scrollIntoView({behavior:"smooth",block:"start"});};
+dashboardAnnouncementButton.onclick=()=>document.getElementById("announcementCard")?.scrollIntoView({behavior:"smooth",block:"start"});
 document.getElementById("dashboardNextEventButton").onclick=()=>{
   setType("run");
   const target=document.querySelector(".event-switch-card");
@@ -564,6 +582,10 @@ const dashboardMemberCount=document.getElementById("dashboardMemberCount");
 const dashboardRunCount=document.getElementById("dashboardRunCount");
 const dashboardGymCount=document.getElementById("dashboardGymCount");
 const dashboardAnnouncementCount=document.getElementById("dashboardAnnouncementCount");
+const dashboardMembersButton=document.getElementById("dashboardMembersButton");
+const dashboardRunButton=document.getElementById("dashboardRunButton");
+const dashboardGymButton=document.getElementById("dashboardGymButton");
+const dashboardAnnouncementButton=document.getElementById("dashboardAnnouncementButton");
 const dashboardNextEvent=document.getElementById("dashboardNextEvent");
 const dashboardNextEventButton=document.getElementById("dashboardNextEventButton");
 const announcementCard=document.getElementById("announcementCard");
