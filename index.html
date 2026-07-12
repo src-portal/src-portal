@@ -20,10 +20,10 @@
     <section class="dashboard-card dashboard-card-smart" id="dashboardCard">
   <div class="dashboard-heading"><div class="section-label">📊 SRC Dashboard</div></div>
   <div class="dashboard-grid">
-    <div class="dashboard-stat"><div class="dashboard-icon members">👥</div><div class="dashboard-label">登録メンバー</div><div class="dashboard-value" id="dashboardMemberCount">--</div></div>
-    <div class="dashboard-stat"><div class="dashboard-icon run">🏃</div><div class="dashboard-label">今月ラン参加</div><div class="dashboard-value" id="dashboardRunCount">--</div></div>
-    <div class="dashboard-stat"><div class="dashboard-icon gym">🏋️</div><div class="dashboard-label">今月ジム参加</div><div class="dashboard-value" id="dashboardGymCount">--</div></div>
-    <div class="dashboard-stat"><div class="dashboard-icon news">📢</div><div class="dashboard-label">お知らせ</div><div class="dashboard-value" id="dashboardAnnouncementCount">--</div></div>
+    <button class="dashboard-stat dashboard-stat-button" id="dashboardMembersButton" type="button"><div class="dashboard-icon members">👥</div><div class="dashboard-label">登録メンバー</div><div class="dashboard-value" id="dashboardMemberCount">--</div></button>
+    <button class="dashboard-stat dashboard-stat-button" id="dashboardRunButton" type="button"><div class="dashboard-icon run">🏃</div><div class="dashboard-label">今月ラン参加</div><div class="dashboard-value" id="dashboardRunCount">--</div></button>
+    <button class="dashboard-stat dashboard-stat-button" id="dashboardGymButton" type="button"><div class="dashboard-icon gym">🏋️</div><div class="dashboard-label">今月ジム参加</div><div class="dashboard-value" id="dashboardGymCount">--</div></button>
+    <button class="dashboard-stat dashboard-stat-button" id="dashboardAnnouncementButton" type="button"><div class="dashboard-icon news">📢</div><div class="dashboard-label">お知らせ</div><div class="dashboard-value" id="dashboardAnnouncementCount">--</div></button>
   </div>
   <button class="dashboard-next-event" id="dashboardNextEventButton" type="button"><div class="dashboard-next-icon">📅</div><div class="dashboard-next-main"><div class="dashboard-next-label">次回イベント</div><div class="dashboard-next-value" id="dashboardNextEvent">確認中...</div></div><div class="dashboard-next-arrow">›</div></button>
 </section>
@@ -50,7 +50,7 @@
   <main class="main-content detail-view hidden" id="detailView">
     <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
   </main>
-  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.0g</button><div class="build-info" id="buildInfo">Build 2026/07/12 23:40 JST</div>
+  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.0h</button><div class="build-info" id="buildInfo">Build 2026/07/13 05:10 JST</div>
   <div class="credit">Admin mode / Firebase connected</div></footer>
 </div>
 <div class="modal-overlay hidden" id="setupModal"><div class="modal-card"><h2>お名前を選択</h2><p class="setup-text">初回だけ、自分の名前を選んでください。次回から自動で使用します。</p><div class="name-button-grid" id="nameButtonGrid"></div></div></div>
@@ -248,6 +248,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=090g-fixed-20260712"></script>
+<script type="module" src="js/app.js?v=090h-20260713"></script>
 </body>
 </html>
