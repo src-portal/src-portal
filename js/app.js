@@ -78,6 +78,7 @@ onSnapshot(collection(db,"announcements"),snap=>{
   snap.forEach(d=>{const data=d.data();loaded.push({id:d.id,title:data.title||"",body:data.body||"",enabled:data.enabled!==false,createdAt:data.createdAt||null,updatedAt:data.updatedAt||null});});
   announcementRecords=loaded.sort((a,b)=>{const ta=a.updatedAt?.seconds||a.createdAt?.seconds||0;const tb=b.updatedAt?.seconds||b.createdAt?.seconds||0;return tb-ta;});
   renderAnnouncementsPublic();
+  renderDashboard();
   if(announcementManageModal&&!announcementManageModal.classList.contains("hidden"))renderAdminAnnouncements();
 },err=>{console.error("announcements read error",err);});
 onSnapshot(collection(db,"events"),snap=>{
@@ -98,6 +99,7 @@ onSnapshot(collection(db,"events"),snap=>{
   eventRecords=loaded.sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.type||"").localeCompare(b.type||""));
   renderNextEventPublic();
   renderCalendar();
+  renderDashboard();
   if(eventManageModal&&!eventManageModal.classList.contains("hidden"))renderAdminEvents();
 },err=>{
   console.error("events read error",err);
@@ -156,7 +158,54 @@ async function cancelEvent(){
 }
 
 function updateUser(){currentUserLabel.textContent=currentUser?`😊 ${currentUser}`:"未設定"}function renderNameButtons(){nameButtonGrid.innerHTML="";members.forEach(name=>{const b=document.createElement("button");b.type="button";b.className="name-choice-button";b.textContent=`😊 ${name}`;b.onclick=()=>{currentUser=name;localStorage.setItem(storageUserKey,name);updateUser();hide(setupModal);renderAll()};nameButtonGrid.appendChild(b)})}function requireName(force=false){if(force||!currentUser){renderNameButtons();show(setupModal)}}
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="開催条件";ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderNextEventPublic();renderAnnouncementsPublic()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+
+function currentMonthPrefixJST(){
+  const parts=new Intl.DateTimeFormat("en-CA",{
+    timeZone:"Asia/Tokyo",
+    year:"numeric",
+    month:"2-digit"
+  }).formatToParts(new Date());
+  const values=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+  return `${values.year}-${values.month}`;
+}
+
+function monthlyAttendanceTotal(type){
+  const prefix=`${type}_${currentMonthPrefixJST()}-`;
+  return Object.entries(attendance)
+    .filter(([id])=>id.startsWith(prefix))
+    .reduce((sum,[,participants])=>sum+(Array.isArray(participants)?participants.length:0),0);
+}
+
+function renderDashboard(){
+  if(!dashboardMemberCount)return;
+
+  const activeMemberCount=memberRecords.length>0
+    ? memberRecords.filter(m=>m.active!==false).length
+    : members.length;
+
+  const runCount=monthlyAttendanceTotal("run");
+  const gymCount=monthlyAttendanceTotal("gym");
+  const activeAnnouncementCount=announcementRecords.filter(a=>a.enabled).length;
+  const upcoming=getUpcomingEvents().filter(ev=>ev.status!=="cancelled");
+  const nextEvent=upcoming[0]||getUpcomingEvents()[0]||null;
+
+  dashboardMemberCount.textContent=`${activeMemberCount}名`;
+  dashboardRunCount.textContent=`${runCount}名`;
+  dashboardGymCount.textContent=`${gymCount}名`;
+  dashboardAnnouncementCount.textContent=`${activeAnnouncementCount}件`;
+
+  if(!nextEvent){
+    dashboardNextEvent.textContent="現在、開催予定のイベントはありません。";
+    return;
+  }
+
+  const typeLabel=nextEvent.type==="run"?"🏃 ラン＆ウォーク":"🏋️ ジム";
+  const statusLabel=nextEvent.status==="cancelled"?"（中止）":"";
+  dashboardNextEvent.textContent=
+    `${typeLabel} ${fmt(nextEvent.date)} ${nextEvent.time||systemSettings.run.time} ${nextEvent.place||systemSettings.run.place}${statusLabel}`;
+}
+
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="開催条件";ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderNextEventPublic();renderAnnouncementsPublic();renderDashboard()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -505,6 +554,11 @@ const settingsGymMinParticipants=document.getElementById("settingsGymMinParticip
 const settingsGymDeadline=document.getElementById("settingsGymDeadline");
 const saveSystemSettingsButton=document.getElementById("saveSystemSettingsButton");
 const systemSettingsError=document.getElementById("systemSettingsError");
+const dashboardMemberCount=document.getElementById("dashboardMemberCount");
+const dashboardRunCount=document.getElementById("dashboardRunCount");
+const dashboardGymCount=document.getElementById("dashboardGymCount");
+const dashboardAnnouncementCount=document.getElementById("dashboardAnnouncementCount");
+const dashboardNextEvent=document.getElementById("dashboardNextEvent");
 const announcementCard=document.getElementById("announcementCard");
 const announcementList=document.getElementById("announcementList");
 const announcementManageModal=document.getElementById("announcementManageModal");
