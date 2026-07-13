@@ -18,7 +18,20 @@ let systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
 let requiredMembers=systemSettings.gym.minParticipants;
 const storageUserKey="srcPortalCurrentUser";
 let currentUser=localStorage.getItem(storageUserKey)||"",attendance={};
-function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){e.classList.remove("hidden")}function hide(e){e.classList.add("hidden")}function eventId(type,key){return `${type}_${key}`}function eventPath(type,key){return doc(db,"attendance",eventId(type,key))}function getNames(type,key){return attendance[eventId(type,key)]||[]}function isToday(y,m,d){return today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d}
+function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){
+  if(e&&[
+    "adminPinModal",
+    "adminMenuModal",
+    "adminMemberModal",
+    "announcementManageModal",
+    "eventManageModal",
+    "systemSettingsModal",
+    "invitePreviewModal"
+  ].includes(e.id)){
+    positionMemberModalBelowHeader(e);
+  }
+  e.classList.remove("hidden");
+}function hide(e){e.classList.add("hidden")}function eventId(type,key){return `${type}_${key}`}function eventPath(type,key){return doc(db,"attendance",eventId(type,key))}function getNames(type,key){return attendance[eventId(type,key)]||[]}function isToday(y,m,d){return today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d}
 function todayKeyJST(){
   const parts=new Intl.DateTimeFormat("en-CA",{
     timeZone:"Asia/Tokyo",
@@ -1397,8 +1410,18 @@ dashboardAnnouncementButton.addEventListener("click",()=>{
 
 
 window.addEventListener("resize",()=>{
-  if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))positionMemberModalBelowHeader(memberOverviewModal);
-  if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))positionMemberModalBelowHeader(adminMemberModal);
+  [
+    memberOverviewModal,
+    adminPinModal,
+    adminMenuModal,
+    adminMemberModal,
+    announcementManageModal,
+    eventManageModal,
+    systemSettingsModal,
+    invitePreviewModal
+  ].forEach(modal=>{
+    if(modal&&!modal.classList.contains("hidden"))positionMemberModalBelowHeader(modal);
+  });
 });
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
