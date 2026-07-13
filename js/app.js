@@ -1286,6 +1286,21 @@ addMemberButton.onclick=addMember;
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
 
+// Ver.0.9.0j fixed-header scroll helper
+function scrollToBelowHeader(element,extraGap=8){
+  if(!element)return;
+
+  const header=document.querySelector(".app-header.app-header-image");
+  const headerHeight=header?header.getBoundingClientRect().height:0;
+  const elementTop=element.getBoundingClientRect().top+window.scrollY;
+  const destination=Math.max(elementTop-headerHeight-extraGap,0);
+
+  window.scrollTo({
+    top:destination,
+    behavior:"smooth"
+  });
+}
+
 // Ver.0.9.0i Dashboard card handlers
 dashboardMembersButton.addEventListener("click",()=>{
   show(memberSelectModal);
@@ -1302,5 +1317,5 @@ dashboardGymButton.addEventListener("click",()=>{
 });
 
 dashboardAnnouncementButton.addEventListener("click",()=>{
-  document.getElementById("announcementCard")?.scrollIntoView({behavior:"smooth",block:"start"});
+  scrollToBelowHeader(document.getElementById("announcementCard"),8);
 });
