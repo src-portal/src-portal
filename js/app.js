@@ -17,6 +17,7 @@ const defaultSystemSettings={
 let systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
 let requiredMembers=systemSettings.gym.minParticipants;
 const storageUserKey="srcPortalCurrentUser";
+let userSelectionMode="public";
 let currentUser=localStorage.getItem(storageUserKey)||"",attendance={};
 function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){
   if(e&&[
@@ -172,7 +173,40 @@ async function cancelEvent(){
   }
 }
 
-function updateUser(){currentUserLabel.textContent=currentUser?`😊 ${currentUser}`:"未設定"}function renderNameButtons(){nameButtonGrid.innerHTML="";members.forEach(name=>{const b=document.createElement("button");b.type="button";b.className="name-choice-button";b.textContent=`😊 ${name}`;b.onclick=()=>{currentUser=name;localStorage.setItem(storageUserKey,name);updateUser();hide(setupModal);renderAll()};nameButtonGrid.appendChild(b)})}function requireName(force=false){
+function updateUser(){
+  currentUserLabel.textContent=currentUser||"未設定";
+}
+function renderNameButtons(){
+  nameButtonGrid.innerHTML="";
+
+  let records=memberRecords.filter(member=>member.active!==false);
+  if(records.length===0){
+    records=members.map((name,index)=>({name,order:index+1,admin:false,active:true}));
+  }
+
+  if(userSelectionMode==="public"){
+    records=records.filter(member=>member.admin!==true);
+  }
+
+  records
+    .sort((a,b)=>(a.order||999)-(b.order||999)||a.name.localeCompare(b.name,"ja"))
+    .forEach(member=>{
+      const b=document.createElement("button");
+      b.type="button";
+      b.className="name-choice-button";
+      b.textContent=`😊 ${member.name}`;
+      b.onclick=()=>{
+        currentUser=member.name;
+        localStorage.setItem(storageUserKey,member.name);
+        updateUser();
+        hide(setupModal);
+        renderAll();
+      };
+      nameButtonGrid.appendChild(b);
+    });
+}
+function requireName(force=false){
+  if(!currentUser)userSelectionMode="public";
   if(force||!currentUser){
     renderNameButtons();
     const isInitial=!currentUser;
@@ -604,6 +638,22 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
 
 function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
 joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);
+
+currentUserLabel.onclick=()=>{
+  if(currentUser)show(userChangeConfirmModal);
+};
+cancelUserChangeButton.onclick=()=>hide(userChangeConfirmModal);
+confirmUserChangeButton.onclick=()=>{
+  hide(userChangeConfirmModal);
+  userSelectionMode="public";
+  renderNameButtons();
+  setupModalTitle.textContent="👤 ユーザー変更";
+  setupModalText.textContent="変更するユーザーを選んでください。";
+  closeSetupModalButton.classList.remove("hidden");
+  positionMemberModalBelowHeader(setupModal);
+  show(setupModal);
+};
+
 closeSetupModalButton.onclick=()=>{if(currentUser)hide(setupModal)};changeUserButton.style.display="none";changeUserButton.onclick=()=>{};gymTab.onclick=()=>setType("gym");
 runTab.onclick=()=>setType("run");
 document.getElementById("dashboardNextEventButton").onclick=()=>{
@@ -651,6 +701,8 @@ adminPinSubmitButton.onclick=()=>{
 closeAdminPinButton.onclick=()=>hide(adminPinModal);
 closeAdminMenuButton.onclick=()=>hide(adminMenuModal);
 adminChangeUserButton.onclick=()=>{
+  userSelectionMode="admin";
+  renderNameButtons();
   hide(adminMenuModal);
   requireName(true);
 };
@@ -682,6 +734,9 @@ const memberOverviewModal=document.getElementById("memberOverviewModal");
 const closeMemberOverviewButton=document.getElementById("closeMemberOverviewButton");
 const memberOverviewSummary=document.getElementById("memberOverviewSummary");
 const memberOverviewList=document.getElementById("memberOverviewList");
+const userChangeConfirmModal=document.getElementById("userChangeConfirmModal");
+const cancelUserChangeButton=document.getElementById("cancelUserChangeButton");
+const confirmUserChangeButton=document.getElementById("confirmUserChangeButton");
 const dashboardMemberCount=document.getElementById("dashboardMemberCount");
 const dashboardRunCount=document.getElementById("dashboardRunCount");
 const dashboardGymCount=document.getElementById("dashboardGymCount");
