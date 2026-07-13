@@ -1284,9 +1284,9 @@ addMemberButton.onclick=addMember;
 
 
 
-renderNameButtons();updateUser();renderAll();requireName(false)});
 
-// Ver.0.9.0j fixed-header scroll helper
+
+// Ver.0.9.0l fixed-header scroll helper
 function scrollToBelowHeader(element,extraGap=8){
   if(!element)return;
 
@@ -1301,7 +1301,7 @@ function scrollToBelowHeader(element,extraGap=8){
   });
 }
 
-// Ver.0.9.0i Dashboard card handlers
+// Ver.0.9.0l Dashboard card handlers
 dashboardMembersButton.addEventListener("click",()=>{
   show(memberSelectModal);
 });
@@ -1323,3 +1323,6 @@ dashboardGymButton.addEventListener("click",()=>{
 dashboardAnnouncementButton.addEventListener("click",()=>{
   scrollToBelowHeader(document.getElementById("announcementCard"),8);
 });
+
+
+renderNameButtons();updateUser();renderAll();requireName(false)});
