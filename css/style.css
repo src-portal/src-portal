@@ -744,3 +744,42 @@ body{
 .modal-bottom-close-button{
   display:none !important;
 }
+
+/* Ver.0.9.0s User Change Modal */
+#setupModal{
+  align-items:flex-start;
+  padding-top:var(--member-modal-top,180px);
+  padding-bottom:var(--member-modal-bottom,16px);
+}
+
+.user-change-fixed-modal-card{
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+  max-height:calc(100vh - var(--member-modal-top,180px) - var(--member-modal-bottom,16px)) !important;
+}
+
+.user-change-fixed-modal-card .dialog-header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  flex:0 0 auto;
+  margin:0;
+  padding:4px 0 12px;
+  background:#fff;
+  border-bottom:1px solid #e9eef4;
+}
+
+.user-change-fixed-modal-card .setup-text{
+  flex:0 0 auto;
+  margin:10px 0 8px;
+}
+
+.user-change-fixed-modal-card .name-button-grid{
+  min-height:0;
+  flex:1 1 auto;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:2px 4px 6px 0;
+}
