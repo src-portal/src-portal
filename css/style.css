@@ -627,3 +627,15 @@ body{
   font-weight:900;
   letter-spacing:.08em;
 }
+
+/* Ver.0.9.0n Member Modal Position */
+#memberOverviewModal,#adminMemberModal{
+  align-items:flex-start;
+  padding-top:var(--member-modal-top,180px);
+  padding-bottom:var(--member-modal-bottom,16px);
+}
+#memberOverviewModal .modal-card,#adminMemberModal .modal-card{
+  max-height:calc(100vh - var(--member-modal-top,180px) - var(--member-modal-bottom,16px));
+}
+#memberOverviewModal .dialog-header,#adminMemberModal .dialog-header{margin-bottom:8px}
+.member-overview-summary{margin-top:0;margin-bottom:10px}
