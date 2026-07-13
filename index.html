@@ -50,7 +50,7 @@
   <main class="main-content detail-view hidden" id="detailView">
     <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
   </main>
-  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.0n</button><div class="build-info" id="buildInfo">Build 2026/07/13 11:21 JST</div>
+  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.0o</button><div class="build-info" id="buildInfo">Build 2026/07/13 12:08 JST</div>
   <div class="credit">Admin mode / Firebase connected</div><div class="beta-test-label">β Test Version</div></footer>
 </div>
 <div class="modal-overlay hidden" id="setupModal"><div class="modal-card"><h2>お名前を選択</h2><p class="setup-text">初回だけ、自分の名前を選んでください。次回から自動で使用します。</p><div class="name-button-grid" id="nameButtonGrid"></div></div></div>
@@ -66,11 +66,15 @@
     <div class="member-overview-summary" id="memberOverviewSummary">登録メンバーを確認中...</div>
     <div class="member-overview-list" id="memberOverviewList"></div>
     <div class="member-overview-legend">
-      <span>● 今日参加予定</span>
-      <span>○ 今日参加予定なし</span>
-      <span>🔥 今月参加合計</span>
-      <span>🏃 ラン</span>
-      <span>🏋️ ジム</span>
+      <div class="member-legend-row">
+        <span>● 今日参加予定</span>
+        <span>○ 今日参加予定なし</span>
+      </div>
+      <div class="member-legend-row">
+        <span>🔥 今月参加合計</span>
+        <span>🏃 ラン</span>
+        <span>🏋️ ジム</span>
+      </div>
     </div>
     <p class="member-overview-note">閲覧専用です。メンバー情報の編集はできません。</p>
   </div>
@@ -80,20 +84,21 @@
   <div class="modal-card">
     <div class="dialog-header">
       <h2>👑 管理者PIN</h2>
-      <button id="closeAdminPinButton" type="button">×</button>
+      
     </div>
     <p class="setup-text">管理者PINを入力してください。</p>
     <input id="adminPinInput" class="admin-input" type="password" inputmode="numeric" placeholder="PIN">
     <button class="primary-button" id="adminPinSubmitButton" type="button">管理者モードへ</button>
     <p class="admin-error hidden" id="adminPinError">PINが違います。</p>
-  </div>
+  <button class="modal-bottom-close-button" id="closeAdminPinButton" type="button">閉じる</button>
+</div>
 </div>
 
 <div class="modal-overlay hidden" id="adminMenuModal">
   <div class="modal-card">
     <div class="dialog-header">
       <h2>👑 管理者メニュー</h2>
-      <button id="closeAdminMenuButton" type="button">×</button>
+      
     </div>
     <div class="admin-menu-list">
       <button class="admin-menu-button" id="adminChangeUserButton" type="button">👤 ユーザー変更</button>
@@ -105,7 +110,8 @@
       <button class="admin-menu-button" id="adminSystemSettingsButton" type="button">⚙️ システム設定</button>
     </div>
     <p class="setup-text">管理者入口：画面下の Version 表示を2秒長押し。</p>
-  </div>
+  <button class="modal-bottom-close-button" id="closeAdminMenuButton" type="button">閉じる</button>
+</div>
 </div>
 
 
@@ -113,7 +119,7 @@
   <div class="modal-card">
     <div class="dialog-header">
       <h2>👥 メンバー管理</h2>
-      <button id="closeAdminMemberButton" type="button">×</button>
+      
     </div>
     <div class="member-add-box">
       <div class="member-add-title">＋ メンバー追加</div>
@@ -128,7 +134,8 @@
 
     <div class="member-admin-list" id="memberAdminList"></div>
     <p class="setup-text">Ver.0.7.4ではメンバー名編集・表示順変更に対応しています。招待コードは次バージョン以降で実装します。</p>
-  </div>
+  <button class="modal-bottom-close-button" id="closeAdminMemberButton" type="button">閉じる</button>
+</div>
 </div>
 
 
@@ -150,7 +157,7 @@
   <div class="modal-card">
     <div class="dialog-header">
       <h2>📢 お知らせ管理</h2>
-      <button id="closeAnnouncementManageButton" type="button">×</button>
+      
     </div>
     <div class="announcement-admin-box">
       <div class="member-add-title">＋ 新しいお知らせ</div>
@@ -164,14 +171,15 @@
     </div>
     <div class="announcement-admin-list" id="announcementAdminList"></div>
     <p class="setup-text">有効なお知らせはトップ画面に新しい順で最大3件表示されます。</p>
-  </div>
+  <button class="modal-bottom-close-button" id="closeAnnouncementManageButton" type="button">閉じる</button>
+</div>
 </div>
 
 <div class="modal-overlay hidden" id="eventManageModal">
   <div class="modal-card">
     <div class="dialog-header">
       <h2>📅 イベント管理</h2>
-      <button id="closeEventManageButton" type="button">×</button>
+      
     </div>
 
     <div class="event-admin-box">
@@ -215,7 +223,8 @@
       <div class="event-admin-list" id="pastEventAdminList"></div>
     </details>
     <p class="setup-text">Ver.0.8.5aではラン＆ウォークのみeventsで管理します。ジムは日付を自由に選び、3名で開催です。</p>
-  </div>
+  <button class="modal-bottom-close-button" id="closeEventManageButton" type="button">閉じる</button>
+</div>
 </div>
 
 
@@ -224,7 +233,7 @@
   <div class="modal-card">
     <div class="dialog-header">
       <h2>⚙️ システム設定</h2>
-      <button id="closeSystemSettingsButton" type="button">×</button>
+      
     </div>
     <div class="settings-section">
       <h3>🏃 ラン＆ウォーク</h3>
@@ -248,14 +257,15 @@
     </div>
     <button class="primary-button" id="saveSystemSettingsButton" type="button">設定を保存</button>
     <p class="admin-error hidden" id="systemSettingsError">入力内容を確認してください。</p>
-  </div>
+  <button class="modal-bottom-close-button" id="closeSystemSettingsButton" type="button">閉じる</button>
+</div>
 </div>
 
 <div class="modal-overlay hidden" id="invitePreviewModal">
   <div class="modal-card">
     <div class="dialog-header">
       <h2>📨 招待コード準備</h2>
-      <button id="closeInvitePreviewButton" type="button">×</button>
+      
     </div>
     <p class="setup-text">
       今後は、管理者がメンバーごとに1回限りの招待コードを発行できるようにします。
@@ -265,9 +275,10 @@
       使われたら無効化<br>
       スマホ買い替え時は再発行
     </div>
-  </div>
+  <button class="modal-bottom-close-button" id="closeInvitePreviewButton" type="button">閉じる</button>
+</div>
 </div>
 
-<script type="module" src="js/app.js?v=090n-20260713"></script>
+<script type="module" src="js/app.js?v=090o-20260713"></script>
 </body>
 </html>
