@@ -1308,12 +1308,16 @@ dashboardMembersButton.addEventListener("click",()=>{
 
 dashboardRunButton.addEventListener("click",()=>{
   setType("run");
-  document.querySelector(".event-switch-card")?.scrollIntoView({behavior:"smooth",block:"start"});
+  requestAnimationFrame(()=>{
+    scrollToBelowHeader(document.querySelector(".event-switch-card"),8);
+  });
 });
 
 dashboardGymButton.addEventListener("click",()=>{
   setType("gym");
-  document.querySelector(".event-switch-card")?.scrollIntoView({behavior:"smooth",block:"start"});
+  requestAnimationFrame(()=>{
+    scrollToBelowHeader(document.querySelector(".event-switch-card"),8);
+  });
 });
 
 dashboardAnnouncementButton.addEventListener("click",()=>{
