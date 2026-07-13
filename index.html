@@ -15,7 +15,7 @@
 
   <main class="main-content" id="homeView">
     <section class="connection-card hidden" id="connectionCard"><span id="connectionStatus">🟡 Firebase 接続確認中</span></section>
-    <section class="user-card"><div><div class="small-label">現在のユーザー</div><div class="current-user" id="currentUserLabel">未設定</div></div><button class="small-button" id="changeUserButton" type="button">変更</button></section>
+    <section class="user-card"><div><div class="small-label">現在のユーザー</div><div class="current-user"><span class="current-user-emoji">😊</span><button class="current-user-name-button" id="currentUserLabel" type="button">未設定</button></div></div><button class="small-button" id="changeUserButton" type="button">変更</button></section>
 
     <section class="dashboard-card dashboard-card-smart" id="dashboardCard">
   <div class="dashboard-heading"><div class="section-label">📊 SRC Dashboard</div></div>
@@ -50,7 +50,7 @@
   <main class="main-content detail-view hidden" id="detailView">
     <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
   </main>
-  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.0x</button><div class="build-info" id="buildInfo">Build 2026/07/13 18:02 JST</div>
+  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.0y</button><div class="build-info" id="buildInfo">Build 2026/07/13 19:07 JST</div>
   <div class="credit">Admin mode / Firebase connected</div><div class="beta-test-label">β Test Version</div></footer>
 </div>
 <div class="modal-overlay hidden" id="setupModal">
@@ -86,6 +86,17 @@
       </div>
     </div>
     <p class="member-overview-note">閲覧専用です。メンバー情報の編集はできません。</p>
+  </div>
+</div>
+
+
+<div class="modal-overlay hidden" id="userChangeConfirmModal">
+  <div class="modal-card compact-confirm-card">
+    <h2>現在のユーザーを変更しますか？</h2>
+    <div class="confirm-actions">
+      <button id="cancelUserChangeButton" type="button">キャンセル</button>
+      <button id="confirmUserChangeButton" type="button">変更する</button>
+    </div>
   </div>
 </div>
 
@@ -281,6 +292,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=090x-20260713"></script>
+<script type="module" src="js/app.js?v=090y-20260713"></script>
 </body>
 </html>
