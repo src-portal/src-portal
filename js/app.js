@@ -53,7 +53,7 @@ onSnapshot(doc(db,"settings","system"),snap=>{
   console.error("settings read error",err);
 });
 
-onSnapshot(collection(db,"attendance"),snap=>{attendance={};snap.forEach(d=>{attendance[d.id]=d.data().participants||[]});setOnline("🟢 Firebase 接続中");renderAll();if(selectedKey)renderDetail()},err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
+onSnapshot(collection(db,"attendance"),snap=>{attendance={};snap.forEach(d=>{attendance[d.id]=d.data().participants||[]});setOnline("🟢 Firebase 接続中");renderAll();if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();if(selectedKey)renderDetail()},err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
 onSnapshot(collection(db,"members"),snap=>{
   const loaded=[];
   snap.forEach(d=>{
@@ -69,6 +69,7 @@ onSnapshot(collection(db,"members"),snap=>{
   }
   renderNameButtons();
   renderAll();
+  if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
   if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))renderAdminMembers();
 },err=>{
   console.error("members read error",err);
@@ -174,6 +175,59 @@ function monthlyAttendanceTotal(type){
   return Object.entries(attendance)
     .filter(([id])=>id.startsWith(prefix))
     .reduce((sum,[,participants])=>sum+(Array.isArray(participants)?participants.length:0),0);
+}
+
+function memberMonthlyAttendance(name,type){
+  const prefix=`${type}_${currentMonthPrefixJST()}-`;
+  return Object.entries(attendance)
+    .filter(([id])=>id.startsWith(prefix))
+    .reduce((count,[,participants])=>{
+      return count+(Array.isArray(participants)&&participants.includes(name)?1:0);
+    },0);
+}
+
+function memberIsJoiningToday(name){
+  const todayKey=todayKeyJST();
+  return getNames("run",todayKey).includes(name)||getNames("gym",todayKey).includes(name);
+}
+
+function renderMemberOverview(){
+  if(!memberOverviewList)return;
+
+  const activeMembers=memberRecords.length>0
+    ? memberRecords.filter(member=>member.active!==false)
+    : members.map((name,index)=>({name,order:index+1,active:true}));
+
+  const sorted=[...activeMembers].sort((a,b)=>
+    (a.order||999)-(b.order||999)||
+    a.name.localeCompare(b.name,"ja")
+  );
+
+  memberOverviewSummary.textContent=`登録メンバー ${sorted.length}名`;
+  memberOverviewList.innerHTML="";
+
+  sorted.forEach(member=>{
+    const name=member.name;
+    const runCount=memberMonthlyAttendance(name,"run");
+    const gymCount=memberMonthlyAttendance(name,"gym");
+    const total=runCount+gymCount;
+    const joiningToday=memberIsJoiningToday(name);
+
+    const row=document.createElement("div");
+    row.className="member-overview-row";
+    row.innerHTML=`
+      <div class="member-today-status ${joiningToday?"joining":"not-joining"}" aria-label="${joiningToday?"今日参加予定":"今日参加予定なし"}">${joiningToday?"●":"○"}</div>
+      <div class="member-overview-main">
+        <div class="member-overview-name">${escapeHtml(name)}</div>
+        <div class="member-overview-breakdown">
+          <span>🏃 ${runCount}回</span>
+          <span>🏋️ ${gymCount}回</span>
+        </div>
+      </div>
+      <div class="member-overview-total">🔥 ${total}</div>
+    `;
+    memberOverviewList.appendChild(row);
+  });
 }
 
 const dashboardAnimationState=new Map();
@@ -597,6 +651,10 @@ const settingsGymMinParticipants=document.getElementById("settingsGymMinParticip
 const settingsGymDeadline=document.getElementById("settingsGymDeadline");
 const saveSystemSettingsButton=document.getElementById("saveSystemSettingsButton");
 const systemSettingsError=document.getElementById("systemSettingsError");
+const memberOverviewModal=document.getElementById("memberOverviewModal");
+const closeMemberOverviewButton=document.getElementById("closeMemberOverviewButton");
+const memberOverviewSummary=document.getElementById("memberOverviewSummary");
+const memberOverviewList=document.getElementById("memberOverviewList");
 const dashboardMemberCount=document.getElementById("dashboardMemberCount");
 const dashboardRunCount=document.getElementById("dashboardRunCount");
 const dashboardGymCount=document.getElementById("dashboardGymCount");
@@ -1301,9 +1359,12 @@ function scrollToBelowHeader(element,extraGap=8){
   });
 }
 
+closeMemberOverviewButton.addEventListener("click",()=>hide(memberOverviewModal));
+
 // Ver.0.9.0l Dashboard card handlers
 dashboardMembersButton.addEventListener("click",()=>{
-  show(memberSelectModal);
+  renderMemberOverview();
+  show(memberOverviewModal);
 });
 
 dashboardRunButton.addEventListener("click",()=>{
