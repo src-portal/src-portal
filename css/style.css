@@ -540,3 +540,90 @@ body{
   outline:3px solid rgba(23,115,230,.35);
   outline-offset:2px;
 }
+
+/* Ver.0.9.0m Member Overview */
+.member-overview-modal-card{
+  max-height:min(82vh,720px);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.member-overview-summary{
+  margin:2px 0 10px;
+  color:#5d6a79;
+  font-size:12px;
+  font-weight:900;
+}
+.member-overview-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  overflow-y:auto;
+  padding:2px 2px 4px;
+}
+.member-overview-row{
+  display:grid;
+  grid-template-columns:22px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  padding:10px 11px;
+  border:1px solid #e6ebf1;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 3px 10px rgba(27,49,75,.05);
+}
+.member-today-status{
+  font-size:18px;
+  font-weight:900;
+  text-align:center;
+}
+.member-today-status.joining{color:#1da35a}
+.member-today-status.not-joining{color:#aab3bd}
+.member-overview-main{min-width:0}
+.member-overview-name{
+  color:#13243c;
+  font-size:15px;
+  font-weight:950;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.member-overview-breakdown{
+  display:flex;
+  gap:12px;
+  margin-top:4px;
+  color:#5f6d7d;
+  font-size:11px;
+  font-weight:850;
+}
+.member-overview-total{
+  color:#ef7a1a;
+  font-size:15px;
+  font-weight:950;
+  white-space:nowrap;
+}
+.member-overview-legend{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:5px 10px;
+  margin-top:10px;
+  padding:10px;
+  border-radius:12px;
+  background:#f5f7fa;
+  color:#667384;
+  font-size:10px;
+  font-weight:800;
+}
+.member-overview-note{
+  margin:8px 0 0;
+  color:#8a94a2;
+  font-size:10px;
+  text-align:center;
+}
+.beta-test-label{
+  margin-top:6px;
+  color:#8d98a6;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
