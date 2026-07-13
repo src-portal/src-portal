@@ -50,7 +50,7 @@
   <main class="main-content detail-view hidden" id="detailView">
     <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
   </main>
-  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.0q</button><div class="build-info" id="buildInfo">Build 2026/07/13 13:58 JST</div>
+  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.0r</button><div class="build-info" id="buildInfo">Build 2026/07/13 14:23 JST</div>
   <div class="credit">Admin mode / Firebase connected</div><div class="beta-test-label">β Test Version</div></footer>
 </div>
 <div class="modal-overlay hidden" id="setupModal"><div class="modal-card"><h2>お名前を選択</h2><p class="setup-text">初回だけ、自分の名前を選んでください。次回から自動で使用します。</p><div class="name-button-grid" id="nameButtonGrid"></div></div></div>
@@ -66,22 +66,18 @@
     <div class="member-overview-summary" id="memberOverviewSummary">登録メンバーを確認中...</div>
     <div class="member-overview-list" id="memberOverviewList"></div>
     <div class="member-overview-legend">
-      <div class="member-legend-row">
-        <span>● 今日参加予定</span>
-        <span>○ 今日参加予定なし</span>
-      </div>
-      <div class="member-legend-row">
-        <span>🔥 今月参加合計</span>
-        <span>🏃 ラン</span>
-        <span>🏋️ ジム</span>
-      </div>
+      <span>● 今日参加予定</span>
+      <span>○ 今日参加予定なし</span>
+      <span>🔥 今月参加合計</span>
+      <span>🏃 ラン</span>
+      <span>🏋️ ジム</span>
     </div>
     <p class="member-overview-note">閲覧専用です。メンバー情報の編集はできません。</p>
   </div>
 </div>
 
 <div class="modal-overlay hidden" id="adminPinModal">
-  <div class="modal-card">
+  <div class="modal-card admin-fixed-modal-card">
     <div class="dialog-header">
       <h2>👑 管理者PIN</h2>
       
@@ -94,7 +90,7 @@
 </div>
 
 <div class="modal-overlay hidden" id="adminMenuModal">
-  <div class="modal-card">
+  <div class="modal-card admin-fixed-modal-card">
     <div class="dialog-header">
       <h2>👑 管理者メニュー</h2>
       
@@ -114,7 +110,7 @@
 
 
 <div class="modal-overlay hidden" id="adminMemberModal">
-  <div class="modal-card">
+  <div class="modal-card admin-fixed-modal-card">
     <div class="dialog-header">
       <h2>👥 メンバー管理</h2>
       
@@ -151,7 +147,7 @@
 
 
 <div class="modal-overlay hidden" id="announcementManageModal">
-  <div class="modal-card">
+  <div class="modal-card admin-fixed-modal-card">
     <div class="dialog-header">
       <h2>📢 お知らせ管理</h2>
       
@@ -172,7 +168,7 @@
 </div>
 
 <div class="modal-overlay hidden" id="eventManageModal">
-  <div class="modal-card">
+  <div class="modal-card admin-fixed-modal-card">
     <div class="dialog-header">
       <h2>📅 イベント管理</h2>
       
@@ -225,7 +221,7 @@
 
 
 <div class="modal-overlay hidden" id="systemSettingsModal">
-  <div class="modal-card">
+  <div class="modal-card admin-fixed-modal-card">
     <div class="dialog-header">
       <h2>⚙️ システム設定</h2>
       
@@ -256,7 +252,7 @@
 </div>
 
 <div class="modal-overlay hidden" id="invitePreviewModal">
-  <div class="modal-card">
+  <div class="modal-card admin-fixed-modal-card">
     <div class="dialog-header">
       <h2>📨 招待コード準備</h2>
       
@@ -272,6 +268,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=090q-20260713"></script>
+<script type="module" src="js/app.js?v=090r-20260713"></script>
 </body>
 </html>
