@@ -922,3 +922,27 @@ body{
     ) !important;
   }
 }
+
+/* Ver.0.9.0w Member Legend Fix */
+#memberOverviewModal .member-overview-legend{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:8px !important;
+  grid-template-columns:none !important;
+}
+#memberOverviewModal .member-legend-row{
+  display:flex !important;
+  align-items:center !important;
+  flex-wrap:nowrap !important;
+  gap:16px !important;
+}
+#memberOverviewModal .member-legend-row:first-child{
+  justify-content:space-between;
+}
+#memberOverviewModal .member-legend-row:last-child{
+  justify-content:flex-start;
+}
+#memberOverviewModal .member-legend-row span{
+  white-space:nowrap !important;
+  margin:0 !important;
+}
