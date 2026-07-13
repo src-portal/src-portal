@@ -952,3 +952,60 @@ body{
   justify-content:flex-start !important;
   gap:18px !important;
 }
+
+/* Ver.0.9.0y Public User Change */
+.current-user{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.current-user-emoji{
+  flex:0 0 auto;
+}
+.current-user-name-button{
+  appearance:none;
+  -webkit-appearance:none;
+  border:0;
+  padding:0;
+  margin:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  font-weight:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.current-user-name-button:active{
+  opacity:.6;
+}
+.compact-confirm-card{
+  width:min(88vw,420px);
+  padding:22px;
+}
+.compact-confirm-card h2{
+  margin:0 0 18px;
+  font-size:18px;
+  line-height:1.45;
+}
+.confirm-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+.confirm-actions button{
+  min-width:110px;
+  min-height:42px;
+  border-radius:10px;
+  font-family:inherit;
+  font-weight:900;
+}
+#confirmUserChangeButton{
+  border:0;
+  background:#1673e6;
+  color:#fff;
+}
+#cancelUserChangeButton{
+  border:1px solid #d7dee8;
+  background:#fff;
+  color:#38485c;
+}
