@@ -639,3 +639,67 @@ body{
 }
 #memberOverviewModal .dialog-header,#adminMemberModal .dialog-header{margin-bottom:8px}
 .member-overview-summary{margin-top:0;margin-bottom:10px}
+
+/* Ver.0.9.0o Legend and Admin Close Buttons */
+.member-overview-legend{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.member-legend-row{
+  display:flex;
+  align-items:center;
+  flex-wrap:nowrap;
+  gap:16px;
+}
+.member-legend-row span{
+  white-space:nowrap;
+}
+.member-legend-row:first-child span+span{
+  margin-left:0;
+}
+.member-legend-row:last-child{
+  gap:16px;
+}
+
+#adminPinModal,
+#adminMenuModal,
+#adminMemberModal,
+#announcementManageModal,
+#eventManageModal,
+#systemSettingsModal,
+#invitePreviewModal{
+  align-items:flex-start;
+  padding-top:var(--member-modal-top,180px);
+  padding-bottom:var(--member-modal-bottom,16px);
+}
+
+#adminPinModal .modal-card,
+#adminMenuModal .modal-card,
+#adminMemberModal .modal-card,
+#announcementManageModal .modal-card,
+#eventManageModal .modal-card,
+#systemSettingsModal .modal-card,
+#invitePreviewModal .modal-card{
+  max-height:calc(100vh - var(--member-modal-top,180px) - var(--member-modal-bottom,16px));
+  overflow-y:auto;
+}
+
+.modal-bottom-close-button{
+  width:100%;
+  min-height:44px;
+  margin-top:16px;
+  padding:10px 14px;
+  border:1.5px solid #2677df;
+  border-radius:12px;
+  background:#fff;
+  color:#1768cf;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:950;
+  cursor:pointer;
+}
+.modal-bottom-close-button:active{
+  transform:scale(.99);
+  background:#f3f7fd;
+}
