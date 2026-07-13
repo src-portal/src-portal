@@ -786,8 +786,8 @@ body{
 /* Ver.0.9.0t Compact Admin Modals */
 :root{
   --admin-modal-max-height:min(
-    64dvh,
-    calc(100dvh - var(--member-modal-top,180px) - 72px)
+    72dvh,
+    calc(100dvh - var(--member-modal-top,180px) - 48px)
   );
 }
 
@@ -895,8 +895,8 @@ body{
 @media(max-height:760px){
   :root{
     --admin-modal-max-height:min(
-      58dvh,
-      calc(100dvh - var(--member-modal-top,160px) - 78px)
+      66dvh,
+      calc(100dvh - var(--member-modal-top,160px) - 54px)
     );
   }
 }
