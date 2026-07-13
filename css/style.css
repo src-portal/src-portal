@@ -783,3 +783,120 @@ body{
   -webkit-overflow-scrolling:touch;
   padding:2px 4px 6px 0;
 }
+/* Ver.0.9.0t Compact Admin Modals */
+:root{
+  --admin-modal-max-height:min(
+    64dvh,
+    calc(100dvh - var(--member-modal-top,180px) - 72px)
+  );
+}
+
+/* iPhone SafariのURLバーに隠れない高さへ制限 */
+#adminPinModal .admin-fixed-modal-card,
+#adminMenuModal .admin-fixed-modal-card,
+#adminMemberModal .admin-fixed-modal-card,
+#announcementManageModal .admin-fixed-modal-card,
+#eventManageModal .admin-fixed-modal-card,
+#systemSettingsModal .admin-fixed-modal-card,
+#invitePreviewModal .admin-fixed-modal-card,
+#setupModal .user-change-fixed-modal-card{
+  width:min(92vw,620px);
+  height:auto;
+  max-height:var(--admin-modal-max-height) !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+
+/* タイトルと×は常に固定 */
+#adminPinModal .dialog-header,
+#adminMenuModal .dialog-header,
+#adminMemberModal .dialog-header,
+#announcementManageModal .dialog-header,
+#eventManageModal .dialog-header,
+#systemSettingsModal .dialog-header,
+#invitePreviewModal .dialog-header,
+#setupModal .dialog-header{
+  position:sticky;
+  top:0;
+  z-index:20;
+  flex:0 0 auto;
+  margin:0;
+  padding:4px 0 12px;
+  background:#fff;
+  border-bottom:1px solid #e8edf3;
+}
+
+/* 管理者メニュー：リストだけスクロール */
+#adminMenuModal .admin-menu-list{
+  min-height:0;
+  flex:1 1 auto;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding-right:4px;
+}
+#adminMenuModal .setup-text{
+  flex:0 0 auto;
+  margin:10px 0 0;
+}
+
+/* ユーザー変更：名前リストだけスクロール */
+#setupModal .setup-text{
+  flex:0 0 auto;
+  margin:10px 0 8px;
+}
+#setupModal .name-button-grid{
+  min-height:0;
+  flex:1 1 auto;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding-right:4px;
+}
+
+/* 各管理画面は中央の内容領域だけスクロール */
+#adminPinModal .admin-fixed-modal-card,
+#adminMemberModal .admin-fixed-modal-card,
+#announcementManageModal .admin-fixed-modal-card,
+#eventManageModal .admin-fixed-modal-card,
+#systemSettingsModal .admin-fixed-modal-card,
+#invitePreviewModal .admin-fixed-modal-card{
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:12px;
+}
+
+/* システム設定の保存ボタンを常時見える位置へ */
+#systemSettingsModal #saveSystemSettingsButton{
+  position:sticky;
+  bottom:0;
+  z-index:15;
+  flex:0 0 auto;
+  margin-top:12px;
+  padding-top:12px;
+  padding-bottom:12px;
+  background:#1673e6;
+  box-shadow:0 -10px 18px rgba(255,255,255,.96);
+}
+
+/* 保存エラーもボタン直下で確認可能 */
+#systemSettingsModal #systemSettingsError{
+  position:sticky;
+  bottom:0;
+  z-index:14;
+  background:#fff;
+  margin:0;
+  padding:8px 0 2px;
+}
+
+/* 小さいiPhoneではさらに少し短くする */
+@media(max-height:760px){
+  :root{
+    --admin-modal-max-height:min(
+      58dvh,
+      calc(100dvh - var(--member-modal-top,160px) - 78px)
+    );
+  }
+}
