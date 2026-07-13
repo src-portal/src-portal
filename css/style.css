@@ -900,3 +900,25 @@ body{
     );
   }
 }
+
+/* Ver.0.9.0v Admin Menu Height */
+#adminMenuModal .admin-fixed-modal-card{
+  max-height:min(
+    82dvh,
+    calc(100dvh - var(--member-modal-top,180px) - 24px)
+  ) !important;
+}
+
+#adminMenuModal .admin-menu-list{
+  overflow-y:auto;
+  max-height:none;
+}
+
+@media(max-height:760px){
+  #adminMenuModal .admin-fixed-modal-card{
+    max-height:min(
+      76dvh,
+      calc(100dvh - var(--member-modal-top,160px) - 28px)
+    ) !important;
+  }
+}
