@@ -1309,6 +1309,7 @@ async function addMember(){
 
 adminMemberListButton.onclick=()=>{
   renderAdminMembers();
+  positionMemberModalBelowHeader(adminMemberModal);
   show(adminMemberModal);
 };
 closeEventDetailButton.onclick=()=>hide(eventDetailModal);
@@ -1345,6 +1346,14 @@ addMemberButton.onclick=addMember;
 
 
 // Ver.0.9.0l fixed-header scroll helper
+function positionMemberModalBelowHeader(modal){
+  if(!modal)return;
+  const header=document.querySelector(".app-header.app-header-image");
+  const headerHeight=header?Math.ceil(header.getBoundingClientRect().height):0;
+  modal.style.setProperty("--member-modal-top",`${headerHeight+12}px`);
+  modal.style.setProperty("--member-modal-bottom","16px");
+}
+
 function scrollToBelowHeader(element,extraGap=8){
   if(!element)return;
 
@@ -1364,6 +1373,7 @@ closeMemberOverviewButton.addEventListener("click",()=>hide(memberOverviewModal)
 // Ver.0.9.0l Dashboard card handlers
 dashboardMembersButton.addEventListener("click",()=>{
   renderMemberOverview();
+  positionMemberModalBelowHeader(memberOverviewModal);
   show(memberOverviewModal);
 });
 
@@ -1385,5 +1395,10 @@ dashboardAnnouncementButton.addEventListener("click",()=>{
   scrollToBelowHeader(document.getElementById("announcementCard"),8);
 });
 
+
+window.addEventListener("resize",()=>{
+  if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))positionMemberModalBelowHeader(memberOverviewModal);
+  if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))positionMemberModalBelowHeader(adminMemberModal);
+});
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
