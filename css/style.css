@@ -946,3 +946,9 @@ body{
   white-space:nowrap !important;
   margin:0 !important;
 }
+
+/* Ver.0.9.0x Legend spacing */
+#memberOverviewModal .member-legend-row:first-child{
+  justify-content:flex-start !important;
+  gap:18px !important;
+}
