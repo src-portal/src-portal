@@ -1410,18 +1410,8 @@ dashboardAnnouncementButton.addEventListener("click",()=>{
 
 
 window.addEventListener("resize",()=>{
-  [
-    memberOverviewModal,
-    adminPinModal,
-    adminMenuModal,
-    adminMemberModal,
-    announcementManageModal,
-    eventManageModal,
-    systemSettingsModal,
-    invitePreviewModal
-  ].forEach(modal=>{
-    if(modal&&!modal.classList.contains("hidden"))positionMemberModalBelowHeader(modal);
-  });
+  if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))positionMemberModalBelowHeader(memberOverviewModal);
+  if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))positionMemberModalBelowHeader(adminMemberModal);
 });
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
