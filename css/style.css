@@ -1058,3 +1058,28 @@ body{
     max-height:190px;
   }
 }
+/* Ver.0.9.1c β Help Modal Position */
+#helpModal{
+  align-items:flex-start;
+  padding-top:calc(var(--member-modal-top,180px) + 18px);
+  padding-bottom:16px;
+}
+
+#helpModal .modal-card{
+  max-height:calc(100dvh - var(--member-modal-top,180px) - 50px);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+#helpModal .dialog-header{
+  flex:0 0 auto;
+}
+
+#helpModal .help-content{
+  min-height:0;
+  flex:1 1 auto;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
