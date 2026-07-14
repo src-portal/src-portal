@@ -6,7 +6,10 @@ const firebaseConfig={apiKey:"AIzaSyAsqNE9tSB2eIDtHBR8dRSVkzGFD0sKh-c",authDomai
 document.addEventListener("DOMContentLoaded",()=>{const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),nextEventContent=$("nextEventContent"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
 userChangeConfirmModal=$("userChangeConfirmModal"),
 cancelUserChangeButton=$("cancelUserChangeButton"),
-confirmUserChangeButton=$("confirmUserChangeButton");
+confirmUserChangeButton=$("confirmUserChangeButton"),
+sameDayStatusModal=$("sameDayStatusModal"),
+closeSameDayStatusButton=$("closeSameDayStatusButton"),
+sameDayStatusUser=$("sameDayStatusUser");
 const app=initializeApp(firebaseConfig);const db=getFirestore(app);const today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
 let members=[...defaultMembers];
 let memberRecords=[];
@@ -21,7 +24,7 @@ let systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
 let requiredMembers=systemSettings.gym.minParticipants;
 const storageUserKey="srcPortalCurrentUser";
 let userSelectionMode="public";
-let currentUser=localStorage.getItem(storageUserKey)||"",attendance={};
+let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},selectedSameDayUser="";
 function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){
   if(e&&[
     "adminPinModal",
@@ -72,7 +75,19 @@ onSnapshot(doc(db,"settings","system"),snap=>{
   console.error("settings read error",err);
 });
 
-onSnapshot(collection(db,"attendance"),snap=>{attendance={};snap.forEach(d=>{attendance[d.id]=d.data().participants||[]});setOnline("🟢 Firebase 接続中");renderAll();if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();if(selectedKey)renderDetail()},err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
+onSnapshot(collection(db,"attendance"),snap=>{
+  attendance={};
+  attendanceStatuses={};
+  snap.forEach(d=>{
+    const data=d.data();
+    attendance[d.id]=data.participants||[];
+    attendanceStatuses[d.id]=data.statuses||{};
+  });
+  setOnline("🟢 Firebase 接続中");
+  renderAll();
+  if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
+  if(selectedKey)renderDetail();
+},err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
 onSnapshot(collection(db,"members"),snap=>{
   const loaded=[];
   snap.forEach(d=>{
@@ -531,12 +546,59 @@ function renderNextPlan(){
   nextPlanContent.innerHTML=`${label}<br>📅 ${fmt(p.key)}<br>🕖 ${p.time}<br>📍 ${escapeHtml(p.place)}`;
 }
 
+const SAME_DAY_STATUS_LABELS={
+  late:"⏰ 遅れます",
+  absent:"❌ 行けなくなりました",
+  leaveEarly:"🏃 先に帰ります"
+};
+
+function getSameDayStatuses(type,key){
+  return attendanceStatuses[eventId(type,key)]||{};
+}
+
+function openSameDayStatus(name){
+  if(name!==currentUser)return;
+  selectedSameDayUser=name;
+  sameDayStatusUser.textContent=`${name}さんの当日連絡`;
+  show(sameDayStatusModal);
+}
+
+async function saveSameDayStatus(status){
+  if(!selectedKey||!currentType||!selectedSameDayUser)return;
+
+  const id=eventId(currentType,selectedKey);
+  const statuses={...getSameDayStatuses(currentType,selectedKey)};
+
+  if(status)statuses[selectedSameDayUser]=status;
+  else delete statuses[selectedSameDayUser];
+
+  const payload={
+    date:selectedKey,
+    type:currentType,
+    statuses,
+    updatedAt:serverTimestamp()
+  };
+
+  if(status==="absent"){
+    payload.participants=arrayRemove(selectedSameDayUser);
+  }
+
+  await setDoc(doc(db,"attendance",id),payload,{merge:true});
+  hide(sameDayStatusModal);
+}
+
 function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderDetail();window.scrollTo({top:0,behavior:"smooth"})}function renderDetail(){
   const ev=currentType==="run"
     ? primaryEventForDate(selectedKey,"run")
     : null;
 
   const names=getNames(currentType,selectedKey);
+  const statuses=getSameDayStatuses(currentType,selectedKey);
+  const absentNames=Object.entries(statuses)
+    .filter(([,status])=>status==="absent")
+    .map(([name])=>name)
+    .filter(name=>!names.includes(name));
+  const displayNames=[...names,...absentNames];
   const count=names.length;
   const isPast=isPastKey(selectedKey);
 
@@ -558,17 +620,33 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
   participantTitle.textContent=`参加者（${count}名）`;
   participantList.innerHTML="";
 
-  if(count===0){
+  if(displayNames.length===0){
     const li=document.createElement("li");
     li.className="empty-message";
     li.textContent="まだ参加者はいません。";
     participantList.appendChild(li);
   }else{
-    names.forEach(name=>{
+    displayNames.forEach(name=>{
       const li=document.createElement("li");
       const isMe=name===currentUser;
-      li.textContent=isMe?`⭐ ${name}`:`😊 ${name}`;
-      if(isMe)li.classList.add("me");
+      const status=statuses[name]||"";
+      const icon=isMe?"⭐":"😊";
+
+      li.innerHTML=`<span class="participant-name">${icon} ${escapeHtml(name)}</span>${status?`<span class="same-day-status-badge ${status}">${SAME_DAY_STATUS_LABELS[status]}</span>`:""}`;
+
+      if(isMe){
+        li.classList.add("me","same-day-status-clickable");
+        li.setAttribute("role","button");
+        li.setAttribute("tabindex","0");
+        li.onclick=()=>openSameDayStatus(name);
+        li.onkeydown=event=>{
+          if(event.key==="Enter"||event.key===" "){
+            event.preventDefault();
+            openSameDayStatus(name);
+          }
+        };
+      }
+
       participantList.appendChild(li);
     });
   }
@@ -642,6 +720,10 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
 
 function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
 joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);
+closeSameDayStatusButton.onclick=()=>hide(sameDayStatusModal);
+document.querySelectorAll("#sameDayStatusModal [data-same-day-status]").forEach(button=>{
+  button.onclick=()=>saveSameDayStatus(button.dataset.sameDayStatus||"");
+});
 
 currentUserLabel.onclick=()=>{
   if(currentUser)show(userChangeConfirmModal);
