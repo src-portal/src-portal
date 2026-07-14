@@ -1147,3 +1147,83 @@ body{
   font-size:14px;
   font-weight:900;
 }
+
+/* Ver.0.9.3 β Month Jump */
+.calendar-title-button{
+  appearance:none;
+  -webkit-appearance:none;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font-family:inherit;
+  font-size:inherit;
+  font-weight:inherit;
+  cursor:pointer;
+  padding:6px 10px;
+  border-radius:10px;
+}
+.calendar-title-button:active{
+  background:#eef4fb;
+  transform:scale(.98);
+}
+.month-jump-card{
+  width:min(88vw,420px);
+}
+.month-jump-fields{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin:8px 0 14px;
+}
+.month-jump-fields label{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  color:#5f6d7d;
+  font-size:12px;
+  font-weight:900;
+}
+.month-jump-fields select{
+  min-height:44px;
+  padding:8px 10px;
+  border:1px solid #dce3eb;
+  border-radius:10px;
+  background:#fff;
+  color:#17283d;
+  font-family:inherit;
+  font-size:15px;
+  font-weight:850;
+}
+.month-jump-current-button{
+  width:100%;
+  min-height:42px;
+  margin-bottom:14px;
+  border:1px solid #cfd9e6;
+  border-radius:10px;
+  background:#f7f9fc;
+  color:#2d5f9a;
+  font-family:inherit;
+  font-weight:900;
+}
+.month-jump-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+.month-jump-actions button{
+  min-width:110px;
+  min-height:42px;
+  border-radius:10px;
+  font-family:inherit;
+  font-weight:900;
+}
+#cancelMonthJumpButton{
+  border:1px solid #d7dee8;
+  background:#fff;
+  color:#38485c;
+}
+#applyMonthJumpButton{
+  border:0;
+  background:#1673e6;
+  color:#fff;
+}
