@@ -1009,3 +1009,33 @@ body{
   background:#fff;
   color:#38485c;
 }
+
+/* Ver.0.9.1a β Help Content */
+#helpModal .help-content{
+  overflow-y:auto;
+  max-height:62dvh;
+  padding:4px 2px 2px;
+  line-height:1.75;
+}
+#helpModal .help-content p{
+  margin:0 0 16px;
+}
+#helpModal .help-content h3{
+  margin:18px 0 10px;
+  font-size:15px;
+}
+#helpModal .help-steps{
+  margin:0 0 16px;
+  padding-left:1.6em;
+}
+#helpModal .help-steps li{
+  margin-bottom:9px;
+}
+#helpModal .help-future-list{
+  margin:0 0 16px;
+  padding-left:0;
+  list-style:none;
+}
+#helpModal .help-future-list li{
+  margin-bottom:8px;
+}
