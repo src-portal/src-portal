@@ -1083,3 +1083,67 @@ body{
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
 }
+
+/* Ver.0.9.2 β Same-day Status */
+#participantList li{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.participant-name{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.same-day-status-clickable{
+  cursor:pointer;
+}
+.same-day-status-clickable:active{
+  transform:scale(.99);
+}
+.same-day-status-badge{
+  flex:0 0 auto;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.same-day-status-badge.late{
+  background:#e7f8ed;
+  color:#138d45;
+}
+.same-day-status-badge.absent{
+  background:#fde8e8;
+  color:#d43636;
+}
+.same-day-status-badge.leaveEarly{
+  background:#fff0d5;
+  color:#cf7600;
+}
+.same-day-status-card{
+  width:min(88vw,420px);
+}
+.same-day-status-user{
+  margin:6px 0 12px;
+  color:#5f6d7d;
+  font-size:13px;
+  font-weight:850;
+}
+.same-day-status-options{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.same-day-status-options button{
+  min-height:46px;
+  border:1px solid #dfe5ec;
+  border-radius:12px;
+  background:#fff;
+  color:#1e2e42;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:900;
+}
