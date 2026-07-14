@@ -31,7 +31,8 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "eventManageModal",
     "systemSettingsModal",
     "invitePreviewModal",
-    "setupModal"
+    "setupModal",
+    "helpModal"
   ].includes(e.id)){
     positionMemberModalBelowHeader(e);
   }
