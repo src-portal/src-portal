@@ -50,7 +50,7 @@
   <main class="main-content detail-view hidden" id="detailView">
     <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
   </main>
-  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.1 β</button><div class="build-info" id="buildInfo">Build 2026/07/14 11:02 JST</div>
+  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.1a β</button><div class="build-info" id="buildInfo">Build 2026/07/14 11:33 JST</div>
   <div class="credit">Admin mode / Firebase connected</div><div class="beta-test-label">β Test Version</div></footer>
 </div>
 <div class="modal-overlay hidden" id="setupModal">
@@ -63,7 +63,53 @@
     <div class="name-button-grid" id="nameButtonGrid"></div>
   </div>
 </div>
-<div class="modal-overlay hidden" id="helpModal"><div class="modal-card"><div class="dialog-header"><h2>使い方</h2><button id="closeHelpButton" type="button">×</button></div><ol class="help-list"><li>名前を選びます。</li><li>「ジム」または「ラン＆ウォーク」を選びます。</li><li>カレンダーの日付をタップします。</li><li>「参加する」または「参加取消」を押します。</li><li>参加状況はFirebaseで共有されます。</li></ol></div></div>
+<div class="modal-overlay hidden" id="helpModal"><div class="modal-card">
+    <div class="dialog-header">
+      <h2>📖 使い方</h2>
+      <button id="closeHelpButton" type="button" aria-label="閉じる">×</button>
+    </div>
+
+    <div class="help-content">
+      <p>
+        SRCメンバーのラン＆ウォークやジムへの<br>
+        参加予定を共有し、<br>
+        仲間と楽しく運動を続けるためのアプリです。
+      </p>
+
+      <p>
+        参加状況が見えることで、<br>
+        「今日は行ってみよう！」<br>
+        「みんなも参加するなら行こう！」<br>
+        という気持ちが生まれ、<br>
+        運動を続けるモチベーションにつながります。
+      </p>
+
+      <h3>【使い方】</h3>
+
+      <ol class="help-steps">
+        <li>現在のユーザーを選択します。</li>
+        <li>「ラン＆ウォーク」または「ジム」を選択します。</li>
+        <li>参加したい日付をタップします。</li>
+        <li>「参加する」または「参加取消」を押します。</li>
+      </ol>
+
+      <p>参加人数や参加者はリアルタイムで更新されます。</p>
+
+      <h3>【今後のアップデート予定】</h3>
+
+      <ul class="help-future-list">
+        <li>🏅 参加ランキング</li>
+        <li>🥉🥈🥇 参加バッジ</li>
+        <li>📩 招待コード登録</li>
+      </ul>
+
+      <p>
+        💬 皆さんのご意見を取り入れながら、<br>
+        皆さんと一緒に、より便利で楽しい<br>
+        SRCアプリへ育てていきます。
+      </p>
+    </div>
+</div></div>
 
 
 <div class="modal-overlay hidden" id="memberOverviewModal">
@@ -292,6 +338,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=091beta-20260714"></script>
+<script type="module" src="js/app.js?v=091abeta-20260714"></script>
 </body>
 </html>
