@@ -311,7 +311,7 @@ function animateDashboardNumber(element,target,suffix){
     return;
   }
 
-  const duration=600;
+  const duration=1000;
   const startTime=performance.now();
 
   function update(now){
