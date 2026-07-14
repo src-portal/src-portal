@@ -874,7 +874,7 @@ function formatAnnouncementDate(timestamp){
 function renderAnnouncementsPublic(){
   if(!announcementList)return;
 
-  const active=announcementRecords.filter(a=>a.enabled).slice(0,3);
+  const active=announcementRecords.filter(a=>a.enabled);
 
   if(active.length===0){
     announcementList.className="announcement-empty";
