@@ -1039,3 +1039,22 @@ body{
 #helpModal .help-future-list li{
   margin-bottom:8px;
 }
+/* Ver.0.9.1b β Announcement List */
+#announcementCard{
+  overflow:hidden;
+}
+
+#announcementList{
+  max-height:230px;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding-right:4px;
+}
+
+/* 画面が低い場合は少し短くする */
+@media(max-height:760px){
+  #announcementList{
+    max-height:190px;
+  }
+}
