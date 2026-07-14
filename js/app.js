@@ -9,7 +9,14 @@ cancelUserChangeButton=$("cancelUserChangeButton"),
 confirmUserChangeButton=$("confirmUserChangeButton"),
 sameDayStatusModal=$("sameDayStatusModal"),
 closeSameDayStatusButton=$("closeSameDayStatusButton"),
-sameDayStatusUser=$("sameDayStatusUser");
+sameDayStatusUser=$("sameDayStatusUser"),
+monthJumpModal=$("monthJumpModal"),
+closeMonthJumpButton=$("closeMonthJumpButton"),
+monthJumpYear=$("monthJumpYear"),
+monthJumpMonth=$("monthJumpMonth"),
+monthJumpCurrentButton=$("monthJumpCurrentButton"),
+cancelMonthJumpButton=$("cancelMonthJumpButton"),
+applyMonthJumpButton=$("applyMonthJumpButton");
 const app=initializeApp(firebaseConfig);const db=getFirestore(app);const today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
 let members=[...defaultMembers];
 let memberRecords=[];
@@ -35,7 +42,8 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "systemSettingsModal",
     "invitePreviewModal",
     "setupModal",
-    "helpModal"
+    "helpModal",
+    "monthJumpModal"
   ].includes(e.id)){
     positionMemberModalBelowHeader(e);
   }
@@ -388,9 +396,37 @@ function primaryEventForDate(dateStr,type=currentType){
   return eventsByDate(dateStr,type)[0]||null;
 }
 
+function populateMonthJumpYears(){
+  const now=new Date();
+  const startYear=Math.min(now.getFullYear()-1,currentYear-1);
+  const endYear=Math.max(now.getFullYear()+5,currentYear+1);
+
+  monthJumpYear.innerHTML="";
+  for(let year=startYear;year<=endYear;year++){
+    const option=document.createElement("option");
+    option.value=String(year);
+    option.textContent=`${year}年`;
+    monthJumpYear.appendChild(option);
+  }
+}
+
+function openMonthJump(){
+  populateMonthJumpYears();
+  monthJumpYear.value=String(currentYear);
+  monthJumpMonth.value=String(currentMonth);
+  show(monthJumpModal);
+}
+
+function moveToMonth(year,month){
+  currentYear=year;
+  currentMonth=month;
+  renderAll();
+  hide(monthJumpModal);
+}
+
 function renderCalendar(){
   calendarGrid.innerHTML="";
-  calendarTitle.textContent=`${currentYear}年${currentMonth+1}月`;
+  calendarTitle.textContent=`${currentYear}年${currentMonth+1}月 ▼`;
 
   for(let i=0;i<blank(currentYear,currentMonth);i++){
     const empty=document.createElement("div");
@@ -719,7 +755,16 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
 }
 
 function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
-joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);
+joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{hide(detailView);show(homeView);renderAll()};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};
+nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};
+calendarTitle.onclick=openMonthJump;
+closeMonthJumpButton.onclick=()=>hide(monthJumpModal);
+cancelMonthJumpButton.onclick=()=>hide(monthJumpModal);
+applyMonthJumpButton.onclick=()=>moveToMonth(Number(monthJumpYear.value),Number(monthJumpMonth.value));
+monthJumpCurrentButton.onclick=()=>{
+  const now=new Date();
+  moveToMonth(now.getFullYear(),now.getMonth());
+};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);
 closeSameDayStatusButton.onclick=()=>hide(sameDayStatusModal);
 document.querySelectorAll("#sameDayStatusModal [data-same-day-status]").forEach(button=>{
   button.onclick=()=>saveSameDayStatus(button.dataset.sameDayStatus||"");
