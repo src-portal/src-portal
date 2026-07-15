@@ -1227,3 +1227,41 @@ body{
   background:#1673e6;
   color:#fff;
 }
+
+/* Ver.0.9.3b β Initial Admin Selection */
+.setup-admin-unlock-target{
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:manipulation;
+}
+#setupAdminUnlockModal .compact-confirm-card{
+  width:min(88vw,420px);
+}
+#setupAdminUnlockModal .admin-pin-label{
+  display:block;
+  margin:8px 0 6px;
+  color:#5f6d7d;
+  font-size:13px;
+  font-weight:900;
+}
+#setupAdminUnlockPin{
+  width:100%;
+  min-height:46px;
+  box-sizing:border-box;
+  border:1px solid #d7dee8;
+  border-radius:10px;
+  padding:10px 12px;
+  font-size:18px;
+  text-align:center;
+}
+#applySetupAdminUnlockButton{
+  width:100%;
+  min-height:46px;
+  margin-top:14px;
+  border:0;
+  border-radius:10px;
+  background:#1673e6;
+  color:#fff;
+  font-family:inherit;
+  font-weight:900;
+}
