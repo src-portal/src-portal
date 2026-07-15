@@ -54,13 +54,13 @@
   <main class="main-content detail-view hidden" id="detailView">
     <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
   </main>
-  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.3a β</button><div class="build-info" id="buildInfo">Build 2026/07/15 11:59 JST</div>
+  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.3b β</button><div class="build-info" id="buildInfo">Build 2026/07/15 13:01 JST</div>
   <div class="credit">Admin mode / Firebase connected</div><div class="beta-test-label">β Test Version</div></footer>
 </div>
 <div class="modal-overlay hidden" id="setupModal">
   <div class="modal-card user-change-fixed-modal-card">
     <div class="dialog-header">
-      <h2 id="setupModalTitle">👤 ユーザー変更</h2>
+      <h2 id="setupModalTitle" class="setup-admin-unlock-target">👤 ユーザー変更</h2>
       <button class="modal-header-close-button" id="closeSetupModalButton" type="button" aria-label="閉じる">×</button>
     </div>
     <p class="setup-text" id="setupModalText">自分の名前を選んでください。</p>
@@ -199,6 +199,20 @@
       <button id="cancelMonthJumpButton" type="button">キャンセル</button>
       <button id="applyMonthJumpButton" type="button">OK</button>
     </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay hidden" id="setupAdminUnlockModal">
+  <div class="modal-card compact-confirm-card">
+    <div class="dialog-header">
+      <h2>管理者確認</h2>
+      <button id="closeSetupAdminUnlockButton" type="button" aria-label="閉じる">×</button>
+    </div>
+    <label class="admin-pin-label" for="setupAdminUnlockPin">管理者PIN</label>
+    <input id="setupAdminUnlockPin" type="password" inputmode="numeric" autocomplete="off">
+    <p class="error-message hidden" id="setupAdminUnlockError">PINが違います。</p>
+    <button id="applySetupAdminUnlockButton" type="button">確認</button>
   </div>
 </div>
 
@@ -394,6 +408,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=093abeta-20260715"></script>
+<script type="module" src="js/app.js?v=093bbeta-20260715"></script>
 </body>
 </html>
