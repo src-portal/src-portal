@@ -16,7 +16,12 @@ monthJumpYear=$("monthJumpYear"),
 monthJumpMonth=$("monthJumpMonth"),
 monthJumpCurrentButton=$("monthJumpCurrentButton"),
 cancelMonthJumpButton=$("cancelMonthJumpButton"),
-applyMonthJumpButton=$("applyMonthJumpButton");
+applyMonthJumpButton=$("applyMonthJumpButton"),
+setupAdminUnlockModal=$("setupAdminUnlockModal"),
+closeSetupAdminUnlockButton=$("closeSetupAdminUnlockButton"),
+setupAdminUnlockPin=$("setupAdminUnlockPin"),
+setupAdminUnlockError=$("setupAdminUnlockError"),
+applySetupAdminUnlockButton=$("applySetupAdminUnlockButton");
 const app=initializeApp(firebaseConfig);const db=getFirestore(app);const today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
 let members=[...defaultMembers];
 let memberRecords=[];
@@ -31,6 +36,7 @@ let systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
 let requiredMembers=systemSettings.gym.minParticipants;
 const storageUserKey="srcPortalCurrentUser";
 let userSelectionMode="public";
+let setupAdminLongPressTimer=null;
 let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},selectedSameDayUser="";
 function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){
   if(e&&[
@@ -43,7 +49,8 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "invitePreviewModal",
     "setupModal",
     "helpModal",
-    "monthJumpModal"
+    "monthJumpModal",
+    "setupAdminUnlockModal"
   ].includes(e.id)){
     positionMemberModalBelowHeader(e);
   }
@@ -232,6 +239,39 @@ function renderNameButtons(){
       nameButtonGrid.appendChild(b);
     });
 }
+function startSetupAdminLongPress(){
+  if(currentUser)return;
+  clearTimeout(setupAdminLongPressTimer);
+  setupAdminLongPressTimer=setTimeout(()=>{
+    setupAdminUnlockPin.value="";
+    hide(setupAdminUnlockError);
+    show(setupAdminUnlockModal);
+    setTimeout(()=>setupAdminUnlockPin.focus(),50);
+  },2000);
+}
+
+function cancelSetupAdminLongPress(){
+  clearTimeout(setupAdminLongPressTimer);
+  setupAdminLongPressTimer=null;
+}
+
+function unlockAdminSelectionFromSetup(){
+  const expectedPin=String(systemSettings.adminPin||"1979");
+  if(setupAdminUnlockPin.value!==expectedPin){
+    show(setupAdminUnlockError);
+    setupAdminUnlockPin.select();
+    return;
+  }
+
+  hide(setupAdminUnlockError);
+  hide(setupAdminUnlockModal);
+  userSelectionMode="admin";
+  renderNameButtons();
+  setupModalTitle.textContent="👤 管理者ユーザーを選択";
+  setupModalText.textContent="管理者を含むユーザー一覧です。";
+  closeSetupModalButton.classList.add("hidden");
+}
+
 function requireName(force=false){
   if(!currentUser)userSelectionMode="public";
   if(force||!currentUser){
@@ -785,7 +825,28 @@ confirmUserChangeButton.onclick=()=>{
   show(setupModal);
 };
 
-closeSetupModalButton.onclick=()=>{if(currentUser)hide(setupModal)};changeUserButton.style.display="none";changeUserButton.onclick=()=>{};gymTab.onclick=()=>setType("gym");
+closeSetupModalButton.onclick=()=>{if(currentUser)hide(setupModal)};
+
+setupModalTitle.addEventListener("pointerdown",event=>{
+  if(event.pointerType==="mouse"&&event.button!==0)return;
+  startSetupAdminLongPress();
+});
+["pointerup","pointercancel","pointerleave"].forEach(type=>{
+  setupModalTitle.addEventListener(type,cancelSetupAdminLongPress);
+});
+setupModalTitle.addEventListener("contextmenu",event=>{
+  if(!currentUser)event.preventDefault();
+});
+
+closeSetupAdminUnlockButton.onclick=()=>{
+  cancelSetupAdminLongPress();
+  hide(setupAdminUnlockModal);
+};
+applySetupAdminUnlockButton.onclick=unlockAdminSelectionFromSetup;
+setupAdminUnlockPin.addEventListener("keydown",event=>{
+  if(event.key==="Enter")unlockAdminSelectionFromSetup();
+});
+changeUserButton.style.display="none";changeUserButton.onclick=()=>{};gymTab.onclick=()=>setType("gym");
 runTab.onclick=()=>setType("run");
 document.getElementById("dashboardNextEventButton").onclick=()=>{
   setType("run");
