@@ -5,11 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal β</title>
 <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="images/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
+  <link rel="apple-touch-icon" href="images/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
 <div class="app-shell">
   <header class="app-header app-header-image">
-    <img src="images/src-header-090g.jpg" alt="SRC Keep Moving Forward — Run Walk Gym Together" class="header-banner-image">
+    <img src="images/src-header.jpg" alt="SRC Keep Moving Forward — Run Walk Gym Together" class="header-banner-image">
     <button class="help-button header-help-button" id="helpButton" type="button">👟 使い方</button>
   </header>
 
@@ -50,7 +54,7 @@
   <main class="main-content detail-view hidden" id="detailView">
     <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
   </main>
-  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.3 β</button><div class="build-info" id="buildInfo">Build 2026/07/14 17:46 JST</div>
+  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.3a β</button><div class="build-info" id="buildInfo">Build 2026/07/15 11:59 JST</div>
   <div class="credit">Admin mode / Firebase connected</div><div class="beta-test-label">β Test Version</div></footer>
 </div>
 <div class="modal-overlay hidden" id="setupModal">
@@ -390,6 +394,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=093beta-20260714"></script>
+<script type="module" src="js/app.js?v=093abeta-20260715"></script>
 </body>
 </html>
