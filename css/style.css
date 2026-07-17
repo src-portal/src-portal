@@ -1322,3 +1322,7 @@ body{
   .invite-auth-modal-card{width:calc(100% - 28px);padding:22px 18px}
   .invite-auth-code-input{font-size:1.2rem;min-height:52px}
 }
+
+/* Ver.0.9.4d: 招待コード入力案内 */
+.invite-auth-help{margin:7px 0 12px;color:var(--muted);font-size:.9rem;line-height:1.55}
+.invite-auth-help strong{color:var(--blue)}
