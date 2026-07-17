@@ -1500,33 +1500,74 @@ function renderAdminMembers(){
   const list=memberRecords.length>0?memberRecords:members.map((name,i)=>({name,admin:false,active:true,order:i+1}));
   if(list.length===0){
     const div=document.createElement("div");
-    div.className="member-admin-item";
+    div.className="member-admin-item empty";
     div.textContent="メンバーが登録されていません。";
     memberAdminList.appendChild(div);
     return;
   }
-  list.forEach((m,index)=>{
-    const div=document.createElement("div");
-    div.className="member-admin-item";
 
-    const left=document.createElement("div");
-    left.className="member-admin-card-left";
+  list.forEach((m,index)=>{
+    const card=document.createElement("div");
+    card.className="member-admin-item member-admin-compact-card";
+
+    const summary=document.createElement("button");
+    summary.type="button";
+    summary.className="member-admin-summary";
+    summary.setAttribute("aria-expanded","false");
+
+    const summaryText=document.createElement("div");
+    summaryText.className="member-admin-summary-text";
 
     const title=document.createElement("div");
     title.className="member-admin-main";
     title.textContent=`😊 ${m.name}`;
 
-    const sub=document.createElement("div");
-    sub.className="member-admin-sub";
-    sub.textContent=`order: ${m.order ?? "-"} / ${m.active===false ? "無効" : "有効"} / ${m.admin ? "管理者" : "一般"}`;
+    const status=document.createElement("div");
+    status.className="member-admin-summary-status";
+    status.textContent=invitationStatusLabel(m);
 
-    const inviteInfo=document.createElement("div");
-    inviteInfo.className="member-invite-info";
-    inviteInfo.innerHTML=`<span class="invite-status-label">${invitationStatusLabel(m)}</span><span class="invite-code-label">${m.inviteCode?escapeHtml(m.inviteCode):"コードなし"}</span>`;
+    summaryText.appendChild(title);
+    summaryText.appendChild(status);
 
-    left.appendChild(title);
-    left.appendChild(sub);
-    left.appendChild(inviteInfo);
+    const chevron=document.createElement("span");
+    chevron.className="member-admin-chevron";
+    chevron.textContent="›";
+    chevron.setAttribute("aria-hidden","true");
+
+    summary.appendChild(summaryText);
+    summary.appendChild(chevron);
+
+    const detail=document.createElement("div");
+    detail.className="member-admin-detail hidden";
+
+    const meta=document.createElement("div");
+    meta.className="member-admin-meta-grid";
+    meta.innerHTML=`
+      <div><span>区分</span><strong>${m.admin?"管理者":"一般"}</strong></div>
+      <div><span>状態</span><strong>${m.active===false?"停止":"有効"}</strong></div>
+      <div><span>表示順</span><strong>${m.order ?? "-"}</strong></div>
+      <div><span>招待コード</span><strong class="member-code-value">${m.inviteCode?escapeHtml(m.inviteCode):"コードなし"}</strong></div>`;
+    detail.appendChild(meta);
+
+    const primaryActions=document.createElement("div");
+    primaryActions.className="member-detail-actions member-detail-primary-actions";
+
+    const copyInviteBtn=document.createElement("button");
+    copyInviteBtn.type="button";
+    copyInviteBtn.className="member-small-button invite-action-button";
+    copyInviteBtn.textContent="招待情報をコピー";
+    copyInviteBtn.disabled=!m.inviteCode;
+    copyInviteBtn.onclick=()=>copyInviteInformation(m);
+
+    const reissueBtn=document.createElement("button");
+    reissueBtn.type="button";
+    reissueBtn.className="member-small-button";
+    reissueBtn.textContent=m.inviteCode?"コード再発行":"コード発行";
+    reissueBtn.onclick=()=>reissueInviteCode(m);
+
+    primaryActions.appendChild(copyInviteBtn);
+    primaryActions.appendChild(reissueBtn);
+    detail.appendChild(primaryActions);
 
     const editBox=document.createElement("div");
     editBox.className="member-edit-box hidden";
@@ -1576,17 +1617,15 @@ function renderAdminMembers(){
     editRow.appendChild(saveBtn);
     editRow.appendChild(cancelBtn);
     editBox.appendChild(editRow);
-    left.appendChild(editBox);
+    detail.appendChild(editBox);
 
-    div.appendChild(left);
-
-    const actions=document.createElement("div");
-    actions.className="member-admin-actions";
+    const secondaryActions=document.createElement("div");
+    secondaryActions.className="member-detail-actions member-detail-secondary-actions";
 
     const editBtn=document.createElement("button");
     editBtn.type="button";
     editBtn.className="member-small-button";
-    editBtn.textContent="編集";
+    editBtn.textContent="名前・権限を編集";
     editBtn.onclick=()=>editBox.classList.toggle("hidden");
 
     const adminBtn=document.createElement("button");
@@ -1598,51 +1637,40 @@ function renderAdminMembers(){
     const activeBtn=document.createElement("button");
     activeBtn.type="button";
     activeBtn.className=`member-toggle-button ${m.active===false ? "off" : "on"}`;
-    activeBtn.textContent=m.active===false ? "無効" : "有効";
+    activeBtn.textContent=m.active===false ? "停止中" : "有効";
     activeBtn.onclick=()=>toggleMemberFlag(m.id,"active",m.active===false);
-
-    const orderBox=document.createElement("div");
-    orderBox.className="member-order-buttons";
 
     const upBtn=document.createElement("button");
     upBtn.type="button";
-    upBtn.className="member-small-button";
-    upBtn.textContent="↑";
+    upBtn.className="member-small-button member-order-button";
+    upBtn.textContent="↑ 上へ";
     upBtn.disabled=index===0;
     upBtn.onclick=()=>moveMember(m,index,-1);
 
     const downBtn=document.createElement("button");
     downBtn.type="button";
-    downBtn.className="member-small-button";
-    downBtn.textContent="↓";
+    downBtn.className="member-small-button member-order-button";
+    downBtn.textContent="↓ 下へ";
     downBtn.disabled=index===list.length-1;
     downBtn.onclick=()=>moveMember(m,index,1);
 
-    orderBox.appendChild(upBtn);
-    orderBox.appendChild(downBtn);
+    secondaryActions.appendChild(editBtn);
+    secondaryActions.appendChild(adminBtn);
+    secondaryActions.appendChild(activeBtn);
+    secondaryActions.appendChild(upBtn);
+    secondaryActions.appendChild(downBtn);
+    detail.appendChild(secondaryActions);
 
-    const copyInviteBtn=document.createElement("button");
-    copyInviteBtn.type="button";
-    copyInviteBtn.className="member-small-button invite-action-button";
-    copyInviteBtn.textContent="招待情報をコピー";
-    copyInviteBtn.disabled=!m.inviteCode;
-    copyInviteBtn.onclick=()=>copyInviteInformation(m);
+    summary.onclick=()=>{
+      const opening=detail.classList.contains("hidden");
+      detail.classList.toggle("hidden",!opening);
+      card.classList.toggle("open",opening);
+      summary.setAttribute("aria-expanded",opening?"true":"false");
+    };
 
-    const reissueBtn=document.createElement("button");
-    reissueBtn.type="button";
-    reissueBtn.className="member-small-button";
-    reissueBtn.textContent=m.inviteCode?"コード再発行":"コード発行";
-    reissueBtn.onclick=()=>reissueInviteCode(m);
-
-    actions.appendChild(copyInviteBtn);
-    actions.appendChild(reissueBtn);
-    actions.appendChild(editBtn);
-    actions.appendChild(adminBtn);
-    actions.appendChild(activeBtn);
-    actions.appendChild(orderBox);
-    div.appendChild(actions);
-
-    memberAdminList.appendChild(div);
+    card.appendChild(summary);
+    card.appendChild(detail);
+    memberAdminList.appendChild(card);
   });
 }
 
@@ -1728,18 +1756,17 @@ async function getNextMemberOrder(){
 
 async function addMember(){
   const name=newMemberNameInput.value.trim();
-  const inviteCode=normalizeInviteCode(newMemberInviteCodeInput.value);
-  if(!name||!inviteCode){
+  let inviteCode=generateInviteCode();
+  while(memberRecords.some(member=>normalizeInviteCode(member.inviteCode)===inviteCode)){
+    inviteCode=generateInviteCode();
+  }
+  if(!name){
     addMemberError.classList.remove("hidden");
     return;
   }
   addMemberError.classList.add("hidden");
   if(memberRecords.some(member=>member.name===name)){
     alert("同じ名前のメンバーがすでに登録されています。");
-    return;
-  }
-  if(memberRecords.some(member=>normalizeInviteCode(member.inviteCode)===inviteCode)){
-    alert("招待コードが重複しています。もう一度自動生成してください。");
     return;
   }
   const id=makeMemberId(name);
@@ -1801,7 +1828,7 @@ adminInvitePreviewButton.onclick=()=>show(invitePreviewModal);
 adminSeedMembersButton.onclick=seedMembers;
 closeAdminMemberButton.onclick=()=>hide(adminMemberModal);
 closeInvitePreviewButton.onclick=()=>hide(invitePreviewModal);
-generateInviteCodeButton.onclick=()=>{newMemberInviteCodeInput.value=generateInviteCode();addMemberError.classList.add("hidden");};
+if(generateInviteCodeButton)generateInviteCodeButton.onclick=()=>{newMemberInviteCodeInput.value=generateInviteCode();addMemberError.classList.add("hidden");};
 newMemberNameInput.addEventListener("input",()=>{if(!newMemberInviteCodeInput.value)newMemberInviteCodeInput.value=generateInviteCode();});
 addMemberButton.onclick=addMember;
 
