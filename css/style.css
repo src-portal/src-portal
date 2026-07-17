@@ -1312,3 +1312,13 @@ body{
   .member-detail-secondary-actions>*{width:100%}
   .member-detail-secondary-actions .member-small-button:first-child{grid-column:1/-1}
 }
+
+
+/* Ver.0.9.4c: 招待コード初回認証 */
+.invite-auth-modal-card{max-width:520px}
+.invite-auth-code-input{font-size:1.35rem;font-weight:800;letter-spacing:.12em;text-align:center;text-transform:uppercase}
+#confirmInviteAuthButton:disabled{opacity:.65;cursor:wait}
+@media (max-width:600px){
+  .invite-auth-modal-card{width:calc(100% - 28px);padding:22px 18px}
+  .invite-auth-code-input{font-size:1.2rem;min-height:52px}
+}
