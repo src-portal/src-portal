@@ -286,6 +286,8 @@ function openInviteAuthentication(member){
   pendingInviteMember=member;
   inviteAuthMemberName.textContent=member.name;
   inviteAuthCodeInput.value="";
+  confirmInviteAuthButton.disabled=true;
+  confirmInviteAuthButton.textContent="登録する";
   inviteAuthError.textContent="招待コードが違います。管理者から案内されたコードを確認してください。";
   hide(inviteAuthError);
   show(inviteAuthModal);
@@ -295,6 +297,8 @@ function openInviteAuthentication(member){
 function closeInviteAuthentication(){
   pendingInviteMember=null;
   inviteAuthCodeInput.value="";
+  confirmInviteAuthButton.disabled=true;
+  confirmInviteAuthButton.textContent="登録する";
   hide(inviteAuthError);
   hide(inviteAuthModal);
 }
@@ -303,6 +307,7 @@ async function authenticateInvitedMember(){
   const member=pendingInviteMember;
   if(!member||!member.id)return;
   const entered=normalizeInviteCode(inviteAuthCodeInput.value);
+  if(entered.length!==8)return;
   const expected=normalizeInviteCode(member.inviteCode);
   if(!entered||!expected||entered!==expected){
     show(inviteAuthError);
@@ -967,7 +972,8 @@ closeInviteAuthButton.onclick=closeInviteAuthentication;
 confirmInviteAuthButton.onclick=authenticateInvitedMember;
 inviteAuthCodeInput.addEventListener("input",()=>{
   const compact=inviteAuthCodeInput.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8);
-  inviteAuthCodeInput.value=compact.length>4?`${compact.slice(0,4)}-${compact.slice(4)}`:compact;
+  inviteAuthCodeInput.value=compact.length===8?`${compact.slice(0,4)}-${compact.slice(4)}`:compact;
+  confirmInviteAuthButton.disabled=compact.length!==8;
   hide(inviteAuthError);
 });
 inviteAuthCodeInput.addEventListener("keydown",event=>{
