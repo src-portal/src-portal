@@ -1265,3 +1265,13 @@ body{
   font-family:inherit;
   font-weight:900;
 }
+
+/* Ver.0.9.4b 招待コード管理 */
+.invite-code-create-row{display:flex;gap:8px;align-items:center;margin:10px 0}
+.invite-code-input{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.08em;font-weight:900}
+.member-invite-info{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px;align-items:center}
+.invite-status-label,.invite-code-label{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:900}
+.invite-status-label{background:#eef3f7;color:#334155}
+.invite-code-label{background:#fff;border:1px solid var(--border);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.05em}
+.invite-action-button{background:var(--blue-soft);color:var(--blue)}
+@media(max-width:520px){.invite-code-create-row{align-items:stretch}.invite-code-create-row .member-small-button{white-space:nowrap}.member-admin-actions{min-width:100%;justify-content:flex-start;margin-top:8px}}
