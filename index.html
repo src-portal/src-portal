@@ -54,7 +54,7 @@
   <main class="main-content detail-view hidden" id="detailView">
     <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
   </main>
-  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.4b β</button><div class="build-info" id="buildInfo">Build 2026/07/17 14:36 JST</div>
+  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.4c β</button><div class="build-info" id="buildInfo">Build 2026/07/17 14:55 JST</div>
   <div class="credit">Admin mode / Firebase connected</div><div class="beta-test-label">β Test Version</div></footer>
 </div>
 <div class="modal-overlay hidden" id="setupModal">
@@ -262,8 +262,11 @@
         <input id="newMemberAdminCheck" type="checkbox">
         管理者にする
       </label>
-      <input id="newMemberInviteCodeInput" type="hidden">
-      <button class="primary-button" id="addMemberButton" type="button">メンバーを追加して招待情報を作成</button>
+      <div class="invite-code-create-row">
+        <input id="newMemberInviteCodeInput" class="admin-input invite-code-input" type="text" readonly placeholder="招待コード">
+        <button class="member-small-button" id="generateInviteCodeButton" type="button">自動生成</button>
+      </div>
+      <button class="primary-button" id="addMemberButton" type="button">メンバーを追加して招待準備</button>
       <p class="admin-error hidden" id="addMemberError">メンバー名と招待コードを確認してください。</p>
     </div>
 
@@ -392,6 +395,21 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="inviteAuthModal">
+  <div class="modal-card invite-auth-modal-card">
+    <div class="dialog-header">
+      <h2>🔐 招待コード確認</h2>
+      <button class="modal-header-close-button" id="closeInviteAuthButton" type="button" aria-label="閉じる">×</button>
+    </div>
+    <p class="setup-text"><strong id="inviteAuthMemberName"></strong> さんの招待コードを入力してください。</p>
+    <label class="admin-form-label" for="inviteAuthCodeInput">招待コード</label>
+    <input id="inviteAuthCodeInput" class="admin-input invite-auth-code-input" type="text" inputmode="text" autocomplete="one-time-code" autocapitalize="characters" placeholder="例：ABCD-1234" maxlength="9">
+    <p class="admin-error hidden" id="inviteAuthError">招待コードが正しくありません。</p>
+    <button class="primary-button" id="confirmInviteAuthButton" type="button">登録する</button>
+    <p class="settings-note">招待コードは管理者から届いたものを入力してください。登録後は次回から入力不要です。</p>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="invitePreviewModal">
   <div class="modal-card admin-fixed-modal-card">
     <div class="dialog-header">
@@ -408,6 +426,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=094bbeta-20260717-1420"></script>
+<script type="module" src="js/app.js?v=094cbeta-20260717-1455"></script>
 </body>
 </html>
