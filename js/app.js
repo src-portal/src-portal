@@ -286,6 +286,7 @@ function openInviteAuthentication(member){
   pendingInviteMember=member;
   inviteAuthMemberName.textContent=member.name;
   inviteAuthCodeInput.value="";
+  inviteAuthError.textContent="招待コードが違います。管理者から案内されたコードを確認してください。";
   hide(inviteAuthError);
   show(inviteAuthModal);
   setTimeout(()=>inviteAuthCodeInput.focus(),50);
@@ -325,7 +326,7 @@ async function authenticateInvitedMember(){
     closeInviteAuthentication();
     hide(setupModal);
     renderAll();
-    alert(`登録が完了しました。ようこそ、${member.name}さん！`);
+    alert(`🎉 登録が完了しました！\n\nSRCへようこそ、${member.name}さん！\n次回から招待コードの入力は不要です。`);
   }catch(e){
     console.error("invite authentication error",e);
     inviteAuthError.textContent="登録に失敗しました。通信状態を確認して、もう一度お試しください。";
