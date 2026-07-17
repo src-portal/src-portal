@@ -21,7 +21,13 @@ setupAdminUnlockModal=$("setupAdminUnlockModal"),
 closeSetupAdminUnlockButton=$("closeSetupAdminUnlockButton"),
 setupAdminUnlockPin=$("setupAdminUnlockPin"),
 setupAdminUnlockError=$("setupAdminUnlockError"),
-applySetupAdminUnlockButton=$("applySetupAdminUnlockButton");
+applySetupAdminUnlockButton=$("applySetupAdminUnlockButton"),
+inviteAuthModal=$("inviteAuthModal"),
+closeInviteAuthButton=$("closeInviteAuthButton"),
+inviteAuthMemberName=$("inviteAuthMemberName"),
+inviteAuthCodeInput=$("inviteAuthCodeInput"),
+inviteAuthError=$("inviteAuthError"),
+confirmInviteAuthButton=$("confirmInviteAuthButton");
 const app=initializeApp(firebaseConfig);const db=getFirestore(app);const today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
 let members=[...defaultMembers];
 let memberRecords=[];
@@ -35,7 +41,9 @@ const defaultSystemSettings={
 let systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
 let requiredMembers=systemSettings.gym.minParticipants;
 const storageUserKey="srcPortalCurrentUser";
+const storageMemberIdKey="srcPortalCurrentMemberId";
 let userSelectionMode="public";
+let pendingInviteMember=null;
 let setupAdminLongPressTimer=null;
 let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},selectedSameDayUser="";
 let memberInvitationMigrationStarted=false;
@@ -52,7 +60,8 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "setupModal",
     "helpModal",
     "monthJumpModal",
-    "setupAdminUnlockModal"
+    "setupAdminUnlockModal",
+    "inviteAuthModal"
   ].includes(e.id)){
     positionMemberModalBelowHeader(e);
   }
@@ -273,6 +282,60 @@ async function cancelEvent(){
   }
 }
 
+function openInviteAuthentication(member){
+  pendingInviteMember=member;
+  inviteAuthMemberName.textContent=member.name;
+  inviteAuthCodeInput.value="";
+  hide(inviteAuthError);
+  show(inviteAuthModal);
+  setTimeout(()=>inviteAuthCodeInput.focus(),50);
+}
+
+function closeInviteAuthentication(){
+  pendingInviteMember=null;
+  inviteAuthCodeInput.value="";
+  hide(inviteAuthError);
+  hide(inviteAuthModal);
+}
+
+async function authenticateInvitedMember(){
+  const member=pendingInviteMember;
+  if(!member||!member.id)return;
+  const entered=normalizeInviteCode(inviteAuthCodeInput.value);
+  const expected=normalizeInviteCode(member.inviteCode);
+  if(!entered||!expected||entered!==expected){
+    show(inviteAuthError);
+    inviteAuthCodeInput.select();
+    return;
+  }
+  confirmInviteAuthButton.disabled=true;
+  confirmInviteAuthButton.textContent="登録中...";
+  try{
+    await updateDoc(doc(db,"members",member.id),{
+      inviteStatus:"registered",
+      registeredAt:serverTimestamp(),
+      lastActiveAt:serverTimestamp(),
+      updatedAt:serverTimestamp()
+    });
+    currentUser=member.name;
+    localStorage.setItem(storageUserKey,member.name);
+    localStorage.setItem(storageMemberIdKey,member.id);
+    lastActiveUpdatedMemberId=member.id;
+    updateUser();
+    closeInviteAuthentication();
+    hide(setupModal);
+    renderAll();
+    alert(`登録が完了しました。ようこそ、${member.name}さん！`);
+  }catch(e){
+    console.error("invite authentication error",e);
+    inviteAuthError.textContent="登録に失敗しました。通信状態を確認して、もう一度お試しください。";
+    show(inviteAuthError);
+  }finally{
+    confirmInviteAuthButton.disabled=false;
+    confirmInviteAuthButton.textContent="登録する";
+  }
+}
+
 function updateUser(){
   currentUserLabel.textContent=currentUser||"未設定";
 }
@@ -296,8 +359,13 @@ function renderNameButtons(){
       b.className="name-choice-button";
       b.textContent=`😊 ${member.name}`;
       b.onclick=()=>{
+        if(member.inviteStatus==="pending"){
+          openInviteAuthentication(member);
+          return;
+        }
         currentUser=member.name;
         localStorage.setItem(storageUserKey,member.name);
+        if(member.id)localStorage.setItem(storageMemberIdKey,member.id);
         lastActiveUpdatedMemberId="";
         updateUser();
         updateCurrentUserLastActive();
@@ -894,6 +962,16 @@ confirmUserChangeButton.onclick=()=>{
 };
 
 closeSetupModalButton.onclick=()=>{if(currentUser)hide(setupModal)};
+closeInviteAuthButton.onclick=closeInviteAuthentication;
+confirmInviteAuthButton.onclick=authenticateInvitedMember;
+inviteAuthCodeInput.addEventListener("input",()=>{
+  const compact=inviteAuthCodeInput.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8);
+  inviteAuthCodeInput.value=compact.length>4?`${compact.slice(0,4)}-${compact.slice(4)}`:compact;
+  hide(inviteAuthError);
+});
+inviteAuthCodeInput.addEventListener("keydown",event=>{
+  if(event.key==="Enter")authenticateInvitedMember();
+});
 
 setupModalTitle.addEventListener("pointerdown",event=>{
   if(event.pointerType==="mouse"&&event.button!==0)return;
