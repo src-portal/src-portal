@@ -977,6 +977,8 @@ const closeInvitePreviewButton=document.getElementById("closeInvitePreviewButton
 const memberAdminList=document.getElementById("memberAdminList");
 const newMemberNameInput=document.getElementById("newMemberNameInput");
 const newMemberAdminCheck=document.getElementById("newMemberAdminCheck");
+const newMemberInviteCodeInput=document.getElementById("newMemberInviteCodeInput");
+const generateInviteCodeButton=document.getElementById("generateInviteCodeButton");
 const addMemberButton=document.getElementById("addMemberButton");
 const addMemberError=document.getElementById("addMemberError");
 const systemSettingsModal=document.getElementById("systemSettingsModal");
@@ -1413,6 +1415,86 @@ async function addEvent(){
   }
 }
 
+function generateInviteCode(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const values=new Uint32Array(8);
+  if(window.crypto&&window.crypto.getRandomValues){
+    window.crypto.getRandomValues(values);
+  }else{
+    for(let i=0;i<values.length;i++)values[i]=Math.floor(Math.random()*chars.length);
+  }
+  const raw=Array.from(values,v=>chars[v%chars.length]).join("");
+  return `${raw.slice(0,4)}-${raw.slice(4)}`;
+}
+
+function normalizeInviteCode(value){
+  return String(value||"").trim().toUpperCase();
+}
+
+function invitationStatusLabel(member){
+  if(member.active===false||member.inviteStatus==="inactive")return "🔴 停止";
+  if(member.inviteStatus==="pending")return "🟡 未登録";
+  return "🟢 登録済み";
+}
+
+function appInviteUrl(){
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
+function buildInviteMessage(member){
+  return `SRCアプリへようこそ！\n\n以下のURLからアクセスしてください。\n${appInviteUrl()}\n\n名前\n${member.name}\n\n招待コード\n${member.inviteCode}\n\n初回起動時に、名前と招待コードを入力してください。`;
+}
+
+async function copyText(text){
+  try{
+    if(navigator.clipboard&&window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+    }else{
+      const textarea=document.createElement("textarea");
+      textarea.value=text;
+      textarea.style.position="fixed";
+      textarea.style.opacity="0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const ok=document.execCommand("copy");
+      textarea.remove();
+      if(!ok)throw new Error("copy failed");
+    }
+    return true;
+  }catch(e){
+    console.error("copy error",e);
+    return false;
+  }
+}
+
+async function copyInviteInformation(member){
+  if(!member.inviteCode){
+    alert("招待コードがありません。先に再発行してください。");
+    return;
+  }
+  const copied=await copyText(buildInviteMessage(member));
+  alert(copied?"招待情報をコピーしました。LINE・メール・SMSへ貼り付けて送信してください。":"コピーできませんでした。招待コードを長押ししてコピーしてください。");
+}
+
+async function reissueInviteCode(member){
+  if(!member.id)return;
+  if(!confirm(`${member.name}さんの招待コードを再発行します。以前のコードは使えなくなります。よろしいですか？`))return;
+  const inviteCode=generateInviteCode();
+  try{
+    await updateDoc(doc(db,"members",member.id),{
+      inviteCode,
+      inviteStatus:"pending",
+      registeredAt:null,
+      updatedAt:serverTimestamp()
+    });
+    alert(`招待コードを再発行しました。\n${inviteCode}`);
+  }catch(e){
+    console.error(e);
+    alert("招待コードの再発行に失敗しました。Firestoreルールを確認してください。");
+  }
+}
+
 function renderAdminMembers(){
   memberAdminList.innerHTML="";
   const list=memberRecords.length>0?memberRecords:members.map((name,i)=>({name,admin:false,active:true,order:i+1}));
@@ -1438,8 +1520,13 @@ function renderAdminMembers(){
     sub.className="member-admin-sub";
     sub.textContent=`order: ${m.order ?? "-"} / ${m.active===false ? "無効" : "有効"} / ${m.admin ? "管理者" : "一般"}`;
 
+    const inviteInfo=document.createElement("div");
+    inviteInfo.className="member-invite-info";
+    inviteInfo.innerHTML=`<span class="invite-status-label">${invitationStatusLabel(m)}</span><span class="invite-code-label">${m.inviteCode?escapeHtml(m.inviteCode):"コードなし"}</span>`;
+
     left.appendChild(title);
     left.appendChild(sub);
+    left.appendChild(inviteInfo);
 
     const editBox=document.createElement("div");
     editBox.className="member-edit-box hidden";
@@ -1534,6 +1621,21 @@ function renderAdminMembers(){
     orderBox.appendChild(upBtn);
     orderBox.appendChild(downBtn);
 
+    const copyInviteBtn=document.createElement("button");
+    copyInviteBtn.type="button";
+    copyInviteBtn.className="member-small-button invite-action-button";
+    copyInviteBtn.textContent="招待情報をコピー";
+    copyInviteBtn.disabled=!m.inviteCode;
+    copyInviteBtn.onclick=()=>copyInviteInformation(m);
+
+    const reissueBtn=document.createElement("button");
+    reissueBtn.type="button";
+    reissueBtn.className="member-small-button";
+    reissueBtn.textContent=m.inviteCode?"コード再発行":"コード発行";
+    reissueBtn.onclick=()=>reissueInviteCode(m);
+
+    actions.appendChild(copyInviteBtn);
+    actions.appendChild(reissueBtn);
     actions.appendChild(editBtn);
     actions.appendChild(adminBtn);
     actions.appendChild(activeBtn);
@@ -1626,11 +1728,20 @@ async function getNextMemberOrder(){
 
 async function addMember(){
   const name=newMemberNameInput.value.trim();
-  if(!name){
+  const inviteCode=normalizeInviteCode(newMemberInviteCodeInput.value);
+  if(!name||!inviteCode){
     addMemberError.classList.remove("hidden");
     return;
   }
   addMemberError.classList.add("hidden");
+  if(memberRecords.some(member=>member.name===name)){
+    alert("同じ名前のメンバーがすでに登録されています。");
+    return;
+  }
+  if(memberRecords.some(member=>normalizeInviteCode(member.inviteCode)===inviteCode)){
+    alert("招待コードが重複しています。もう一度自動生成してください。");
+    return;
+  }
   const id=makeMemberId(name);
   const order=await getNextMemberOrder();
   try{
@@ -1639,15 +1750,19 @@ async function addMember(){
       admin:newMemberAdminCheck.checked,
       active:true,
       order,
-      inviteCode:"",
-      inviteStatus:"registered",
-      registeredAt:serverTimestamp(),
+      inviteCode,
+      inviteStatus:"pending",
+      registeredAt:null,
       lastActiveAt:null,
+      invitedAt:serverTimestamp(),
       updatedAt:serverTimestamp()
     },{merge:true});
+    const addedMember={id,name,inviteCode,inviteStatus:"pending",active:true};
     newMemberNameInput.value="";
     newMemberAdminCheck.checked=false;
-    alert("メンバーを追加しました。");
+    newMemberInviteCodeInput.value="";
+    const copied=await copyText(buildInviteMessage(addedMember));
+    alert(copied?`メンバーを追加し、招待情報をコピーしました。\n招待コード：${inviteCode}`:`メンバーを追加しました。\n招待コード：${inviteCode}`);
   }catch(e){
     console.error(e);
     alert("メンバー追加に失敗しました。Firestoreルールを確認してください。");
@@ -1686,6 +1801,8 @@ adminInvitePreviewButton.onclick=()=>show(invitePreviewModal);
 adminSeedMembersButton.onclick=seedMembers;
 closeAdminMemberButton.onclick=()=>hide(adminMemberModal);
 closeInvitePreviewButton.onclick=()=>hide(invitePreviewModal);
+generateInviteCodeButton.onclick=()=>{newMemberInviteCodeInput.value=generateInviteCode();addMemberError.classList.add("hidden");};
+newMemberNameInput.addEventListener("input",()=>{if(!newMemberInviteCodeInput.value)newMemberInviteCodeInput.value=generateInviteCode();});
 addMemberButton.onclick=addMember;
 
 
