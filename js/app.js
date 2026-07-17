@@ -1835,9 +1835,14 @@ async function getNextMemberOrder(){
 
 async function addMember(){
   const name=newMemberNameInput.value.trim();
-  let inviteCode=generateInviteCode();
+  let inviteCode=normalizeInviteCode(newMemberInviteCodeInput.value);
+  if(!inviteCode){
+    inviteCode=generateInviteCode();
+    newMemberInviteCodeInput.value=inviteCode;
+  }
   while(memberRecords.some(member=>normalizeInviteCode(member.inviteCode)===inviteCode)){
     inviteCode=generateInviteCode();
+    newMemberInviteCodeInput.value=inviteCode;
   }
   if(!name){
     addMemberError.classList.remove("hidden");
