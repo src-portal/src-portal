@@ -38,6 +38,8 @@ const storageUserKey="srcPortalCurrentUser";
 let userSelectionMode="public";
 let setupAdminLongPressTimer=null;
 let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},selectedSameDayUser="";
+let memberInvitationMigrationStarted=false;
+let lastActiveUpdatedMemberId="";
 function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){
   if(e&&[
     "adminPinModal",
@@ -67,6 +69,53 @@ function todayKeyJST(){
   return `${values.year}-${values.month}-${values.day}`;
 }
 function isPastKey(key){return Boolean(key)&&key<todayKeyJST()}
+
+async function migrateExistingMemberInvitationFields(records){
+  if(memberInvitationMigrationStarted)return;
+  const targets=records.filter(record=>record.needsInvitationMigration);
+  if(targets.length===0){
+    memberInvitationMigrationStarted=true;
+    return;
+  }
+  memberInvitationMigrationStarted=true;
+  try{
+    const batch=writeBatch(db);
+    targets.forEach(record=>{
+      const fields={};
+      if(record.inviteCodeMissing)fields.inviteCode="";
+      if(record.inviteStatusMissing)fields.inviteStatus="registered";
+      if(record.registeredAtMissing)fields.registeredAt=serverTimestamp();
+      if(record.lastActiveAtMissing)fields.lastActiveAt=null;
+      if(Object.keys(fields).length>0){
+        fields.updatedAt=serverTimestamp();
+        batch.set(doc(db,"members",record.id),fields,{merge:true});
+      }
+    });
+    await batch.commit();
+  }catch(e){
+    memberInvitationMigrationStarted=false;
+    console.error("member invitation migration error",e);
+  }
+}
+
+async function updateCurrentUserLastActive(){
+  if(!currentUser)return;
+  const record=memberRecords.find(member=>member.name===currentUser&&member.active!==false);
+  if(!record||!record.id||lastActiveUpdatedMemberId===record.id)return;
+  lastActiveUpdatedMemberId=record.id;
+  try{
+    await setDoc(doc(db,"members",record.id),{
+      inviteCode:record.inviteCode||"",
+      inviteStatus:record.inviteStatus||"registered",
+      registeredAt:record.registeredAt||serverTimestamp(),
+      lastActiveAt:serverTimestamp(),
+      updatedAt:serverTimestamp()
+    },{merge:true});
+  }catch(e){
+    lastActiveUpdatedMemberId="";
+    console.error("lastActiveAt update error",e);
+  }
+}
 
 onSnapshot(doc(db,"settings","system"),snap=>{
   const data=snap.exists()?snap.data():{};
@@ -108,10 +157,27 @@ onSnapshot(collection(db,"members"),snap=>{
   snap.forEach(d=>{
     const data=d.data();
     if(data.name){
-      loaded.push({id:d.id,name:data.name,admin:data.admin===true,active:data.active!==false,order:data.order??999});
+      loaded.push({
+        id:d.id,
+        name:data.name,
+        admin:data.admin===true,
+        active:data.active!==false,
+        order:data.order??999,
+        inviteCode:data.inviteCode||"",
+        inviteStatus:data.inviteStatus||"registered",
+        registeredAt:data.registeredAt||null,
+        lastActiveAt:data.lastActiveAt||null,
+        inviteCodeMissing:!("inviteCode" in data),
+        inviteStatusMissing:!("inviteStatus" in data),
+        registeredAtMissing:!("registeredAt" in data),
+        lastActiveAtMissing:!("lastActiveAt" in data),
+        needsInvitationMigration:!("inviteCode" in data)||!("inviteStatus" in data)||!("registeredAt" in data)||!("lastActiveAt" in data)
+      });
     }
   });
   memberRecords=loaded.sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"ja"));
+  migrateExistingMemberInvitationFields(memberRecords);
+  updateCurrentUserLastActive();
   const activeMembers=memberRecords.filter(m=>m.active!==false);
   if(activeMembers.length>0){
     members=activeMembers.map(m=>m.name);
@@ -232,7 +298,9 @@ function renderNameButtons(){
       b.onclick=()=>{
         currentUser=member.name;
         localStorage.setItem(storageUserKey,member.name);
+        lastActiveUpdatedMemberId="";
         updateUser();
+        updateCurrentUserLastActive();
         hide(setupModal);
         renderAll();
       };
@@ -997,6 +1065,10 @@ async function seedMembers(){
         admin:m.admin,
         active:m.active,
         order:m.order,
+        inviteCode:"",
+        inviteStatus:"registered",
+        registeredAt:serverTimestamp(),
+        lastActiveAt:null,
         updatedAt:serverTimestamp()
       },{merge:true});
     }
@@ -1567,6 +1639,10 @@ async function addMember(){
       admin:newMemberAdminCheck.checked,
       active:true,
       order,
+      inviteCode:"",
+      inviteStatus:"registered",
+      registeredAt:serverTimestamp(),
+      lastActiveAt:null,
       updatedAt:serverTimestamp()
     },{merge:true});
     newMemberNameInput.value="";
