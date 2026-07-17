@@ -1513,7 +1513,7 @@ function generateInviteCode(){
 }
 
 function normalizeInviteCode(value){
-  return String(value||"").trim().toUpperCase();
+  return String(value||"").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0,8);
 }
 
 function invitationStatusLabel(member){
