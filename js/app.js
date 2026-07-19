@@ -3,7 +3,7 @@ import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, arrayRemo
 
 const firebaseConfig={apiKey:"AIzaSyAsqNE9tSB2eIDtHBR8dRSVkzGFD0sKh-c",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
-document.addEventListener("DOMContentLoaded",()=>{const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),nextEventContent=$("nextEventContent"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
+document.addEventListener("DOMContentLoaded",()=>{const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),nextEventContent=$("nextEventContent"),nextEventCard=$("nextEventCard"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
 userChangeConfirmModal=$("userChangeConfirmModal"),
 cancelUserChangeButton=$("cancelUserChangeButton"),
 confirmUserChangeButton=$("confirmUserChangeButton"),
@@ -467,16 +467,20 @@ function renderMemberOverview(){
     ? memberRecords.filter(member=>member.active!==false)
     : members.map((name,index)=>({name,order:index+1,active:true}));
 
-  const sorted=[...activeMembers].sort((a,b)=>
-    (a.order||999)-(b.order||999)||
-    a.name.localeCompare(b.name,"ja")
-  );
+  const sorted=[...activeMembers].sort((a,b)=>{
+    const aTotal=memberMonthlyAttendance(a.name,"run")+memberMonthlyAttendance(a.name,"gym");
+    const bTotal=memberMonthlyAttendance(b.name,"run")+memberMonthlyAttendance(b.name,"gym");
+    return bTotal-aTotal||
+      (a.order||999)-(b.order||999)||
+      a.name.localeCompare(b.name,"ja");
+  });
 
-  memberOverviewSummary.textContent=`登録メンバー ${sorted.length}名`;
+  memberOverviewSummary.textContent=`今月の参加回数順／登録メンバー ${sorted.length}名`;
   memberOverviewList.innerHTML="";
 
-  sorted.forEach(member=>{
+  sorted.forEach((member,index)=>{
     const name=member.name;
+    const medal=index===0?"🥇 ":index===1?"🥈 ":index===2?"🥉 ":"";
     const runCount=memberMonthlyAttendance(name,"run");
     const gymCount=memberMonthlyAttendance(name,"gym");
     const total=runCount+gymCount;
@@ -487,7 +491,7 @@ function renderMemberOverview(){
     row.innerHTML=`
       <div class="member-today-status ${joiningToday?"joining":"not-joining"}" aria-label="${joiningToday?"今日参加予定":"今日参加予定なし"}">${joiningToday?"●":"○"}</div>
       <div class="member-overview-main">
-        <div class="member-overview-name">${escapeHtml(name)}</div>
+        <div class="member-overview-name">${medal}${escapeHtml(name)}</div>
         <div class="member-overview-breakdown">
           <span>🏃 ${runCount}回</span>
           <span>🏋️ ${gymCount}回</span>
@@ -546,23 +550,12 @@ function renderDashboard(){
   const runCount=monthlyAttendanceTotal("run");
   const gymCount=monthlyAttendanceTotal("gym");
   const activeAnnouncementCount=announcementRecords.filter(a=>a.enabled).length;
-  const upcoming=getUpcomingEvents().filter(ev=>ev.status!=="cancelled");
-  const nextEvent=upcoming[0]||getUpcomingEvents()[0]||null;
 
   animateDashboardNumber(dashboardMemberCount,activeMemberCount,"名");
   animateDashboardNumber(dashboardRunCount,runCount,"名");
   animateDashboardNumber(dashboardGymCount,gymCount,"名");
   animateDashboardNumber(dashboardAnnouncementCount,activeAnnouncementCount,"件");
 
-  if(!nextEvent){
-    dashboardNextEvent.textContent="現在、開催予定のイベントはありません。";
-    return;
-  }
-
-  const typeLabel=nextEvent.type==="run"?"🏃 ラン＆ウォーク":"🏋️ ジム";
-  const statusLabel=nextEvent.status==="cancelled"?"（中止）":"";
-  dashboardNextEvent.textContent=
-    `${typeLabel} ${fmt(nextEvent.date)} ${nextEvent.time||systemSettings.run.time} ${nextEvent.place||systemSettings.run.place}${statusLabel}`;
 }
 
 function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="開催条件";ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderNextEventPublic();renderAnnouncementsPublic();renderDashboard()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
@@ -700,13 +693,29 @@ function renderNextEventPublic(){
   const label=ev.type==="run"?"🏃 ラン＆ウォーク":"🏋️ ジム";
   const statusText=ev.status==="cancelled"?"中止":"開催予定";
   const statusIcon=ev.status==="cancelled"?"🔴":"🟢";
+  const participantCount=getNames(ev.type,ev.date).length;
 
   nextEventContent.className=`next-event-item ${ev.status==="cancelled"?"next-event-cancelled":""}`;
   nextEventContent.innerHTML=`
     <div class="next-event-title">${statusIcon} ${label} ${statusText}</div>
-    <div class="next-event-meta">📅 ${fmt(ev.date)}<br>🕖 ${ev.time||"19:00"}<br>📍 ${ev.place||"-"}</div>
+    <div class="next-event-meta">📅 ${fmt(ev.date)}<br>🕖 ${ev.time||"19:00"}<br>📍 ${ev.place||"-"}<br>👥 参加予定 ${participantCount}名</div>
     ${ev.memo?`<div class="next-event-memo">📝 ${ev.memo}</div>`:""}
   `;
+}
+
+function openNextEventInCalendar(){
+  const events=getUpcomingEvents();
+  if(events.length===0)return;
+  const ev=events[0];
+  currentType=ev.type==="gym"?"gym":"run";
+  selectedKey=ev.date;
+  const [year,month]=ev.date.split("-").map(Number);
+  currentYear=year;
+  currentMonth=month-1;
+  setType(currentType);
+  requestAnimationFrame(()=>{
+    scrollToBelowHeader(document.querySelector(".calendar-card"),8);
+  });
 }
 
 function renderNextPlan(){
@@ -947,6 +956,15 @@ monthJumpCurrentButton.onclick=()=>{
   const now=new Date();
   moveToMonth(now.getFullYear(),now.getMonth());
 };helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);
+if(nextEventCard){
+  nextEventCard.addEventListener("click",openNextEventInCalendar);
+  nextEventCard.addEventListener("keydown",event=>{
+    if(event.key==="Enter"||event.key===" "){
+      event.preventDefault();
+      openNextEventInCalendar();
+    }
+  });
+}
 closeSameDayStatusButton.onclick=()=>hide(sameDayStatusModal);
 document.querySelectorAll("#sameDayStatusModal [data-same-day-status]").forEach(button=>{
   button.onclick=()=>saveSameDayStatus(button.dataset.sameDayStatus||"");
@@ -1001,11 +1019,6 @@ setupAdminUnlockPin.addEventListener("keydown",event=>{
 });
 changeUserButton.style.display="none";changeUserButton.onclick=()=>{};gymTab.onclick=()=>setType("gym");
 runTab.onclick=()=>setType("run");
-document.getElementById("dashboardNextEventButton").onclick=()=>{
-  setType("run");
-  const target=document.querySelector(".event-switch-card");
-  if(target)target.scrollIntoView({behavior:"smooth",block:"start"});
-};
 const adminPin="1979";
 const adminPinModal=document.getElementById("adminPinModal");
 const adminMenuModal=document.getElementById("adminMenuModal");
@@ -1089,8 +1102,6 @@ const dashboardMembersButton=document.getElementById("dashboardMembersButton");
 const dashboardRunButton=document.getElementById("dashboardRunButton");
 const dashboardGymButton=document.getElementById("dashboardGymButton");
 const dashboardAnnouncementButton=document.getElementById("dashboardAnnouncementButton");
-const dashboardNextEvent=document.getElementById("dashboardNextEvent");
-const dashboardNextEventButton=document.getElementById("dashboardNextEventButton");
 const announcementCard=document.getElementById("announcementCard");
 const announcementList=document.getElementById("announcementList");
 const announcementManageModal=document.getElementById("announcementManageModal");
