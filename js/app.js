@@ -439,17 +439,22 @@ function currentMonthPrefixJST(){
   return `${values.year}-${values.month}`;
 }
 
+function isCompletedAttendanceId(id,type){
+  const prefix=`${type}_`;
+  if(!id.startsWith(prefix))return false;
+  const dateKey=id.slice(prefix.length);
+  return dateKey.startsWith(`${currentMonthPrefixJST()}-`)&&dateKey<todayKeyJST();
+}
+
 function monthlyAttendanceTotal(type){
-  const prefix=`${type}_${currentMonthPrefixJST()}-`;
   return Object.entries(attendance)
-    .filter(([id])=>id.startsWith(prefix))
+    .filter(([id])=>isCompletedAttendanceId(id,type))
     .reduce((sum,[,participants])=>sum+(Array.isArray(participants)?participants.length:0),0);
 }
 
 function memberMonthlyAttendance(name,type){
-  const prefix=`${type}_${currentMonthPrefixJST()}-`;
   return Object.entries(attendance)
-    .filter(([id])=>id.startsWith(prefix))
+    .filter(([id])=>isCompletedAttendanceId(id,type))
     .reduce((count,[,participants])=>{
       return count+(Array.isArray(participants)&&participants.includes(name)?1:0);
     },0);
