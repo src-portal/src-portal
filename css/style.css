@@ -1326,3 +1326,27 @@ body{
 /* Ver.0.9.4d: 招待コード入力案内 */
 .invite-auth-help{margin:7px 0 12px;color:var(--muted);font-size:.9rem;line-height:1.55}
 .invite-auth-help strong{color:var(--blue)}
+
+
+/* Ver.1.0.0 Official Release */
+.next-event-card-button{cursor:pointer;transition:transform .1s ease,box-shadow .1s ease}
+.next-event-card-button:active{transform:scale(.99)}
+.next-event-card-button:focus-visible{outline:3px solid rgba(23,115,230,.35);outline-offset:2px}
+.next-event-card-button .next-event-item{pointer-events:none}
+.help-content{line-height:1.7}
+.help-section{margin:0 0 18px}
+.help-section h3{margin:0 0 8px;color:var(--charcoal)}
+.help-section p{margin:0;color:var(--muted);font-weight:700}
+.help-details{margin:10px 0;border:1px solid var(--border);border-radius:16px;background:#f7f9fb;overflow:hidden}
+.help-details summary{padding:13px 14px;cursor:pointer;font-weight:900;color:var(--charcoal);list-style:none}
+.help-details summary::-webkit-details-marker{display:none}
+.help-details summary::after{content:"＋";float:right;color:var(--blue)}
+.help-details[open] summary::after{content:"−"}
+.help-document{padding:0 14px 14px;color:var(--muted);font-size:13px;font-weight:700}
+.help-document h4{margin:2px 0 8px;color:var(--charcoal)}
+.help-document p{margin:8px 0}
+.help-document ul{margin:8px 0;padding-left:20px}
+.help-document-date{text-align:right;font-size:11px}
+.footer-product-name{font-size:14px;font-weight:900;color:var(--charcoal)}
+.official-release-label{margin-top:4px;color:var(--blue);font-size:12px;font-weight:900;letter-spacing:.05em}
+.release-date{margin-top:2px;font-size:11px;font-weight:800}
