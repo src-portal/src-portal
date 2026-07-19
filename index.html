@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SRC Portal β</title>
+<title>SRC Portal</title>
 <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
@@ -29,7 +29,6 @@
     <button class="dashboard-stat dashboard-stat-button" id="dashboardGymButton" type="button"><div class="dashboard-icon gym">🏋️</div><div class="dashboard-label">今月ジム参加</div><div class="dashboard-value" id="dashboardGymCount">--</div></button>
     <button class="dashboard-stat dashboard-stat-button" id="dashboardAnnouncementButton" type="button"><div class="dashboard-icon news">📢</div><div class="dashboard-label">お知らせ</div><div class="dashboard-value" id="dashboardAnnouncementCount">--</div></button>
   </div>
-  <button class="dashboard-next-event" id="dashboardNextEventButton" type="button"><div class="dashboard-next-icon">📅</div><div class="dashboard-next-main"><div class="dashboard-next-label">次回イベント</div><div class="dashboard-next-value" id="dashboardNextEvent">確認中...</div></div><div class="dashboard-next-arrow">›</div></button>
 </section>
 
     
@@ -40,7 +39,7 @@
       <div id="announcementList" class="announcement-empty">現在のお知らせはありません。</div>
     </section>
 
-    <section class="next-event-card" id="nextEventCard">
+    <section class="next-event-card next-event-card-button" id="nextEventCard" role="button" tabindex="0" aria-label="次回イベントをカレンダーで開く">
       <div class="section-label">📅 次回イベント</div>
       <div id="nextEventContent" class="next-event-empty">登録されたイベントはまだありません。</div>
     </section>
@@ -54,8 +53,14 @@
   <main class="main-content detail-view hidden" id="detailView">
     <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
   </main>
-  <footer class="app-footer"><button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 0.9.4d3 β</button><div class="build-info" id="buildInfo">Build 2026/07/17 19:10 JST</div>
-  <div class="credit">Admin mode / Firebase connected</div><div class="beta-test-label">β Test Version</div></footer>
+  <footer class="app-footer">
+  <div class="footer-product-name">SRC Portal</div>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.0.0</button>
+  <div class="official-release-label">Official Release</div>
+  <div class="release-date">2026.07.20</div>
+  <div class="build-info" id="buildInfo">Build 2026/07/20 JST</div>
+  <div class="credit">Admin mode / Firebase connected</div>
+</footer>
 </div>
 <div class="modal-overlay hidden" id="setupModal">
   <div class="modal-card user-change-fixed-modal-card">
@@ -74,44 +79,72 @@
     </div>
 
     <div class="help-content">
-      <p>
-        SRCメンバーのラン＆ウォークやジムへの<br>
-        参加予定を共有し、<br>
-        仲間と楽しく運動を続けるためのアプリです。
-      </p>
+      <section class="help-section">
+        <h3>📖 SRC Portalについて</h3>
+        <p>SRCメンバーのラン＆ウォークやジムへの参加予定を共有し、仲間と楽しく運動を続けるためのアプリです。</p>
+      </section>
 
-      <p>
-        参加状況が見えることで、<br>
-        「今日は行ってみよう！」<br>
-        「みんなも参加するなら行こう！」<br>
-        という気持ちが生まれ、<br>
-        運動を続けるモチベーションにつながります。
-      </p>
+      <section class="help-section">
+        <h3>📋 使い方</h3>
+        <ol class="help-steps">
+          <li>現在のユーザーを選択します。</li>
+          <li>「ラン＆ウォーク」または「ジム」を選択します。</li>
+          <li>参加したい日付をタップします。</li>
+          <li>「参加する」または「参加取消」を押します。</li>
+        </ol>
+        <p>参加人数や参加者はリアルタイムで更新されます。次回イベントカードをタップすると、該当月のカレンダーへ移動します。</p>
+      </section>
 
-      <h3>【使い方】</h3>
+      <details class="help-details">
+        <summary>📄 利用規約</summary>
+        <div class="help-document">
+          <p>SRC Portalは、Santec Running Club（SRC）の活動における参加予定の共有を目的として提供します。</p>
+          <ul>
+            <li>利用者は、自分の名前を選択し、正確な参加予定を登録してください。</li>
+            <li>他のメンバーになりすました登録や、運営を妨げる操作は禁止します。</li>
+            <li>イベント内容は変更または中止される場合があります。最新のお知らせを確認してください。</li>
+            <li>本アプリの利用により生じた損害について、運営者は故意または重大な過失がある場合を除き責任を負いません。</li>
+            <li>必要に応じて、本規約や提供内容を変更する場合があります。</li>
+          </ul>
+          <p class="help-document-date">制定：2026年7月20日</p>
+        </div>
+      </details>
 
-      <ol class="help-steps">
-        <li>現在のユーザーを選択します。</li>
-        <li>「ラン＆ウォーク」または「ジム」を選択します。</li>
-        <li>参加したい日付をタップします。</li>
-        <li>「参加する」または「参加取消」を押します。</li>
-      </ol>
+      <details class="help-details">
+        <summary>🔒 プライバシーポリシー</summary>
+        <div class="help-document">
+          <p>SRC Portalでは、運営に必要な範囲で次の情報を取り扱います。</p>
+          <ul>
+            <li>メンバー名、管理者設定、招待・登録状況</li>
+            <li>イベントへの参加・取消・当日連絡</li>
+            <li>登録日時、最終利用日時などの運用情報</li>
+          </ul>
+          <p>これらの情報は、参加予定の共有、開催判断、メンバー管理およびアプリ改善のために利用し、法令に基づく場合を除いて目的外で第三者へ提供しません。</p>
+          <p>端末には、選択したユーザーや招待認証に必要な情報が保存される場合があります。共用端末では利用後の管理に注意してください。</p>
+          <p class="help-document-date">制定：2026年7月20日</p>
+        </div>
+      </details>
 
-      <p>参加人数や参加者はリアルタイムで更新されます。</p>
+      <details class="help-details">
+        <summary>📝 リリースノート</summary>
+        <div class="help-document">
+          <h4>Version 1.0.0 — Official Release</h4>
+          <ul>
+            <li>正式版として公開</li>
+            <li>Help、利用規約、プライバシーポリシーを整備</li>
+            <li>次回イベント表示を1つのカードに集約</li>
+            <li>メンバー一覧を今月の参加回数順に変更</li>
+            <li>上位3名に🥇🥈🥉を表示</li>
+            <li>招待コードによる初回登録に対応</li>
+          </ul>
+          <p class="help-document-date">リリース日：2026年7月20日</p>
+        </div>
+      </details>
 
-      <h3>【今後のアップデート予定】</h3>
-
-      <ul class="help-future-list">
-        <li>🏅 参加ランキング</li>
-        <li>🥉🥈🥇 参加バッジ</li>
-        <li>📩 招待コード登録</li>
-      </ul>
-
-      <p>
-        💬 皆さんのご意見を取り入れながら、<br>
-        皆さんと一緒に、より便利で楽しい<br>
-        SRCアプリへ育てていきます。
-      </p>
+      <section class="help-section">
+        <h3>ℹ️ バージョン情報</h3>
+        <p><strong>SRC Portal<br>Version 1.0.0<br>Official Release<br>2026.07.20</strong></p>
+      </section>
     </div>
 </div></div>
 
@@ -427,6 +460,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=094d3beta-20260717-1910"></script>
+<script type="module" src="js/app.js?v=100-20260720"></script>
 </body>
 </html>
