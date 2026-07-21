@@ -429,21 +429,26 @@ function requireName(force=false){
   }
 }
 
-function currentMonthPrefixJST(){
+function monthPrefixJST(offset=0){
   const parts=new Intl.DateTimeFormat("en-CA",{
     timeZone:"Asia/Tokyo",
     year:"numeric",
     month:"2-digit"
   }).formatToParts(new Date());
   const values=Object.fromEntries(parts.map(p=>[p.type,p.value]));
-  return `${values.year}-${values.month}`;
+  const baseYear=Number(values.year);
+  const baseMonth=Number(values.month)-1;
+  const target=new Date(Date.UTC(baseYear,baseMonth+offset,1));
+  return `${target.getUTCFullYear()}-${pad2(target.getUTCMonth()+1)}`;
 }
 
-function isCompletedAttendanceId(id,type){
+function currentMonthPrefixJST(){return monthPrefixJST(0);}
+
+function isCompletedAttendanceId(id,type,monthOffset=0){
   const prefix=`${type}_`;
   if(!id.startsWith(prefix))return false;
   const dateKey=id.slice(prefix.length);
-  return dateKey.startsWith(`${currentMonthPrefixJST()}-`)&&dateKey<todayKeyJST();
+  return dateKey.startsWith(`${monthPrefixJST(monthOffset)}-`)&&dateKey<todayKeyJST();
 }
 
 function monthlyAttendanceTotal(type){
@@ -452,9 +457,9 @@ function monthlyAttendanceTotal(type){
     .reduce((sum,[,participants])=>sum+(Array.isArray(participants)?participants.length:0),0);
 }
 
-function memberMonthlyAttendance(name,type){
+function memberMonthlyAttendance(name,type,monthOffset=0){
   return Object.entries(attendance)
-    .filter(([id])=>isCompletedAttendanceId(id,type))
+    .filter(([id])=>isCompletedAttendanceId(id,type,monthOffset))
     .reduce((count,[,participants])=>{
       return count+(Array.isArray(participants)&&participants.includes(name)?1:0);
     },0);
@@ -465,6 +470,8 @@ function memberIsJoiningToday(name){
   return getNames("run",todayKey).includes(name)||getNames("gym",todayKey).includes(name);
 }
 
+let memberOverviewMonthOffset=0;
+
 function renderMemberOverview(){
   if(!memberOverviewList)return;
 
@@ -473,21 +480,24 @@ function renderMemberOverview(){
     : members.map((name,index)=>({name,order:index+1,active:true}));
 
   const sorted=[...activeMembers].sort((a,b)=>{
-    const aTotal=memberMonthlyAttendance(a.name,"run")+memberMonthlyAttendance(a.name,"gym");
-    const bTotal=memberMonthlyAttendance(b.name,"run")+memberMonthlyAttendance(b.name,"gym");
+    const aTotal=memberMonthlyAttendance(a.name,"run",memberOverviewMonthOffset)+memberMonthlyAttendance(a.name,"gym",memberOverviewMonthOffset);
+    const bTotal=memberMonthlyAttendance(b.name,"run",memberOverviewMonthOffset)+memberMonthlyAttendance(b.name,"gym",memberOverviewMonthOffset);
     return bTotal-aTotal||
       (a.order||999)-(b.order||999)||
       a.name.localeCompare(b.name,"ja");
   });
 
-  memberOverviewSummary.textContent=`今月の参加回数順／登録メンバー ${sorted.length}名`;
+  const monthLabel=memberOverviewMonthOffset===-1?"先月":"今月";
+  memberOverviewSummary.textContent=`${monthLabel}の参加回数順／登録メンバー ${sorted.length}名`;
+  const totalLegend=document.getElementById("memberOverviewTotalLegend");
+  if(totalLegend)totalLegend.textContent=`🔥 ${monthLabel}参加合計`;
   memberOverviewList.innerHTML="";
 
   sorted.forEach((member,index)=>{
     const name=member.name;
     const medal=index===0?"🥇 ":index===1?"🥈 ":index===2?"🥉 ":"";
-    const runCount=memberMonthlyAttendance(name,"run");
-    const gymCount=memberMonthlyAttendance(name,"gym");
+    const runCount=memberMonthlyAttendance(name,"run",memberOverviewMonthOffset);
+    const gymCount=memberMonthlyAttendance(name,"gym",memberOverviewMonthOffset);
     const total=runCount+gymCount;
     const joiningToday=memberIsJoiningToday(name);
 
@@ -1099,6 +1109,7 @@ const memberOverviewModal=document.getElementById("memberOverviewModal");
 const closeMemberOverviewButton=document.getElementById("closeMemberOverviewButton");
 const memberOverviewSummary=document.getElementById("memberOverviewSummary");
 const memberOverviewList=document.getElementById("memberOverviewList");
+const memberOverviewMonthSelect=document.getElementById("memberOverviewMonthSelect");
 const dashboardMemberCount=document.getElementById("dashboardMemberCount");
 const dashboardRunCount=document.getElementById("dashboardRunCount");
 const dashboardGymCount=document.getElementById("dashboardGymCount");
@@ -1966,6 +1977,10 @@ function scrollToBelowHeader(element,extraGap=8){
 }
 
 closeMemberOverviewButton.addEventListener("click",()=>hide(memberOverviewModal));
+memberOverviewMonthSelect?.addEventListener("change",()=>{
+  memberOverviewMonthOffset=Number(memberOverviewMonthSelect.value)===-1?-1:0;
+  renderMemberOverview();
+});
 
 // Ver.0.9.0l Dashboard card handlers
 dashboardMembersButton.addEventListener("click",()=>{
@@ -1999,3 +2014,230 @@ window.addEventListener("resize",()=>{
 });
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
+
+/* SRC Portal Ver.1.1.0b - basic-operation multilingual display
+   Detects the browser/device language: ja / ko / zh; all others use English.
+   Only fixed user-facing labels are translated. Firestore content and admin screens remain unchanged. */
+(() => {
+  "use strict";
+
+  const rawLanguage = (navigator.languages && navigator.languages[0]) || navigator.language || "en";
+  const normalized = rawLanguage.toLowerCase();
+  const language = normalized.startsWith("ja") ? "ja" : normalized.startsWith("ko") ? "ko" : normalized.startsWith("zh") ? "zh" : "en";
+  document.documentElement.lang = language === "zh" ? "zh-CN" : language;
+
+  const messages = {
+    ja: {
+      help:"ヘルプ", currentUser:"現在のユーザー", unset:"未設定", change:"変更",
+      members:"登録メンバー", monthlyRun:"今月ラン参加", monthlyGym:"今月ジム参加", announcements:"お知らせ",
+      noAnnouncements:"現在のお知らせはありません。", nextPlan:"あなたの次回参加予定", noNextPlan:"参加予定はまだありません。",
+      nextEvent:"次回イベント", noNextEvent:"今後のイベントは登録されていません。", openEvent:"このイベントを開く",
+      runWalk:"ラン＆ウォーク", gym:"ジム", calendarBack:"カレンダーへ戻る",
+      participants:"参加者", notJoined:"まだ参加していません。", join:"参加する", cancelJoin:"参加取消",
+      chooseUser:"ユーザー変更", chooseName:"自分の名前を選んでください。", confirmUserChange:"現在のユーザーを変更しますか？",
+      cancel:"キャンセル", changeUser:"変更する", close:"閉じる",
+      inviteCheck:"招待コード確認", inviteCode:"招待コード", invitePrompt:"さんの招待コードを入力してください。",
+      inviteHelp:"8文字入力すると「-」は自動で入ります。", inviteError:"招待コードが違います。管理者から案内されたコードを確認してください。",
+      register:"登録する", inviteNote:"招待コードは管理者から届いたものを入力してください。登録後は次回から入力不要です。",
+      statusToday:"当日の状況", late:"遅れます", absent:"行けなくなりました", leaveEarly:"先に帰ります", clearStatus:"連絡を取り消す",
+      selectMonth:"表示する年月", currentMonth:"今月へ戻る", previousMonth:"先月", attendanceCount:"参加回数", show:"表示する",
+      today:"今日", mine:"自分", held:"開催", cancelled:"中止", scheduled:"開催予定",
+      noParticipants:"まだ参加者はいません。", pastNoJoin:"過去の日付には参加登録できません。",
+      pastEventReadOnly:"過去のイベントのため、参加・取消はできません。", cancelledNoJoin:"中止イベントには参加登録できません。",
+      joined:"参加予定です。", notJoinedPerson:"まだ参加していません。", people:"名", times:"回",
+      weekdays:["月","火","水","木","金","土","日"]
+    },
+    en: {
+      help:"Help", currentUser:"Current user", unset:"Not selected", change:"Change",
+      members:"Members", monthlyRun:"Run this month", monthlyGym:"Gym this month", announcements:"Announcements",
+      noAnnouncements:"There are no announcements.", nextPlan:"Your next plan", noNextPlan:"You have no upcoming plans.",
+      nextEvent:"Next event", noNextEvent:"There are no upcoming events.", openEvent:"Open this event",
+      runWalk:"Run & Walk", gym:"Gym", calendarBack:"Back to calendar",
+      participants:"Participants", notJoined:"You are not joining yet.", join:"Join", cancelJoin:"Cancel participation",
+      chooseUser:"Select user", chooseName:"Select your name.", confirmUserChange:"Change the current user?",
+      cancel:"Cancel", changeUser:"Change", close:"Close",
+      inviteCheck:"Verify invitation code", inviteCode:"Invitation code", invitePrompt:" — enter the invitation code.",
+      inviteHelp:"The hyphen is inserted automatically after 8 characters.", inviteError:"The invitation code is incorrect. Check the code from the administrator.",
+      register:"Register", inviteNote:"Enter the code sent by the administrator. You will not need it again after registration.",
+      statusToday:"Today's status", late:"I will be late", absent:"I cannot attend", leaveEarly:"I will leave early", clearStatus:"Clear status",
+      selectMonth:"Select month", currentMonth:"Back to this month", show:"Show",
+      today:"Today", mine:"Me", held:"Open", cancelled:"Cancelled", scheduled:"Scheduled",
+      noParticipants:"No participants yet.", pastNoJoin:"You cannot join a past date.",
+      pastEventReadOnly:"This event is in the past. Participation cannot be changed.", cancelledNoJoin:"You cannot join a cancelled event.",
+      joined:"is participating.", notJoinedPerson:"is not participating yet.", people:"", times:"times",
+      weekdays:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+    },
+    ko: {
+      help:"도움말", currentUser:"현재 사용자", unset:"미설정", change:"변경",
+      members:"등록 멤버", monthlyRun:"이번 달 러닝", monthlyGym:"이번 달 체육관", announcements:"공지사항",
+      noAnnouncements:"현재 공지사항이 없습니다.", nextPlan:"다음 참가 예정", noNextPlan:"참가 예정이 없습니다.",
+      nextEvent:"다음 이벤트", noNextEvent:"예정된 이벤트가 없습니다.", openEvent:"이 이벤트 열기",
+      runWalk:"러닝 & 워킹", gym:"체육관", calendarBack:"달력으로 돌아가기",
+      participants:"참가자", notJoined:"아직 참가하지 않았습니다.", join:"참가하기", cancelJoin:"참가 취소",
+      chooseUser:"사용자 선택", chooseName:"본인의 이름을 선택하세요.", confirmUserChange:"현재 사용자를 변경하시겠습니까?",
+      cancel:"취소", changeUser:"변경", close:"닫기",
+      inviteCheck:"초대 코드 확인", inviteCode:"초대 코드", invitePrompt:" 님의 초대 코드를 입력하세요.",
+      inviteHelp:"8자를 입력하면 하이픈이 자동으로 삽입됩니다.", inviteError:"초대 코드가 올바르지 않습니다. 관리자에게 받은 코드를 확인하세요.",
+      register:"등록", inviteNote:"관리자에게 받은 코드를 입력하세요. 등록 후에는 다시 입력할 필요가 없습니다.",
+      statusToday:"당일 상황", late:"늦습니다", absent:"참석할 수 없습니다", leaveEarly:"먼저 가겠습니다", clearStatus:"연락 취소",
+      selectMonth:"표시할 연월", currentMonth:"이번 달로 돌아가기", show:"표시",
+      today:"오늘", mine:"나", held:"개최", cancelled:"취소", scheduled:"개최 예정",
+      noParticipants:"아직 참가자가 없습니다.", pastNoJoin:"지난 날짜에는 참가 등록을 할 수 없습니다.",
+      pastEventReadOnly:"지난 이벤트이므로 참가 상태를 변경할 수 없습니다.", cancelledNoJoin:"취소된 이벤트에는 참가할 수 없습니다.",
+      joined:" 님은 참가 예정입니다.", notJoinedPerson:" 님은 아직 참가하지 않았습니다.", people:"명", times:"회",
+      weekdays:["월","화","수","목","금","토","일"]
+    },
+    zh: {
+      help:"帮助", currentUser:"当前用户", unset:"未设置", change:"更改",
+      members:"注册成员", monthlyRun:"本月跑步", monthlyGym:"本月健身", announcements:"通知",
+      noAnnouncements:"目前没有通知。", nextPlan:"您的下次参加计划", noNextPlan:"目前没有参加计划。",
+      nextEvent:"下次活动", noNextEvent:"目前没有即将举行的活动。", openEvent:"打开此活动",
+      runWalk:"跑步与健走", gym:"健身房", calendarBack:"返回日历",
+      participants:"参加者", notJoined:"您尚未参加。", join:"参加", cancelJoin:"取消参加",
+      chooseUser:"选择用户", chooseName:"请选择您的姓名。", confirmUserChange:"要更改当前用户吗？",
+      cancel:"取消", changeUser:"更改", close:"关闭",
+      inviteCheck:"确认邀请码", inviteCode:"邀请码", invitePrompt:"的请输入邀请码。",
+      inviteHelp:"输入8个字符后会自动插入连字符。", inviteError:"邀请码不正确。请确认管理员提供的代码。",
+      register:"注册", inviteNote:"请输入管理员发送的邀请码。注册后下次无需再次输入。",
+      statusToday:"当天状态", late:"会迟到", absent:"无法参加", leaveEarly:"会提前离开", clearStatus:"取消状态通知",
+      selectMonth:"选择年月", currentMonth:"返回本月", show:"显示",
+      today:"今天", mine:"自己", held:"举行", cancelled:"取消", scheduled:"计划举行",
+      noParticipants:"目前没有参加者。", pastNoJoin:"过去的日期不能报名参加。",
+      pastEventReadOnly:"该活动已结束，不能更改参加状态。", cancelledNoJoin:"不能参加已取消的活动。",
+      joined:"已计划参加。", notJoinedPerson:"尚未参加。", people:"人", times:"次",
+      weekdays:["一","二","三","四","五","六","日"]
+    }
+  };
+
+  const m = messages[language];
+  window.SRC_I18N = { language, t: key => m[key] ?? messages.ja[key] ?? key };
+
+  const setText = (selector, value) => {
+    const el = document.querySelector(selector);
+    if (el && value != null) el.textContent = value;
+  };
+  const setAttr = (selector, name, value) => {
+    const el = document.querySelector(selector);
+    if (el && value != null) el.setAttribute(name, value);
+  };
+
+  function applyStaticTranslations() {
+    if (language === "ja") return;
+    setText("#helpButton", `❓ ${m.help}`);
+    setText(".user-card .small-label", m.currentUser);
+    setText("#currentUserLabel", m.unset);
+    setText("#changeUserButton", m.change);
+    const dashboardLabels = document.querySelectorAll("#dashboardCard .dashboard-label");
+    [m.members,m.monthlyRun,m.monthlyGym,m.announcements].forEach((text,i)=>{ if(dashboardLabels[i]) dashboardLabels[i].textContent=text; });
+    setText("#announcementCard .section-label", `📢 ${m.announcements}`);
+    setText("#announcementList", m.noAnnouncements);
+    setText("#nextPlanCard .section-label", `⭐ ${m.nextPlan}`);
+    setText("#nextPlanContent", m.noNextPlan);
+    setText("#nextEventCard .section-label", `📅 ${m.nextEvent}`);
+    setText("#nextEventContent", m.noNextEvent);
+    setText("#runTab", `🏃 ${m.runWalk}`);
+    setText("#gymTab", `🏋️ ${m.gym}`);
+    setText("#backButton", `← ${m.calendarBack}`);
+    setText("#participantTitle", `${m.participants}（0${m.people}）`);
+    setText("#myStatus", m.notJoined);
+    setText("#joinButton", m.join);
+    setText("#cancelButton", m.cancelJoin);
+    setText("#setupModalTitle", `👤 ${m.chooseUser}`);
+    setText("#setupModalText", m.chooseName);
+    setText("#userChangeConfirmModal h2", m.confirmUserChange);
+    setText("#cancelUserChangeButton", m.cancel);
+    setText("#confirmUserChangeButton", m.changeUser);
+    setText("#inviteAuthModal h2", `🔐 ${m.inviteCheck}`);
+    setText("#inviteAuthModal label[for='inviteAuthCodeInput']", m.inviteCode);
+    setText("#inviteAuthCodeHelp", m.inviteHelp);
+    setText("#inviteAuthError", m.inviteError);
+    setText("#confirmInviteAuthButton", m.register);
+    setText("#inviteAuthModal .settings-note", m.inviteNote);
+    setText("#sameDayStatusModal h2", m.statusToday);
+    const statusButtons = document.querySelectorAll("#sameDayStatusModal [data-same-day-status]");
+    const statusTexts = [`⏰ ${m.late}`,`❌ ${m.absent}`,`🏃 ${m.leaveEarly}`,m.clearStatus];
+    statusButtons.forEach((button,i)=>{ if(statusTexts[i]) button.textContent=statusTexts[i]; });
+    setText("#memberOverviewModal .member-overview-controls label", m.attendanceCount);
+    const monthSelect=document.getElementById("memberOverviewMonthSelect");
+    if(monthSelect){
+      const options=monthSelect.options;
+      if(options[0])options[0].textContent=m.currentMonth.replace(/へ戻る$|로 돌아가기$|返回$/u,"");
+      if(options[1])options[1].textContent=m.previousMonth;
+    }
+    setText("#monthJumpModal h2", m.selectMonth);
+    setText("#monthJumpCurrentButton", m.currentMonth);
+    setText("#cancelMonthJumpButton", m.cancel);
+    setText("#applyMonthJumpButton", m.show);
+    document.querySelectorAll(".weekday-row span").forEach((el,i)=>{ el.textContent=m.weekdays[i] || el.textContent; });
+    setAttr("#calendarTitle","aria-label",m.selectMonth);
+    document.querySelectorAll("#setupModal button[aria-label='閉じる'], #inviteAuthModal button[aria-label='閉じる'], #sameDayStatusModal button[aria-label='閉じる'], #monthJumpModal button[aria-label='閉じる']")
+      .forEach(el=>el.setAttribute("aria-label",m.close));
+  }
+
+  function translateDynamicElement(el) {
+    if (language === "ja" || !(el instanceof Element)) return;
+    if (el.closest("#adminPinModal,#adminMenuModal,#adminMemberModal,#announcementManageModal,#eventManageModal,#systemSettingsModal,#invitePreviewModal,#helpModal")) return;
+    const text = el.textContent.trim();
+    if (!text) return;
+
+    if (el.id === "announcementList" && text === "現在のお知らせはありません。") el.textContent=m.noAnnouncements;
+    else if (el.id === "memberOverviewSummary") {
+      const hit=text.match(/(今月|先月)の参加回数順／登録メンバー (\d+)名/);
+      if(hit){
+        const label=hit[1]==="先月"?m.previousMonth:m.currentMonth.replace(/へ戻る$|로 돌아가기$|返回$/u,"");
+        el.textContent=`${label} / ${m.members} ${hit[2]}`;
+      }
+    } else if (el.id === "memberOverviewTotalLegend") {
+      const label=text.includes("先月")?m.previousMonth:m.currentMonth.replace(/へ戻る$|로 돌아가기$|返回$/u,"");
+      el.textContent=`🔥 ${label}`;
+    }
+    else if (el.id === "nextPlanContent" && text === "参加予定はまだありません。") el.textContent=m.noNextPlan;
+    else if (el.id === "nextEventContent" && (text === "今後のイベントは登録されていません。" || text === "登録されたイベントはまだありません。")) el.textContent=m.noNextEvent;
+    else if (el.id === "participantTitle") {
+      const hit=text.match(/参加者（(\d+)名）/); if(hit) el.textContent=`${m.participants}（${hit[1]}${m.people}）`;
+    } else if (el.id === "myStatus") {
+      if(text === "まだ参加していません。") el.textContent=m.notJoined;
+      else if(/さんは参加予定です。$/.test(text)) el.textContent=text.replace(/さんは参加予定です。$/, language==="ko"?m.joined:` ${m.joined}`);
+      else if(/さんはまだ参加していません。$/.test(text)) el.textContent=text.replace(/さんはまだ参加していません。$/, language==="ko"?m.notJoinedPerson:` ${m.notJoinedPerson}`);
+      else if(text === "過去のイベントのため、参加・取消はできません。" || text === "過去の日付のため、参加・取消はできません。") el.textContent=m.pastEventReadOnly;
+      else if(text === "中止イベントには参加登録できません。") el.textContent=m.cancelledNoJoin;
+    } else if (el.id === "joinButton" && text === "参加する") el.textContent=m.join;
+    else if (el.id === "cancelButton" && text === "参加取消") el.textContent=m.cancelJoin;
+    else if (el.id === "setupModalTitle" && text.includes("ユーザー変更")) el.textContent=`👤 ${m.chooseUser}`;
+    else if (el.id === "setupModalText" && (text.includes("自分の名前を選んでください") || text.includes("変更するユーザーを選んでください") || text.includes("初回だけ、自分の名前を選んでください"))) el.textContent=m.chooseName;
+    else if (el.id === "inviteAuthError" && text.startsWith("招待コードが違います")) el.textContent=m.inviteError;
+    else if (el.classList.contains("empty-message") && text === "まだ参加者はいません。") el.textContent=m.noParticipants;
+    else if (el.classList.contains("day-note")) {
+      if(text === "今日") el.textContent=m.today;
+      else if(text === "自分") el.textContent=m.mine;
+      else if(text === "開催") el.textContent=m.held;
+      else if(text === "中止") el.textContent=m.cancelled;
+      else if(text === "開催予定") el.textContent=m.scheduled;
+    } else if (el.id === "calendarLegend") {
+      el.querySelectorAll("span").forEach(span=>{
+        const t=span.textContent.trim();
+        if(t.includes("今日")) span.lastChild.textContent=` ${m.today}`;
+        else if(t.includes("自分")) span.lastChild.textContent=` ${m.mine}`;
+        else if(t.includes("開催")) span.lastChild.textContent=` ${m.held}`;
+        else if(t.includes("中止")) span.lastChild.textContent=` ${m.cancelled}`;
+      });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    applyStaticTranslations();
+    document.querySelectorAll("#homeView,#detailView,#setupModal,#inviteAuthModal,#userChangeConfirmModal,#sameDayStatusModal,#monthJumpModal").forEach(translateDynamicElement);
+    const observer = new MutationObserver(records => {
+      for (const record of records) {
+        if (record.target.nodeType === Node.TEXT_NODE) translateDynamicElement(record.target.parentElement);
+        record.addedNodes.forEach(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            translateDynamicElement(node);
+            node.querySelectorAll?.("*").forEach(translateDynamicElement);
+          } else if (node.nodeType === Node.TEXT_NODE) translateDynamicElement(node.parentElement);
+        });
+      }
+    });
+    observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+  });
+})();
