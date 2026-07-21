@@ -548,6 +548,27 @@ body{
   display:flex;
   flex-direction:column;
 }
+
+.member-overview-controls{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  margin:0 0 8px;
+  font-size:12px;
+  font-weight:900;
+  color:#5d6a79;
+}
+.member-overview-controls select{
+  min-width:92px;
+  padding:7px 30px 7px 10px;
+  border:1px solid #d8e0e8;
+  border-radius:10px;
+  background:#fff;
+  color:#20324a;
+  font:inherit;
+}
+
 .member-overview-summary{
   margin:2px 0 10px;
   color:#5d6a79;
