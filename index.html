@@ -55,9 +55,9 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.1.0b</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.2.0</button>
   <div class="official-release-label">Official Release</div>
-  <div class="release-date">2026.07.20</div>
+  <div class="release-date">2026.07.21</div>
   <div class="build-info" id="buildInfo">Build 2026/07/20 JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
@@ -98,15 +98,39 @@
       <details class="help-details">
         <summary>📄 利用規約</summary>
         <div class="help-document">
-          <p>SRC Portalは、Santec Running Club（SRC）の活動における参加予定の共有を目的として提供します。</p>
+          <p>SRC Portalをご利用いただきありがとうございます。</p>
+          <p>みんなが気持ちよく利用できるよう、以下の内容をご確認ください。</p>
+          <h4>1. 利用できる人</h4>
+          <p>SRCメンバーとして管理者が登録した方が利用できます。</p>
+          <h4>2. 利用について</h4>
           <ul>
-            <li>利用者は、自分の名前を選択し、正確な参加予定を登録してください。</li>
-            <li>他のメンバーになりすました登録や、運営を妨げる操作は禁止します。</li>
-            <li>イベント内容は変更または中止される場合があります。最新のお知らせを確認してください。</li>
-            <li>本アプリの利用により生じた損害について、運営者は故意または重大な過失がある場合を除き責任を負いません。</li>
-            <li>必要に応じて、本規約や提供内容を変更する場合があります。</li>
+            <li>参加登録・取消はご本人が行ってください。</li>
+            <li>みんなが気持ちよく利用できるよう、ご協力をお願いします。</li>
           </ul>
-          <p class="help-document-date">制定：2026年7月20日</p>
+          <h4>3. やってはいけないこと</h4>
+          <ul>
+            <li>他人になりすまして利用すること</li>
+            <li>他人の参加情報を勝手に変更すること</li>
+            <li>アプリの正常な運営を妨げること</li>
+            <li>その他、管理者が不適切と判断する行為</li>
+          </ul>
+          <h4>4. 利用停止について</h4>
+          <p>次の場合は、管理者の判断で利用を停止（無効化）することがあります。</p>
+          <ul>
+            <li>SRCメンバーでなくなった場合</li>
+            <li>1年以上利用がない場合</li>
+            <li>利用ルールを守っていただけない場合</li>
+            <li>その他、運営上必要と判断した場合</li>
+          </ul>
+          <p>再度利用したい場合は、管理者までお気軽にご連絡ください。</p>
+          <h4>5. アプリについて</h4>
+          <p>本アプリは、必要に応じて機能の追加・変更・停止を行うことがあります。</p>
+          <h4>6. 個人情報について</h4>
+          <p>アプリでは、運営に必要な範囲でメンバー名や参加情報などを管理します。</p>
+          <p>取得した情報は、SRC Portalの運営以外の目的には利用しません。</p>
+          <h4>7. 利用規約の変更</h4>
+          <p>必要に応じて、本利用規約を変更する場合があります。</p>
+          <p class="help-document-date">最終更新：2026年7月21日</p>
         </div>
       </details>
 
@@ -128,7 +152,7 @@
       <details class="help-details">
         <summary>📝 リリースノート</summary>
         <div class="help-document">
-          <h4>Version 1.1.0b</h4>
+          <h4>Version 1.2.0</h4>
           <ul>
             <li>月間参加回数を、終了したイベントのみの実績集計に変更</li>
             <li>今日を含む今後の参加予定をランキングと月間集計から除外</li>
@@ -149,7 +173,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.1.0b<br>Official Release<br>2026.07.20</strong></p>
+        <p><strong>SRC Portal<br>Version 1.2.0<br>Official Release<br>2026.07.21</strong></p>
       </section>
     </div>
 </div></div>
@@ -161,6 +185,13 @@
       <h2>👥 SRC Members</h2>
       <button id="closeMemberOverviewButton" type="button">×</button>
     </div>
+    <div class="member-overview-controls">
+      <label for="memberOverviewMonthSelect">参加回数</label>
+      <select id="memberOverviewMonthSelect" aria-label="参加回数の表示月">
+        <option value="0">今月</option>
+        <option value="-1">先月</option>
+      </select>
+    </div>
     <div class="member-overview-summary" id="memberOverviewSummary">登録メンバーを確認中...</div>
     <div class="member-overview-list" id="memberOverviewList"></div>
     <div class="member-overview-legend">
@@ -169,7 +200,7 @@
         <span>○ 今日参加予定なし</span>
       </div>
       <div class="member-legend-row">
-        <span>🔥 今月参加合計</span>
+        <span id="memberOverviewTotalLegend">🔥 今月参加合計</span>
         <span>🏃 ラン</span>
         <span>🏋️ ジム</span>
       </div>
@@ -466,7 +497,6 @@
   </div>
 </div>
 
-<script src="js/i18n.js?v=110b-20260720"></script>
-<script type="module" src="js/app.js?v=110b-20260720"></script>
+<script type="module" src="js/app.js?v=120-20260721"></script>
 </body>
 </html>
