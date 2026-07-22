@@ -1,9 +1,16 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, getDoc, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+const isDemoMode=new URLSearchParams(window.location.search).has("demo");
+let initializeApp,getFirestore,collection,doc,setDoc,updateDoc,arrayUnion,arrayRemove,onSnapshot,getDocs,getDoc,deleteDoc,writeBatch,serverTimestamp;
 
 const firebaseConfig={apiKey:"AIzaSyAsqNE9tSB2eIDtHBR8dRSVkzGFD0sKh-c",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
-document.addEventListener("DOMContentLoaded",()=>{const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),nextEventContent=$("nextEventContent"),nextEventCard=$("nextEventCard"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
+document.addEventListener("DOMContentLoaded",async()=>{
+if(!isDemoMode){
+  const firebaseAppModule=await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
+  const firestoreModule=await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
+  ({initializeApp}=firebaseAppModule);
+  ({getFirestore,collection,doc,setDoc,updateDoc,arrayUnion,arrayRemove,onSnapshot,getDocs,getDoc,deleteDoc,writeBatch,serverTimestamp}=firestoreModule);
+}
+const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),nextEventContent=$("nextEventContent"),nextEventCard=$("nextEventCard"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
 userChangeConfirmModal=$("userChangeConfirmModal"),
 cancelUserChangeButton=$("cancelUserChangeButton"),
 confirmUserChangeButton=$("confirmUserChangeButton"),
@@ -28,7 +35,9 @@ inviteAuthMemberName=$("inviteAuthMemberName"),
 inviteAuthCodeInput=$("inviteAuthCodeInput"),
 inviteAuthError=$("inviteAuthError"),
 confirmInviteAuthButton=$("confirmInviteAuthButton");
-const app=initializeApp(firebaseConfig);const db=getFirestore(app);const today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
+const app=isDemoMode?null:initializeApp(firebaseConfig);
+const db=isDemoMode?null:getFirestore(app);
+const today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
 let members=[...defaultMembers];
 let memberRecords=[];
 let eventRecords=[];
@@ -45,7 +54,7 @@ const storageMemberIdKey="srcPortalCurrentMemberId";
 let userSelectionMode="public";
 let pendingInviteMember=null;
 let setupAdminLongPressTimer=null;
-let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},selectedSameDayUser="";
+let currentUser=isDemoMode?"デモユーザー":(localStorage.getItem(storageUserKey)||""),attendance={},attendanceStatuses={},selectedSameDayUser="";
 let memberInvitationMigrationStarted=false;
 let lastActiveUpdatedMemberId="";
 function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){
@@ -126,6 +135,102 @@ async function updateCurrentUserLastActive(){
   }
 }
 
+
+function demoDateKey(dayOffset){
+  const date=new Date(today.getFullYear(),today.getMonth(),today.getDate()+dayOffset);
+  return toKey(date.getFullYear(),date.getMonth(),date.getDate());
+}
+
+function initializeDemoMode(){
+  const demoMembers=18;
+  members=Array.from({length:demoMembers},(_,index)=>`Demo Member ${pad2(index+1)}`);
+  memberRecords=members.map((name,index)=>({
+    id:`demo_${index+1}`,
+    name,
+    admin:false,
+    active:true,
+    order:index+1,
+    inviteStatus:"registered"
+  }));
+
+  const upcomingRun=demoDateKey(3);
+  const upcomingGym=demoDateKey(6);
+  const laterRun=demoDateKey(10);
+  const completedRun=demoDateKey(-7);
+  const completedGym=demoDateKey(-4);
+
+  eventRecords=[
+    {id:`demo_run_${upcomingRun}`,type:"run",date:upcomingRun,title:"ラン＆ウォーク",time:"19:00",place:"落合公園",status:"scheduled",memo:"サンプルイベントです。"},
+    {id:`demo_gym_${upcomingGym}`,type:"gym",date:upcomingGym,title:"ジムトレーニング",time:"19:00",place:"サンフロッグ春日井",status:"scheduled",memo:""},
+    {id:`demo_run_${laterRun}`,type:"run",date:laterRun,title:"ラン＆ウォーク",time:"19:00",place:"落合公園",status:"scheduled",memo:""}
+  ].sort((a,b)=>a.date.localeCompare(b.date));
+
+  attendance={
+    [`run_${upcomingRun}`]:members.slice(0,6),
+    [`gym_${upcomingGym}`]:members.slice(2,6),
+    [`run_${laterRun}`]:members.slice(5,10),
+    [`run_${completedRun}`]:members.slice(0,8),
+    [`gym_${completedGym}`]:members.slice(3,9)
+  };
+  attendanceStatuses={};
+  announcementRecords=[
+    {id:"demo_announcement_1",title:"SRC Portal デモ",body:"これは紹介用のサンプル画面です。実際のメンバー情報や参加情報は使用していません。",enabled:true},
+    {id:"demo_announcement_2",title:"操作について",body:"デモモードでは閲覧のみ可能です。参加登録や管理操作はできません。",enabled:true}
+  ];
+
+  const demoBadge=document.createElement("div");
+  demoBadge.className="demo-mode-badge";
+  demoBadge.textContent="DEMO MODE";
+  document.querySelector(".app-shell")?.prepend(demoBadge);
+
+  currentUserLabel.textContent="デモユーザー";
+  currentUserLabel.disabled=true;
+  currentUserLabel.setAttribute("aria-disabled","true");
+  changeUserButton.style.display="none";
+  connectionCard.classList.add("hidden");
+
+  document.querySelector(".credit").textContent="Demo mode / Sample data only";
+  document.body.classList.add("demo-mode");
+
+  const demoMessage=()=>alert("デモ画面のため操作できません。");
+  const blockedIds=[
+    "dashboardMembersButton","dashboardRunButton","dashboardGymButton","dashboardAnnouncementButton",
+    "nextEventCard","runTab","gymTab","prevMonthButton","nextMonthButton","calendarTitle",
+    "versionAdminTrigger","changeUserButton"
+  ];
+  blockedIds.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.addEventListener("click",event=>{
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      demoMessage();
+    },true);
+    el.addEventListener("keydown",event=>{
+      if(event.key==="Enter"||event.key===" "){
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        demoMessage();
+      }
+    },true);
+  });
+
+  renderNameButtons();
+  updateUser();
+  renderAll();
+
+  document.querySelectorAll("#calendarGrid .day-cell").forEach(cell=>{
+    cell.disabled=false;
+    cell.classList.add("demo-disabled");
+    cell.onclick=null;
+    cell.addEventListener("click",event=>{
+      event.preventDefault();
+      demoMessage();
+    });
+  });
+}
+
+if(!isDemoMode){
 onSnapshot(doc(db,"settings","system"),snap=>{
   const data=snap.exists()?snap.data():{};
   systemSettings={
@@ -229,8 +334,10 @@ onSnapshot(collection(db,"events"),snap=>{
 },err=>{
   console.error("events read error",err);
 });
+}
 
 async function joinEvent(){
+  if(isDemoMode){alert("デモ画面のため操作できません。");return;}
   if(isPastKey(selectedKey)){
     alert("過去の日付には参加登録できません。");
     return;
@@ -266,6 +373,7 @@ async function joinEvent(){
 }
 
 async function cancelEvent(){
+  if(isDemoMode){alert("デモ画面のため操作できません。");return;}
   if(isPastKey(selectedKey)){
     alert("過去の日付の参加取消はできません。");
     return;
@@ -684,6 +792,11 @@ function renderCalendar(){
       ? '<span class="my-day-star">⭐</span>'
       : "";
     cell.innerHTML=`<span class="day-number">${me}${d}</span><span class="day-note">${note}</span>${eventLabel}`;
+    if(isDemoMode){
+      cell.disabled=false;
+      cell.classList.add("demo-disabled");
+      cell.onclick=()=>alert("デモ画面のため操作できません。");
+    }
     calendarGrid.appendChild(cell);
   }
 }
@@ -806,6 +919,7 @@ function openSameDayStatus(name){
 }
 
 async function saveSameDayStatus(status){
+  if(isDemoMode){alert("デモ画面のため操作できません。");return;}
   if(!selectedKey||!currentType||!selectedSameDayUser)return;
 
   const id=eventId(currentType,selectedKey);
@@ -2013,9 +2127,14 @@ window.addEventListener("resize",()=>{
   if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))positionMemberModalBelowHeader(adminMemberModal);
 });
 
-renderNameButtons();updateUser();renderAll();requireName(false)});
+if(isDemoMode){
+  initializeDemoMode();
+}else{
+  renderNameButtons();updateUser();renderAll();requireName(false);
+}
+});
 
-/* SRC Portal Ver.1.2.1 - basic-operation multilingual display
+/* SRC Portal Ver.1.3.0 - basic-operation multilingual display
    Detects the browser/device language: ja / ko / zh; all others use English.
    Only fixed user-facing labels are translated. Firestore content and admin screens remain unchanged. */
 (() => {
