@@ -1448,3 +1448,31 @@ body{
     font-size:9px;
   }
 }
+
+/* Ver.1.3.0b: compact dashboard next-event hardening */
+.dashboard-card-smart .dashboard-grid{
+  align-items:stretch;
+}
+.dashboard-card-smart .dashboard-grid > .dashboard-stat{
+  height:132px;
+  overflow:hidden;
+}
+.dashboard-card-smart .dashboard-grid > .dashboard-stat.dashboard-next-event{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+}
+.dashboard-card-smart .dashboard-grid > .dashboard-stat.dashboard-next-event .dashboard-next-event-content{
+  flex:0 0 auto;
+  max-width:100%;
+  overflow:hidden;
+}
+.dashboard-card-smart .dashboard-grid > .dashboard-stat.dashboard-next-event .dashboard-next-name{
+  max-width:100%;
+}
+@media(max-width:420px){
+  .dashboard-card-smart .dashboard-grid > .dashboard-stat{
+    height:124px;
+  }
+}
