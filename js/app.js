@@ -981,9 +981,6 @@ if(nextEventCard){
     }
   });
 }
-if(openMessageBoardButton)openMessageBoardButton.onclick=()=>{renderMessageBoard();show(messageBoardModal);};
-if(closeMessageBoardButton)closeMessageBoardButton.onclick=()=>hide(messageBoardModal);
-if(postMessageBoardButton)postMessageBoardButton.onclick=postMessageBoard;
 closeSameDayStatusButton.onclick=()=>hide(sameDayStatusModal);
 document.querySelectorAll("#sameDayStatusModal [data-same-day-status]").forEach(button=>{
   button.onclick=()=>saveSameDayStatus(button.dataset.sameDayStatus||"");
@@ -1137,6 +1134,11 @@ const messageBoardModal=document.getElementById("messageBoardModal");
 const openMessageBoardButton=document.getElementById("openMessageBoardButton");
 const closeMessageBoardButton=document.getElementById("closeMessageBoardButton");
 const postMessageBoardButton=document.getElementById("postMessageBoardButton");
+
+// Ver.1.3.0c: bind message-board controls only after their DOM references are initialized.
+if(openMessageBoardButton)openMessageBoardButton.onclick=()=>{renderMessageBoard();show(messageBoardModal);};
+if(closeMessageBoardButton)closeMessageBoardButton.onclick=()=>hide(messageBoardModal);
+if(postMessageBoardButton)postMessageBoardButton.onclick=postMessageBoard;
 const eventDetailModal=document.getElementById("eventDetailModal");
 const closeEventDetailButton=document.getElementById("closeEventDetailButton");
 const eventDetailContent=document.getElementById("eventDetailContent");
@@ -2104,7 +2106,7 @@ window.addEventListener("resize",()=>{
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
 
-/* SRC Portal Ver.1.3.0 - basic-operation multilingual display
+/* SRC Portal Ver.1.3.0c - basic-operation multilingual display
    Detects the browser/device language: ja / ko / zh; all others use English.
    Only fixed user-facing labels are translated. Firestore content and admin screens remain unchanged. */
 (() => {
