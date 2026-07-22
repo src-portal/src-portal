@@ -2015,7 +2015,7 @@ window.addEventListener("resize",()=>{
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
 
-/* SRC Portal Ver.1.1.0b - basic-operation multilingual display
+/* SRC Portal Ver.1.2.1 - basic-operation multilingual display
    Detects the browser/device language: ja / ko / zh; all others use English.
    Only fixed user-facing labels are translated. Firestore content and admin screens remain unchanged. */
 (() => {
@@ -2033,6 +2033,8 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noAnnouncements:"現在のお知らせはありません。", nextPlan:"あなたの次回参加予定", noNextPlan:"参加予定はまだありません。",
       nextEvent:"次回イベント", noNextEvent:"今後のイベントは登録されていません。", openEvent:"このイベントを開く",
       runWalk:"ラン＆ウォーク", gym:"ジム", calendarBack:"カレンダーへ戻る",
+      runSummary:"イベント管理で登録された開催日を表示します。", gymSummary:"好きな日を選んで参加表明",
+      runRuleTitle:"開催状態", runRuleValue:"管理者がイベントごとに設定", gymRuleTitle:"開催条件",
       participants:"参加者", notJoined:"まだ参加していません。", join:"参加する", cancelJoin:"参加取消",
       chooseUser:"ユーザー変更", chooseName:"自分の名前を選んでください。", confirmUserChange:"現在のユーザーを変更しますか？",
       cancel:"キャンセル", changeUser:"変更する", close:"閉じる",
@@ -2053,6 +2055,8 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noAnnouncements:"There are no announcements.", nextPlan:"Your next plan", noNextPlan:"You have no upcoming plans.",
       nextEvent:"Next event", noNextEvent:"There are no upcoming events.", openEvent:"Open this event",
       runWalk:"Run & Walk", gym:"Gym", calendarBack:"Back to calendar",
+      runSummary:"Shows dates registered in Event Management.", gymSummary:"Choose any date to join.",
+      runRuleTitle:"Event status", runRuleValue:"Set for each event by the administrator", gymRuleTitle:"Event conditions",
       participants:"Participants", notJoined:"You are not joining yet.", join:"Join", cancelJoin:"Cancel participation",
       chooseUser:"Select user", chooseName:"Select your name.", confirmUserChange:"Change the current user?",
       cancel:"Cancel", changeUser:"Change", close:"Close",
@@ -2060,7 +2064,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       inviteHelp:"The hyphen is inserted automatically after 8 characters.", inviteError:"The invitation code is incorrect. Check the code from the administrator.",
       register:"Register", inviteNote:"Enter the code sent by the administrator. You will not need it again after registration.",
       statusToday:"Today's status", late:"I will be late", absent:"I cannot attend", leaveEarly:"I will leave early", clearStatus:"Clear status",
-      selectMonth:"Select month", currentMonth:"Back to this month", show:"Show",
+      selectMonth:"Select month", currentMonth:"Back to this month", previousMonth:"Previous month", attendanceCount:"Attendance count", show:"Show",
       today:"Today", mine:"Me", held:"Open", cancelled:"Cancelled", scheduled:"Scheduled",
       noParticipants:"No participants yet.", pastNoJoin:"You cannot join a past date.",
       pastEventReadOnly:"This event is in the past. Participation cannot be changed.", cancelledNoJoin:"You cannot join a cancelled event.",
@@ -2073,6 +2077,8 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noAnnouncements:"현재 공지사항이 없습니다.", nextPlan:"다음 참가 예정", noNextPlan:"참가 예정이 없습니다.",
       nextEvent:"다음 이벤트", noNextEvent:"예정된 이벤트가 없습니다.", openEvent:"이 이벤트 열기",
       runWalk:"러닝 & 워킹", gym:"체육관", calendarBack:"달력으로 돌아가기",
+      runSummary:"이벤트 관리에 등록된 개최일을 표시합니다.", gymSummary:"원하는 날짜를 선택해 참가 의사를 표시합니다.",
+      runRuleTitle:"개최 상태", runRuleValue:"관리자가 이벤트별로 설정", gymRuleTitle:"개최 조건",
       participants:"참가자", notJoined:"아직 참가하지 않았습니다.", join:"참가하기", cancelJoin:"참가 취소",
       chooseUser:"사용자 선택", chooseName:"본인의 이름을 선택하세요.", confirmUserChange:"현재 사용자를 변경하시겠습니까?",
       cancel:"취소", changeUser:"변경", close:"닫기",
@@ -2080,7 +2086,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       inviteHelp:"8자를 입력하면 하이픈이 자동으로 삽입됩니다.", inviteError:"초대 코드가 올바르지 않습니다. 관리자에게 받은 코드를 확인하세요.",
       register:"등록", inviteNote:"관리자에게 받은 코드를 입력하세요. 등록 후에는 다시 입력할 필요가 없습니다.",
       statusToday:"당일 상황", late:"늦습니다", absent:"참석할 수 없습니다", leaveEarly:"먼저 가겠습니다", clearStatus:"연락 취소",
-      selectMonth:"표시할 연월", currentMonth:"이번 달로 돌아가기", show:"표시",
+      selectMonth:"표시할 연월", currentMonth:"이번 달로 돌아가기", previousMonth:"지난달", attendanceCount:"참가 횟수", show:"표시",
       today:"오늘", mine:"나", held:"개최", cancelled:"취소", scheduled:"개최 예정",
       noParticipants:"아직 참가자가 없습니다.", pastNoJoin:"지난 날짜에는 참가 등록을 할 수 없습니다.",
       pastEventReadOnly:"지난 이벤트이므로 참가 상태를 변경할 수 없습니다.", cancelledNoJoin:"취소된 이벤트에는 참가할 수 없습니다.",
@@ -2093,6 +2099,8 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noAnnouncements:"目前没有通知。", nextPlan:"您的下次参加计划", noNextPlan:"目前没有参加计划。",
       nextEvent:"下次活动", noNextEvent:"目前没有即将举行的活动。", openEvent:"打开此活动",
       runWalk:"跑步与健走", gym:"健身房", calendarBack:"返回日历",
+      runSummary:"显示在活动管理中登记的举办日期。", gymSummary:"选择任意日期报名参加。",
+      runRuleTitle:"活动状态", runRuleValue:"由管理员按活动设置", gymRuleTitle:"举办条件",
       participants:"参加者", notJoined:"您尚未参加。", join:"参加", cancelJoin:"取消参加",
       chooseUser:"选择用户", chooseName:"请选择您的姓名。", confirmUserChange:"要更改当前用户吗？",
       cancel:"取消", changeUser:"更改", close:"关闭",
@@ -2100,7 +2108,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       inviteHelp:"输入8个字符后会自动插入连字符。", inviteError:"邀请码不正确。请确认管理员提供的代码。",
       register:"注册", inviteNote:"请输入管理员发送的邀请码。注册后下次无需再次输入。",
       statusToday:"当天状态", late:"会迟到", absent:"无法参加", leaveEarly:"会提前离开", clearStatus:"取消状态通知",
-      selectMonth:"选择年月", currentMonth:"返回本月", show:"显示",
+      selectMonth:"选择年月", currentMonth:"返回本月", previousMonth:"上个月", attendanceCount:"参加次数", show:"显示",
       today:"今天", mine:"自己", held:"举行", cancelled:"取消", scheduled:"计划举行",
       noParticipants:"目前没有参加者。", pastNoJoin:"过去的日期不能报名参加。",
       pastEventReadOnly:"该活动已结束，不能更改参加状态。", cancelledNoJoin:"不能参加已取消的活动。",
@@ -2131,12 +2139,16 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
     [m.members,m.monthlyRun,m.monthlyGym,m.announcements].forEach((text,i)=>{ if(dashboardLabels[i]) dashboardLabels[i].textContent=text; });
     setText("#announcementCard .section-label", `📢 ${m.announcements}`);
     setText("#announcementList", m.noAnnouncements);
-    setText("#nextPlanCard .section-label", `⭐ ${m.nextPlan}`);
+    setText(".next-card .section-label", `✨ ${m.nextPlan}`);
     setText("#nextPlanContent", m.noNextPlan);
     setText("#nextEventCard .section-label", `📅 ${m.nextEvent}`);
     setText("#nextEventContent", m.noNextEvent);
     setText("#runTab", `🏃 ${m.runWalk}`);
     setText("#gymTab", `🏋️ ${m.gym}`);
+    setText("#eventTitle", m.runWalk);
+    setText("#eventSummary", m.runSummary);
+    setText("#ruleTitle", m.runRuleTitle);
+    setText("#ruleValue", m.runRuleValue);
     setText("#backButton", `← ${m.calendarBack}`);
     setText("#participantTitle", `${m.participants}（0${m.people}）`);
     setText("#myStatus", m.notJoined);
@@ -2192,6 +2204,16 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       el.textContent=`🔥 ${label}`;
     }
     else if (el.id === "nextPlanContent" && text === "参加予定はまだありません。") el.textContent=m.noNextPlan;
+    else if (el.id === "eventTitle") {
+      if(text === "ラン＆ウォーク") el.textContent=m.runWalk;
+      else if(text === "ジムトレーニング") el.textContent=m.gym;
+    } else if (el.id === "eventSummary") {
+      if(text === "イベント管理で登録された開催日を表示します。") el.textContent=m.runSummary;
+      else if(text === "好きな日を選んで参加表明") el.textContent=m.gymSummary;
+    } else if (el.id === "ruleTitle") {
+      if(text === "開催状態") el.textContent=m.runRuleTitle;
+      else if(text === "開催条件") el.textContent=m.gymRuleTitle;
+    } else if (el.id === "ruleValue" && text === "管理者がイベントごとに設定") el.textContent=m.runRuleValue;
     else if (el.id === "nextEventContent" && (text === "今後のイベントは登録されていません。" || text === "登録されたイベントはまだありません。")) el.textContent=m.noNextEvent;
     else if (el.id === "participantTitle") {
       const hit=text.match(/参加者（(\d+)名）/); if(hit) el.textContent=`${m.participants}（${hit[1]}${m.people}）`;
@@ -2218,6 +2240,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
         const t=span.textContent.trim();
         if(t.includes("今日")) span.lastChild.textContent=` ${m.today}`;
         else if(t.includes("自分")) span.lastChild.textContent=` ${m.mine}`;
+        else if(t.includes("開催予定")) span.lastChild.textContent=` ${m.scheduled}`;
         else if(t.includes("開催")) span.lastChild.textContent=` ${m.held}`;
         else if(t.includes("中止")) span.lastChild.textContent=` ${m.cancelled}`;
       });
