@@ -25,9 +25,9 @@
   <div class="dashboard-heading"><div class="section-label">📊 SRC Dashboard</div></div>
   <div class="dashboard-grid">
     <button class="dashboard-stat dashboard-stat-button" id="dashboardMembersButton" type="button"><div class="dashboard-icon members">👥</div><div class="dashboard-label">登録メンバー</div><div class="dashboard-value" id="dashboardMemberCount">--</div></button>
-    <button class="dashboard-stat dashboard-stat-button" id="dashboardRunButton" type="button"><div class="dashboard-icon run">🏃</div><div class="dashboard-label">今月ラン参加</div><div class="dashboard-value" id="dashboardRunCount">--</div></button>
-    <button class="dashboard-stat dashboard-stat-button" id="dashboardGymButton" type="button"><div class="dashboard-icon gym">🏋️</div><div class="dashboard-label">今月ジム参加</div><div class="dashboard-value" id="dashboardGymCount">--</div></button>
-    <button class="dashboard-stat dashboard-stat-button" id="dashboardAnnouncementButton" type="button"><div class="dashboard-icon news">📢</div><div class="dashboard-label">お知らせ</div><div class="dashboard-value" id="dashboardAnnouncementCount">--</div></button>
+    <button class="dashboard-stat dashboard-stat-button" id="dashboardRunButton" type="button"><div class="dashboard-icon run">🏃</div><div class="dashboard-label">今月ラン参加者数</div><div class="dashboard-value" id="dashboardRunCount">--</div></button>
+    <button class="dashboard-stat dashboard-stat-button" id="dashboardGymButton" type="button"><div class="dashboard-icon gym">🏋️</div><div class="dashboard-label">今月ジム参加者数</div><div class="dashboard-value" id="dashboardGymCount">--</div></button>
+    <button class="dashboard-stat dashboard-stat-button dashboard-next-event" id="nextEventCard" type="button" aria-label="次回イベントをカレンダーで開く"><div class="dashboard-icon next-event">📅</div><div class="dashboard-label">次回イベント</div><div class="dashboard-next-event-content" id="nextEventContent">--</div></button>
   </div>
 </section>
 
@@ -35,13 +35,16 @@
     
     
     <section class="announcement-card" id="announcementCard">
-      <div class="section-label">📢 お知らせ</div>
+      <div class="section-label" id="announcementHeading">📢 お知らせ（0件）</div>
       <div id="announcementList" class="announcement-empty">現在のお知らせはありません。</div>
     </section>
 
-    <section class="next-event-card next-event-card-button" id="nextEventCard" role="button" tabindex="0" aria-label="次回イベントをカレンダーで開く">
-      <div class="section-label">📅 次回イベント</div>
-      <div id="nextEventContent" class="next-event-empty">登録されたイベントはまだありません。</div>
+    <section class="message-board-card" id="messageBoardCard">
+      <div class="message-board-heading">
+        <div class="section-label">💬 みんなの伝言板</div>
+        <button class="message-board-open-button" id="openMessageBoardButton" type="button">投稿・一覧</button>
+      </div>
+      <div id="messageBoardPreview" class="message-board-empty">伝言はまだありません。</div>
     </section>
 
     <section class="next-card"><div class="section-label">✨ あなたの次回参加予定</div><div id="nextPlanContent" class="next-plan-empty">参加予定はまだありません。</div></section>
@@ -55,10 +58,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.2.1</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.3.0</button>
   <div class="official-release-label">Official Release</div>
-  <div class="release-date">2026.07.21</div>
-  <div class="build-info" id="buildInfo">Build 2026/07/22 JST</div>
+  <div class="release-date">2026.07.23</div>
+  <div class="build-info" id="buildInfo">Build 2026/07/23 JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -70,6 +73,30 @@
     </div>
     <p class="setup-text" id="setupModalText">自分の名前を選んでください。</p>
     <div class="name-button-grid" id="nameButtonGrid"></div>
+  </div>
+</div>
+<div class="modal-overlay hidden" id="messageBoardModal">
+  <div class="modal-card message-board-modal-card">
+    <div class="dialog-header">
+      <h2>💬 みんなの伝言板</h2>
+      <button id="closeMessageBoardButton" type="button" aria-label="閉じる">×</button>
+    </div>
+    <div class="message-board-post-box">
+      <label class="admin-form-label" for="messageBoardTextInput">伝言</label>
+      <textarea id="messageBoardTextInput" class="admin-input admin-textarea" maxlength="200" placeholder="例：日曜朝7時から小牧山を走ります。参加できる方どうぞ！"></textarea>
+      <div class="message-board-form-row">
+        <label for="messageBoardExpirySelect">掲載期間</label>
+        <select id="messageBoardExpirySelect" class="admin-input">
+          <option value="3">3日間</option>
+          <option value="7" selected>7日間</option>
+          <option value="14">14日間</option>
+        </select>
+      </div>
+      <p class="form-error hidden" id="messageBoardError">現在のユーザーと伝言を確認してください。</p>
+      <button class="primary-button" id="postMessageBoardButton" type="button">伝言を投稿</button>
+      <p class="settings-note">テキストのみ・200文字まで。期限を過ぎた伝言は自動的に非表示になります。</p>
+    </div>
+    <div id="messageBoardList" class="message-board-list"></div>
   </div>
 </div>
 <div class="modal-overlay hidden" id="helpModal"><div class="modal-card">
@@ -92,7 +119,11 @@
           <li>参加したい日付をタップします。</li>
           <li>「参加する」または「参加取消」を押します。</li>
         </ol>
-        <p>参加人数や参加者はリアルタイムで更新されます。次回イベントカードをタップすると、該当月のカレンダーへ移動します。</p>
+        <p>参加人数や参加者はリアルタイムで更新されます。ダッシュボードの「次回イベント」をタップすると、該当月のカレンダーへ移動します。</p>
+        <h3>📢 お知らせ</h3>
+        <p>管理者からの正式な連絡です。「お知らせ（○件）」の枠内を上下にスクロールして確認できます。</p>
+        <h3>💬 みんなの伝言板</h3>
+        <p>メンバー同士の軽い情報共有に使います。「投稿・一覧」を押し、伝言と掲載期間（3日・7日・14日）を選んで投稿してください。自分の投稿は削除でき、管理者はすべての投稿を削除できます。期限切れの投稿は表示されません。</p>
       </section>
 
       <details class="help-details">
@@ -152,7 +183,7 @@
       <details class="help-details">
         <summary>📝 リリースノート</summary>
         <div class="help-document">
-          <h4>Version 1.2.1</h4>
+          <h4>Version 1.3.0</h4>
           <ul>
             <li>月間参加回数を、終了したイベントのみの実績集計に変更</li>
             <li>今日を含む今後の参加予定をランキングと月間集計から除外</li>
@@ -162,7 +193,7 @@
           <ul>
             <li>正式版として公開</li>
             <li>Help、利用規約、プライバシーポリシーを整備</li>
-            <li>次回イベント表示を1つのカードに集約</li>
+            <li>みんなの伝言板を追加</li><li>次回イベントをダッシュボードへ移動</li><li>お知らせを件数表示・スクロール対応に整理</li>
             <li>メンバー一覧を今月の参加回数順に変更</li>
             <li>上位3名に🥇🥈🥉を表示</li>
             <li>招待コードによる初回登録に対応</li>
@@ -173,7 +204,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.2.1<br>Official Release<br>2026.07.22</strong></p>
+        <p><strong>SRC Portal<br>Version 1.3.0<br>Official Release<br>2026.07.23</strong></p>
       </section>
     </div>
 </div></div>
