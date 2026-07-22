@@ -1371,10 +1371,3 @@ body{
 .footer-product-name{font-size:14px;font-weight:900;color:var(--charcoal)}
 .official-release-label{margin-top:4px;color:var(--blue);font-size:12px;font-weight:900;letter-spacing:.05em}
 .release-date{margin-top:2px;font-size:11px;font-weight:800}
-
-
-/* Ver.1.3.0 Demo mode */
-.demo-mode-badge{position:sticky;top:0;z-index:1200;background:#0b65c2;color:#fff;text-align:center;font-weight:800;letter-spacing:.12em;padding:7px 12px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
-.demo-mode .dashboard-stat-button,.demo-mode .next-event-card-button,.demo-mode .event-tab,.demo-mode .month-button,.demo-mode .calendar-title-button,.demo-mode .day-cell,.demo-mode .version-admin-trigger{cursor:not-allowed}
-.demo-mode .demo-disabled{opacity:.92}
-.demo-mode .current-user-name-button:disabled{opacity:1;color:inherit;cursor:default}
