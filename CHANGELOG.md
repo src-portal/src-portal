@@ -1,3 +1,7 @@
+Ver.1.3.0c
+- Fixed an initialization error that prevented member and attendance totals from appearing on the dashboard.
+- Message-board button handlers are now registered after the related DOM elements are initialized.
+
 # Ver.1.3.0b
 
 - 緊急修正：JavaScriptのキャッシュ識別子を更新し、旧版の「次回イベント」描画処理が残る問題を解消。
