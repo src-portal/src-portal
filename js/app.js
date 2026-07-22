@@ -33,6 +33,7 @@ let members=[...defaultMembers];
 let memberRecords=[];
 let eventRecords=[];
 let announcementRecords=[];
+let messageBoardRecords=[];
 let selectedEvent=null;
 const defaultSystemSettings={
   run:{time:"19:00",place:"落合公園"},
@@ -54,6 +55,7 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "adminMenuModal",
     "adminMemberModal",
     "announcementManageModal",
+    "messageBoardModal",
     "eventManageModal",
     "systemSettingsModal",
     "invitePreviewModal",
@@ -206,6 +208,13 @@ onSnapshot(collection(db,"announcements"),snap=>{
   renderDashboard();
   if(announcementManageModal&&!announcementManageModal.classList.contains("hidden"))renderAdminAnnouncements();
 },err=>{console.error("announcements read error",err);});
+
+onSnapshot(collection(db,"messageBoard"),snap=>{
+  const loaded=[];
+  snap.forEach(d=>loaded.push({id:d.id,...d.data()}));
+  messageBoardRecords=loaded.sort((a,b)=>messageBoardDateValue(b.createdAt)-messageBoardDateValue(a.createdAt));
+  renderMessageBoard();
+},err=>{console.error("messageBoard read error",err);});
 onSnapshot(collection(db,"events"),snap=>{
   const loaded=[];
   snap.forEach(d=>{
@@ -564,16 +573,14 @@ function renderDashboard(){
 
   const runCount=monthlyAttendanceTotal("run");
   const gymCount=monthlyAttendanceTotal("gym");
-  const activeAnnouncementCount=announcementRecords.filter(a=>a.enabled).length;
 
   animateDashboardNumber(dashboardMemberCount,activeMemberCount,"名");
   animateDashboardNumber(dashboardRunCount,runCount,"名");
   animateDashboardNumber(dashboardGymCount,gymCount,"名");
-  animateDashboardNumber(dashboardAnnouncementCount,activeAnnouncementCount,"件");
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="開催条件";ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderNextEventPublic();renderAnnouncementsPublic();renderDashboard()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="開催条件";ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderDashboard()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -699,23 +706,17 @@ function renderNextEventPublic(){
   if(!nextEventContent)return;
   const events=getUpcomingEvents();
   if(events.length===0){
-    nextEventContent.className="next-event-empty";
-    nextEventContent.textContent="登録されたイベントはまだありません。";
+    nextEventContent.className="dashboard-next-event-content empty";
+    nextEventContent.textContent="なし";
+    nextEventCard?.classList.add("is-empty");
     return;
   }
-
   const ev=events[0];
-  const label=ev.type==="run"?"🏃 ラン＆ウォーク":"🏋️ ジム";
-  const statusText=ev.status==="cancelled"?"中止":"開催予定";
-  const statusIcon=ev.status==="cancelled"?"🔴":"🟢";
-  const participantCount=getNames(ev.type,ev.date).length;
-
-  nextEventContent.className=`next-event-item ${ev.status==="cancelled"?"next-event-cancelled":""}`;
-  nextEventContent.innerHTML=`
-    <div class="next-event-title">${statusIcon} ${label} ${statusText}</div>
-    <div class="next-event-meta">📅 ${fmt(ev.date)}<br>🕖 ${ev.time||"19:00"}<br>📍 ${ev.place||"-"}<br>👥 参加予定 ${participantCount}名</div>
-    ${ev.memo?`<div class="next-event-memo">📝 ${ev.memo}</div>`:""}
-  `;
+  const [,m,d]=ev.date.split("-").map(Number);
+  const eventName=ev.title||ev.place||(ev.type==="gym"?"ジム":"ラン＆ウォーク");
+  nextEventContent.className="dashboard-next-event-content";
+  nextEventContent.innerHTML=`<span class="dashboard-next-date">${m}/${d}</span><span class="dashboard-next-name">${escapeHtml(eventName)}</span>`;
+  nextEventCard?.classList.remove("is-empty");
 }
 
 function openNextEventInCalendar(){
@@ -980,6 +981,9 @@ if(nextEventCard){
     }
   });
 }
+if(openMessageBoardButton)openMessageBoardButton.onclick=()=>{renderMessageBoard();show(messageBoardModal);};
+if(closeMessageBoardButton)closeMessageBoardButton.onclick=()=>hide(messageBoardModal);
+if(postMessageBoardButton)postMessageBoardButton.onclick=postMessageBoard;
 closeSameDayStatusButton.onclick=()=>hide(sameDayStatusModal);
 document.querySelectorAll("#sameDayStatusModal [data-same-day-status]").forEach(button=>{
   button.onclick=()=>saveSameDayStatus(button.dataset.sameDayStatus||"");
@@ -1113,11 +1117,11 @@ const memberOverviewMonthSelect=document.getElementById("memberOverviewMonthSele
 const dashboardMemberCount=document.getElementById("dashboardMemberCount");
 const dashboardRunCount=document.getElementById("dashboardRunCount");
 const dashboardGymCount=document.getElementById("dashboardGymCount");
-const dashboardAnnouncementCount=document.getElementById("dashboardAnnouncementCount");
+
 const dashboardMembersButton=document.getElementById("dashboardMembersButton");
 const dashboardRunButton=document.getElementById("dashboardRunButton");
 const dashboardGymButton=document.getElementById("dashboardGymButton");
-const dashboardAnnouncementButton=document.getElementById("dashboardAnnouncementButton");
+
 const announcementCard=document.getElementById("announcementCard");
 const announcementList=document.getElementById("announcementList");
 const announcementManageModal=document.getElementById("announcementManageModal");
@@ -1129,6 +1133,10 @@ const announcementEnabledInput=document.getElementById("announcementEnabledInput
 const addAnnouncementButton=document.getElementById("addAnnouncementButton");
 const addAnnouncementError=document.getElementById("addAnnouncementError");
 const announcementAdminList=document.getElementById("announcementAdminList");
+const messageBoardModal=document.getElementById("messageBoardModal");
+const openMessageBoardButton=document.getElementById("openMessageBoardButton");
+const closeMessageBoardButton=document.getElementById("closeMessageBoardButton");
+const postMessageBoardButton=document.getElementById("postMessageBoardButton");
 const eventDetailModal=document.getElementById("eventDetailModal");
 const closeEventDetailButton=document.getElementById("closeEventDetailButton");
 const eventDetailContent=document.getElementById("eventDetailContent");
@@ -1236,6 +1244,88 @@ async function saveSystemSettings(){
   }
 }
 
+function messageBoardDateValue(value){
+  if(!value)return 0;
+  if(typeof value.toDate==="function")return value.toDate().getTime();
+  const date=new Date(value);
+  return Number.isNaN(date.getTime())?0:date.getTime();
+}
+function activeMessageBoardRecords(){
+  const now=Date.now();
+  return messageBoardRecords.filter(item=>!item.expiresAt||messageBoardDateValue(item.expiresAt)>now);
+}
+function currentMemberRecord(){
+  return memberRecords.find(member=>member.name===currentUser&&member.active!==false)||null;
+}
+function currentUserIsAdmin(){
+  return currentMemberRecord()?.admin===true;
+}
+function formatMessageBoardDate(value){
+  const time=messageBoardDateValue(value);
+  if(!time)return "";
+  const date=new Date(time);
+  return `${date.getMonth()+1}/${date.getDate()}`;
+}
+function buildMessageBoardItem(item,allowDelete){
+  const wrapper=document.createElement("article");
+  wrapper.className="message-board-item";
+  const head=document.createElement("div");
+  head.className="message-board-item-head";
+  const author=document.createElement("strong");
+  author.textContent=item.authorName||"メンバー";
+  const date=document.createElement("span");
+  date.textContent=formatMessageBoardDate(item.createdAt);
+  head.append(author,date);
+  const body=document.createElement("div");
+  body.className="message-board-item-body";
+  body.textContent=item.text||"";
+  wrapper.append(head,body);
+  if(allowDelete){
+    const button=document.createElement("button");
+    button.type="button";
+    button.className="message-board-delete-button";
+    button.textContent="削除";
+    button.onclick=()=>deleteMessageBoardPost(item);
+    wrapper.appendChild(button);
+  }
+  return wrapper;
+}
+function renderMessageBoard(){
+  const preview=document.getElementById("messageBoardPreview");
+  const list=document.getElementById("messageBoardList");
+  const active=activeMessageBoardRecords();
+  if(preview){
+    preview.innerHTML="";
+    if(active.length===0){preview.className="message-board-empty";preview.textContent="伝言はまだありません。";}
+    else{preview.className="message-board-preview";active.slice(0,3).forEach(item=>preview.appendChild(buildMessageBoardItem(item,false)));}
+  }
+  if(list){
+    list.innerHTML="";
+    if(active.length===0){const empty=document.createElement("div");empty.className="message-board-empty";empty.textContent="伝言はまだありません。";list.appendChild(empty);}
+    else active.forEach(item=>{const canDelete=currentUserIsAdmin()||(item.authorName&&item.authorName===currentUser)||(item.authorId&&item.authorId===currentMemberRecord()?.id);list.appendChild(buildMessageBoardItem(item,canDelete));});
+  }
+}
+async function postMessageBoard(){
+  const input=document.getElementById("messageBoardTextInput");
+  const expiry=document.getElementById("messageBoardExpirySelect");
+  const error=document.getElementById("messageBoardError");
+  const text=input?.value.trim()||"";
+  const member=currentMemberRecord();
+  if(!currentUser||!member||!text){error?.classList.remove("hidden");return;}
+  error?.classList.add("hidden");
+  const days=Number(expiry?.value)||7;
+  const expiresAt=new Date(Date.now()+days*24*60*60*1000).toISOString();
+  try{
+    await setDoc(doc(db,"messageBoard",`message_${Date.now()}`),{text,authorName:currentUser,authorId:member.id||"",createdAt:serverTimestamp(),expiresAt});
+    input.value="";
+  }catch(e){console.error(e);alert("伝言の投稿に失敗しました。Firestoreルールを確認してください。");}
+}
+async function deleteMessageBoardPost(item){
+  const allowed=currentUserIsAdmin()||(item.authorName&&item.authorName===currentUser)||(item.authorId&&item.authorId===currentMemberRecord()?.id);
+  if(!allowed||!confirm("この伝言を削除しますか？"))return;
+  try{await deleteDoc(doc(db,"messageBoard",item.id));}catch(e){console.error(e);alert("伝言の削除に失敗しました。");}
+}
+
 function formatAnnouncementDate(timestamp){
   if(!timestamp)return "";
   const date=timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -1250,6 +1340,8 @@ function renderAnnouncementsPublic(){
   if(!announcementList)return;
 
   const active=announcementRecords.filter(a=>a.enabled);
+  const heading=document.getElementById("announcementHeading");
+  if(heading)heading.textContent=`📢 お知らせ（${active.length}件）`;
 
   if(active.length===0){
     announcementList.className="announcement-empty";
@@ -2003,9 +2095,6 @@ dashboardGymButton.addEventListener("click",()=>{
   });
 });
 
-dashboardAnnouncementButton.addEventListener("click",()=>{
-  scrollToBelowHeader(document.getElementById("announcementCard"),8);
-});
 
 
 window.addEventListener("resize",()=>{
@@ -2015,7 +2104,7 @@ window.addEventListener("resize",()=>{
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
 
-/* SRC Portal Ver.1.2.1 - basic-operation multilingual display
+/* SRC Portal Ver.1.3.0 - basic-operation multilingual display
    Detects the browser/device language: ja / ko / zh; all others use English.
    Only fixed user-facing labels are translated. Firestore content and admin screens remain unchanged. */
 (() => {
@@ -2136,13 +2225,11 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
     setText("#currentUserLabel", m.unset);
     setText("#changeUserButton", m.change);
     const dashboardLabels = document.querySelectorAll("#dashboardCard .dashboard-label");
-    [m.members,m.monthlyRun,m.monthlyGym,m.announcements].forEach((text,i)=>{ if(dashboardLabels[i]) dashboardLabels[i].textContent=text; });
+    [m.members,m.monthlyRun,m.monthlyGym,m.nextEvent].forEach((text,i)=>{ if(dashboardLabels[i]) dashboardLabels[i].textContent=text; });
     setText("#announcementCard .section-label", `📢 ${m.announcements}`);
     setText("#announcementList", m.noAnnouncements);
     setText(".next-card .section-label", `✨ ${m.nextPlan}`);
     setText("#nextPlanContent", m.noNextPlan);
-    setText("#nextEventCard .section-label", `📅 ${m.nextEvent}`);
-    setText("#nextEventContent", m.noNextEvent);
     setText("#runTab", `🏃 ${m.runWalk}`);
     setText("#gymTab", `🏋️ ${m.gym}`);
     setText("#eventTitle", m.runWalk);
