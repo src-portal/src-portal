@@ -1,3 +1,7 @@
+Ver.1.3.0d
+- 画面最下段およびヘルプ内のバージョン表示が1.3.0bのままだった問題を修正。
+- CSS・JavaScriptのキャッシュ識別子を1.3.0dへ更新。
+
 Ver.1.3.0c
 - Fixed an initialization error that prevented member and attendance totals from appearing on the dashboard.
 - Message-board button handlers are now registered after the related DOM elements are initialized.

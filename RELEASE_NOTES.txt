@@ -1,3 +1,8 @@
+Ver.1.3.0d
+【表示修正】
+画面最下段とヘルプ内のバージョン表示をVer.1.3.0dへ統一しました。
+機能内容はVer.1.3.0cと同じです。
+
 Ver.1.3.0c
 - Fixed an initialization error that prevented member and attendance totals from appearing on the dashboard.
 - Message-board button handlers are now registered after the related DOM elements are initialized.
