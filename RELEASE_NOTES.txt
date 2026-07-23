@@ -1,39 +1,4 @@
-Ver.1.3.0e
+Ver.1.3.0f
 
-ダッシュボードの「次回イベント」と日付の間隔を、ほかの3カードと揃えました。
-機能内容はVer.1.3.0dと同じです。
-
-Ver.1.3.0d
-【表示修正】
-画面最下段とヘルプ内のバージョン表示をVer.1.3.0dへ統一しました。
-機能内容はVer.1.3.0cと同じです。
-
-Ver.1.3.0c
-- Fixed an initialization error that prevented member and attendance totals from appearing on the dashboard.
-- Message-board button handlers are now registered after the related DOM elements are initialized.
-
-SRC Portal Ver.1.3.0b
-
-【緊急修正】
-旧JavaScriptがブラウザに残り、ダッシュボードの「次回イベント」カードへ旧形式の詳細情報が表示される問題を修正しました。
-アップロード後は通常の再読み込みで新しいファイルが取得されます。
-
-SRC Portal Ver.1.3.0a
-
-【修正】
-・ダッシュボードの次回イベントカードのレイアウト崩れを修正しました。
-・更新時に古いCSSが残りにくいようキャッシュ対策を追加しました。
-
-SRC Portal Ver.1.3.0
-リリース日：2026年7月23日
-
-【主な変更】
-・メンバーが投稿できる「みんなの伝言板」を追加しました。
-・伝言の掲載期間は3日・7日・14日から選択できます。
-・ダッシュボードの4枚目を「次回イベント」に変更しました。
-・次回イベントカードを押すと、該当月のカレンダーへ移動します。
-・お知らせを「お知らせ（○件）」表示にし、枠内スクロールに対応しました。
-・ヘルプの使い方を更新しました。
-
-【注意】
-新しいFirestoreコレクション「messageBoard」を使用します。投稿できない場合はFirestore Security RulesでmessageBoardの読み書きを許可してください。
+ダッシュボードの「次回イベント」カードについて、見出しと日付の間隔をほかの3カードと同じになるよう修正しました。
+その他の機能はVer.1.3.0eから変更していません。
