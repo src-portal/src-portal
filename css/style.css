@@ -1505,3 +1505,37 @@ body{
 .dashboard-card-smart .dashboard-grid > .dashboard-stat.dashboard-next-event{
   display:block;
 }
+
+/* Ver.1.3.0h: use one shared three-row layout for all dashboard cards */
+.dashboard-card-smart .dashboard-grid > .dashboard-stat{
+  display:grid;
+  grid-template-rows:38px 28px 1fr;
+  align-items:start;
+  justify-items:center;
+  row-gap:7px;
+}
+.dashboard-card-smart .dashboard-grid > .dashboard-stat .dashboard-icon{
+  grid-row:1;
+  margin:0;
+  align-self:start;
+}
+.dashboard-card-smart .dashboard-grid > .dashboard-stat .dashboard-label{
+  grid-row:2;
+  margin:0;
+  align-self:start;
+}
+.dashboard-card-smart .dashboard-grid > .dashboard-stat .dashboard-value,
+.dashboard-card-smart .dashboard-grid > .dashboard-stat .dashboard-next-event-content{
+  grid-row:3;
+  margin-top:4px;
+  align-self:start;
+}
+.dashboard-card-smart .dashboard-grid > .dashboard-stat.dashboard-next-event{
+  display:grid;
+}
+@media(max-width:420px){
+  .dashboard-card-smart .dashboard-grid > .dashboard-stat{
+    grid-template-rows:34px 26px 1fr;
+    row-gap:5px;
+  }
+}
