@@ -64,7 +64,9 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "helpModal",
     "monthJumpModal",
     "setupAdminUnlockModal",
-    "inviteAuthModal"
+    "inviteAuthModal",
+    "memberProfileModal",
+    "memberProfileEditModal"
   ].includes(e.id)){
     positionMemberModalBelowHeader(e);
   }
@@ -179,6 +181,15 @@ onSnapshot(collection(db,"members"),snap=>{
         inviteStatus:data.inviteStatus||"registered",
         registeredAt:data.registeredAt||null,
         lastActiveAt:data.lastActiveAt||null,
+        profile:{
+          nickname:data.profile?.nickname||"",
+          introduction:data.profile?.introduction||"",
+          department:data.profile?.department||"",
+          hobbies:data.profile?.hobbies||"",
+          runningHistory:data.profile?.runningHistory||"",
+          bestTime:data.profile?.bestTime||"",
+          goal:data.profile?.goal||""
+        },
         inviteCodeMissing:!("inviteCode" in data),
         inviteStatusMissing:!("inviteStatus" in data),
         registeredAtMissing:!("registeredAt" in data),
@@ -512,23 +523,82 @@ function renderMemberOverview(){
     const total=runCount+gymCount;
     const joiningToday=memberIsJoiningToday(name);
 
-    const row=document.createElement("div");
-    row.className="member-overview-row";
+    const row=document.createElement("button");
+    row.type="button";
+    row.className="member-overview-row member-profile-open-row";
+    row.setAttribute("aria-label",`${name} ${uiT("openProfile","プロフィールを開く")}`);
     row.innerHTML=`
       <div class="member-today-status ${joiningToday?"joining":"not-joining"}" aria-label="${joiningToday?"今日参加予定":"今日参加予定なし"}">${joiningToday?"●":"○"}</div>
       <div class="member-overview-main">
         <div class="member-overview-name">${medal}${escapeHtml(name)}</div>
         <div class="member-overview-breakdown">
-          <span>🏃 ${runCount}回</span>
-          <span>🏋️ ${gymCount}回</span>
+          <span>🏃 ${runCount}${uiT("times","回")}</span>
+          <span>🏋️ ${gymCount}${uiT("times","回")}</span>
         </div>
       </div>
-      <div class="member-overview-total">🔥 ${total}</div>
+      <div class="member-overview-total">🔥 ${total}<span class="member-profile-chevron">›</span></div>
     `;
+    row.onclick=()=>openMemberProfile(member);
     memberOverviewList.appendChild(row);
   });
 }
 
+function profileValue(value){return String(value||"").trim();}
+function profileDisplayRow(icon,label,value){
+  const clean=profileValue(value);
+  if(!clean)return "";
+  return `<div class="member-profile-field"><div class="member-profile-field-label">${icon} ${escapeHtml(label)}</div><div class="member-profile-field-value">${escapeHtml(clean).replace(/\n/g,"<br>")}</div></div>`;
+}
+function openMemberProfile(member){
+  selectedProfileMember=member;
+  const profile=member.profile||{};
+  const nickname=profileValue(profile.nickname)||member.name;
+  const hasProfile=Object.values(profile).some(value=>profileValue(value));
+  const runCount=memberMonthlyAttendance(member.name,"run",0);
+  const gymCount=memberMonthlyAttendance(member.name,"gym",0);
+  memberProfileContent.innerHTML=`
+    <div class="member-profile-identity"><div class="member-profile-avatar">😊</div><div><div class="member-profile-name">${escapeHtml(member.name)}</div><div class="member-profile-nickname">${escapeHtml(nickname)}</div></div></div>
+    ${hasProfile?"":`<div class="member-profile-empty">${escapeHtml(uiT("profileNotRegistered","自己紹介はまだ登録されていません。"))}</div>`}
+    ${profileDisplayRow("💬",uiT("introduction","ひとこと"),profile.introduction)}
+    ${profileDisplayRow("🏢",uiT("department","所属"),profile.department)}
+    ${profileDisplayRow("🎯",uiT("hobbies","趣味・好きなこと"),profile.hobbies)}
+    ${profileDisplayRow("🏃",uiT("runningHistory","ランニング歴"),profile.runningHistory)}
+    ${profileDisplayRow("🏅",uiT("bestTime","ベストタイム"),profile.bestTime)}
+    ${profileDisplayRow("🌱",uiT("goal","現在の目標"),profile.goal)}
+    <div class="member-profile-attendance"><span>🏃 ${uiT("runWalk","ラン＆ウォーク")} ${runCount}${uiT("times","回")}</span><span>🏋️ ${uiT("gym","ジム")} ${gymCount}${uiT("times","回")}</span></div>`;
+  editOwnProfileButton.classList.toggle("hidden",member.name!==currentUser);
+  hide(memberOverviewModal);
+  show(memberProfileModal);
+}
+function openOwnProfileEditor(){
+  const member=currentMemberRecord();
+  if(!member)return;
+  selectedProfileMember=member;
+  const profile=member.profile||{};
+  profileNicknameInput.value=profile.nickname||"";
+  profileIntroductionInput.value=profile.introduction||"";
+  profileDepartmentInput.value=profile.department||"";
+  profileHobbiesInput.value=profile.hobbies||"";
+  profileRunningHistoryInput.value=profile.runningHistory||"";
+  profileBestTimeInput.value=profile.bestTime||"";
+  profileGoalInput.value=profile.goal||"";
+  profileEditError.classList.add("hidden");
+  hide(memberProfileModal);
+  show(memberProfileEditModal);
+}
+async function saveOwnProfile(){
+  const member=currentMemberRecord();
+  if(!member?.id)return;
+  const nickname=profileNicknameInput.value.trim();
+  const introduction=profileIntroductionInput.value.trim();
+  if(!nickname||!introduction){profileEditError.classList.remove("hidden");return;}
+  profileEditError.classList.add("hidden");
+  const profile={nickname,introduction,department:profileDepartmentInput.value.trim(),hobbies:profileHobbiesInput.value.trim(),runningHistory:profileRunningHistoryInput.value.trim(),bestTime:profileBestTimeInput.value.trim(),goal:profileGoalInput.value.trim()};
+  try{
+    await setDoc(doc(db,"members",member.id),{profile,updatedAt:serverTimestamp()},{merge:true});
+    hide(memberProfileEditModal);
+  }catch(e){console.error(e);alert(uiT("profileSaveFailed","自己紹介の保存に失敗しました。Firestoreルールを確認してください。"));}
+}
 const dashboardAnimationState=new Map();
 
 function animateDashboardNumber(element,target,suffix){
@@ -1180,6 +1250,26 @@ const closeMemberOverviewButton=document.getElementById("closeMemberOverviewButt
 const memberOverviewSummary=document.getElementById("memberOverviewSummary");
 const memberOverviewList=document.getElementById("memberOverviewList");
 const memberOverviewMonthSelect=document.getElementById("memberOverviewMonthSelect");
+const memberProfileModal=document.getElementById("memberProfileModal");
+const closeMemberProfileButton=document.getElementById("closeMemberProfileButton");
+const memberProfileContent=document.getElementById("memberProfileContent");
+const editOwnProfileButton=document.getElementById("editOwnProfileButton");
+const memberProfileEditModal=document.getElementById("memberProfileEditModal");
+const closeMemberProfileEditButton=document.getElementById("closeMemberProfileEditButton");
+const profileNicknameInput=document.getElementById("profileNicknameInput");
+const profileIntroductionInput=document.getElementById("profileIntroductionInput");
+const profileDepartmentInput=document.getElementById("profileDepartmentInput");
+const profileHobbiesInput=document.getElementById("profileHobbiesInput");
+const profileRunningHistoryInput=document.getElementById("profileRunningHistoryInput");
+const profileBestTimeInput=document.getElementById("profileBestTimeInput");
+const profileGoalInput=document.getElementById("profileGoalInput");
+const profileEditError=document.getElementById("profileEditError");
+const saveProfileButton=document.getElementById("saveProfileButton");
+let selectedProfileMember=null;
+if(closeMemberProfileButton)closeMemberProfileButton.onclick=()=>{hide(memberProfileModal);show(memberOverviewModal);};
+if(editOwnProfileButton)editOwnProfileButton.onclick=openOwnProfileEditor;
+if(closeMemberProfileEditButton)closeMemberProfileEditButton.onclick=()=>hide(memberProfileEditModal);
+if(saveProfileButton)saveProfileButton.onclick=saveOwnProfile;
 const dashboardMemberCount=document.getElementById("dashboardMemberCount");
 const dashboardRunCount=document.getElementById("dashboardRunCount");
 const dashboardGymCount=document.getElementById("dashboardGymCount");
@@ -2175,7 +2265,7 @@ window.addEventListener("resize",()=>{
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
 
-/* SRC Portal Ver.1.4.0a - basic-operation multilingual display
+/* SRC Portal Ver.1.5.0a - basic-operation multilingual display
    Detects the browser/device language: ja / ko / zh; all others use English.
    Only fixed user-facing labels are translated. Firestore content and admin screens remain unchanged. */
 (() => {
@@ -2207,7 +2297,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noParticipants:"まだ参加者はいません。", pastNoJoin:"過去の日付には参加登録できません。",
       pastEventReadOnly:"過去のイベントのため、参加・取消はできません。", cancelledNoJoin:"中止イベントには参加登録できません。",
       joined:"参加予定です。", notJoinedPerson:"まだ参加していません。", people:"名", times:"回",
-      reminder:"リマインダー", messageBoard:"みんなの伝言板", postAndList:"投稿・一覧", noMessages:"伝言はまだありません。", message:"伝言", postingPeriod:"掲載期間", days3:"3日間", days7:"7日間", days14:"14日間", postMessage:"伝言を投稿", messagePlaceholder:"例：日曜朝7時から小牧山を走ります。参加できる方どうぞ！", messageError:"現在のユーザーと伝言を確認してください。", messageNote:"テキストのみ・200文字まで。期限を過ぎた伝言は自動的に非表示になります。", delete:"削除", memberGeneric:"メンバー", confirmDeleteMessage:"この伝言を削除しますか？", messagePostFailed:"伝言の投稿に失敗しました。Firestoreルールを確認してください。", messageDeleteFailed:"伝言の削除に失敗しました。", eventGeneric:"イベント", reminderJoined:"明日は「{event}」です", reminderUnanswered:"明日の「{event}」への参加をまだ登録していません", reminderGymJoined:"明日はジムです", reminderGymUnanswered:"明日のジム参加をまだ登録していません", participantsPlanned:"{count}名参加予定", itemsSuffix:"件",
+      reminder:"リマインダー", messageBoard:"みんなの伝言板", postAndList:"投稿・一覧", noMessages:"伝言はまだありません。", message:"伝言", postingPeriod:"掲載期間", days3:"3日間", days7:"7日間", days14:"14日間", postMessage:"伝言を投稿", messagePlaceholder:"例：日曜朝7時から小牧山を走ります。参加できる方どうぞ！", messageError:"現在のユーザーと伝言を確認してください。", messageNote:"テキストのみ・200文字まで。期限を過ぎた伝言は自動的に非表示になります。", delete:"削除", memberGeneric:"メンバー", confirmDeleteMessage:"この伝言を削除しますか？", messagePostFailed:"伝言の投稿に失敗しました。Firestoreルールを確認してください。", messageDeleteFailed:"伝言の削除に失敗しました。", eventGeneric:"イベント", reminderJoined:"明日は「{event}」です", reminderUnanswered:"明日の「{event}」への参加をまだ登録していません", reminderGymJoined:"明日はジムです", reminderGymUnanswered:"明日のジム参加をまだ登録していません", participantsPlanned:"{count}名参加予定", itemsSuffix:"件", profile:"自己紹介", openProfile:"自己紹介を開く", editProfile:"自分の自己紹介を編集", nickname:"ニックネーム", introduction:"ひとこと", department:"所属", hobbies:"趣味・好きなこと", runningHistory:"ランニング歴", bestTime:"ベストタイム", goal:"現在の目標", required:"必須", optional:"任意", save:"保存する", profileNotRegistered:"自己紹介はまだ登録されていません。", profileRequiredError:"ニックネームとひとことを入力してください。", profileSaveFailed:"自己紹介の保存に失敗しました。Firestoreルールを確認してください。",
       weekdays:["月","火","水","木","金","土","日"]
     },
     en: {
@@ -2230,7 +2320,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noParticipants:"No participants yet.", pastNoJoin:"You cannot join a past date.",
       pastEventReadOnly:"This event is in the past. Participation cannot be changed.", cancelledNoJoin:"You cannot join a cancelled event.",
       joined:"is participating.", notJoinedPerson:"is not participating yet.", people:"", times:"times",
-      reminder:"Reminder", messageBoard:"Message board", postAndList:"Post / View all", noMessages:"There are no messages yet.", message:"Message", postingPeriod:"Display period", days3:"3 days", days7:"7 days", days14:"14 days", postMessage:"Post message", messagePlaceholder:"Example: I will run at Komakiyama from 7:00 Sunday morning. Join me!", messageError:"Check the current user and message.", messageNote:"Text only, up to 200 characters. Expired messages are hidden automatically.", delete:"Delete", memberGeneric:"Member", confirmDeleteMessage:"Delete this message?", messagePostFailed:"Failed to post the message. Check the Firestore rules.", messageDeleteFailed:"Failed to delete the message.", eventGeneric:"Event", reminderJoined:"Tomorrow is “{event}”.", reminderUnanswered:"You have not responded to tomorrow’s “{event}” yet.", reminderGymJoined:"You are going to the gym tomorrow.", reminderGymUnanswered:"You have not registered for tomorrow’s gym yet.", participantsPlanned:"{count} planning to attend", itemsSuffix:"",
+      reminder:"Reminder", messageBoard:"Message board", postAndList:"Post / View all", noMessages:"There are no messages yet.", message:"Message", postingPeriod:"Display period", days3:"3 days", days7:"7 days", days14:"14 days", postMessage:"Post message", messagePlaceholder:"Example: I will run at Komakiyama from 7:00 Sunday morning. Join me!", messageError:"Check the current user and message.", messageNote:"Text only, up to 200 characters. Expired messages are hidden automatically.", delete:"Delete", memberGeneric:"Member", confirmDeleteMessage:"Delete this message?", messagePostFailed:"Failed to post the message. Check the Firestore rules.", messageDeleteFailed:"Failed to delete the message.", eventGeneric:"Event", reminderJoined:"Tomorrow is “{event}”.", reminderUnanswered:"You have not responded to tomorrow’s “{event}” yet.", reminderGymJoined:"You are going to the gym tomorrow.", reminderGymUnanswered:"You have not registered for tomorrow’s gym yet.", participantsPlanned:"{count} planning to attend", itemsSuffix:"", profile:"Profile", openProfile:"Open profile", editProfile:"Edit my profile", nickname:"Nickname", introduction:"Message", department:"Department", hobbies:"Hobbies / interests", runningHistory:"Running experience", bestTime:"Personal best", goal:"Current goal", required:"Required", optional:"Optional", save:"Save", profileNotRegistered:"This profile has not been completed yet.", profileRequiredError:"Enter a nickname and message.", profileSaveFailed:"Failed to save the profile. Check the Firestore rules.",
       weekdays:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
     },
     ko: {
@@ -2253,7 +2343,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noParticipants:"아직 참가자가 없습니다.", pastNoJoin:"지난 날짜에는 참가 등록을 할 수 없습니다.",
       pastEventReadOnly:"지난 이벤트이므로 참가 상태를 변경할 수 없습니다.", cancelledNoJoin:"취소된 이벤트에는 참가할 수 없습니다.",
       joined:" 님은 참가 예정입니다.", notJoinedPerson:" 님은 아직 참가하지 않았습니다.", people:"명", times:"회",
-      reminder:"리마인더", messageBoard:"모두의 게시판", postAndList:"작성·목록", noMessages:"아직 전달 사항이 없습니다.", message:"전달 사항", postingPeriod:"게시 기간", days3:"3일", days7:"7일", days14:"14일", postMessage:"게시하기", messagePlaceholder:"예: 일요일 오전 7시부터 고마키산을 달립니다. 함께하실 분 환영합니다!", messageError:"현재 사용자와 내용을 확인하세요.", messageNote:"텍스트만, 최대 200자입니다. 기간이 지난 글은 자동으로 숨겨집니다.", delete:"삭제", memberGeneric:"멤버", confirmDeleteMessage:"이 글을 삭제하시겠습니까?", messagePostFailed:"게시하지 못했습니다. Firestore 규칙을 확인하세요.", messageDeleteFailed:"삭제하지 못했습니다.", eventGeneric:"이벤트", reminderJoined:"내일은 ‘{event}’입니다.", reminderUnanswered:"내일 ‘{event}’ 참가 여부를 아직 등록하지 않았습니다.", reminderGymJoined:"내일은 체육관에 갑니다.", reminderGymUnanswered:"내일 체육관 참가를 아직 등록하지 않았습니다.", participantsPlanned:"{count}명 참가 예정", itemsSuffix:"건",
+      reminder:"리마인더", messageBoard:"모두의 게시판", postAndList:"작성·목록", noMessages:"아직 전달 사항이 없습니다.", message:"전달 사항", postingPeriod:"게시 기간", days3:"3일", days7:"7일", days14:"14일", postMessage:"게시하기", messagePlaceholder:"예: 일요일 오전 7시부터 고마키산을 달립니다. 함께하실 분 환영합니다!", messageError:"현재 사용자와 내용을 확인하세요.", messageNote:"텍스트만, 최대 200자입니다. 기간이 지난 글은 자동으로 숨겨집니다.", delete:"삭제", memberGeneric:"멤버", confirmDeleteMessage:"이 글을 삭제하시겠습니까?", messagePostFailed:"게시하지 못했습니다. Firestore 규칙을 확인하세요.", messageDeleteFailed:"삭제하지 못했습니다.", eventGeneric:"이벤트", reminderJoined:"내일은 ‘{event}’입니다.", reminderUnanswered:"내일 ‘{event}’ 참가 여부를 아직 등록하지 않았습니다.", reminderGymJoined:"내일은 체육관에 갑니다.", reminderGymUnanswered:"내일 체육관 참가를 아직 등록하지 않았습니다.", participantsPlanned:"{count}명 참가 예정", itemsSuffix:"건", profile:"자기소개", openProfile:"자기소개 열기", editProfile:"내 자기소개 편집", nickname:"닉네임", introduction:"한마디", department:"소속", hobbies:"취미·좋아하는 것", runningHistory:"러닝 경력", bestTime:"최고 기록", goal:"현재 목표", required:"필수", optional:"선택", save:"저장", profileNotRegistered:"아직 자기소개가 등록되지 않았습니다.", profileRequiredError:"닉네임과 한마디를 입력하세요.", profileSaveFailed:"자기소개를 저장하지 못했습니다. Firestore 규칙을 확인하세요.",
       weekdays:["월","화","수","목","금","토","일"]
     },
     zh: {
@@ -2276,7 +2366,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noParticipants:"目前没有参加者。", pastNoJoin:"过去的日期不能报名参加。",
       pastEventReadOnly:"该活动已结束，不能更改参加状态。", cancelledNoJoin:"不能参加已取消的活动。",
       joined:"已计划参加。", notJoinedPerson:"尚未参加。", people:"人", times:"次",
-      reminder:"提醒", messageBoard:"大家的留言板", postAndList:"发布／查看全部", noMessages:"目前还没有留言。", message:"留言", postingPeriod:"显示期限", days3:"3天", days7:"7天", days14:"14天", postMessage:"发布留言", messagePlaceholder:"例如：周日上午7点去小牧山跑步，欢迎一起参加！", messageError:"请确认当前用户和留言内容。", messageNote:"仅限文字，最多200字。到期留言会自动隐藏。", delete:"删除", memberGeneric:"成员", confirmDeleteMessage:"要删除这条留言吗？", messagePostFailed:"留言发布失败。请检查 Firestore 规则。", messageDeleteFailed:"留言删除失败。", eventGeneric:"活动", reminderJoined:"明天是“{event}”。", reminderUnanswered:"您尚未登记是否参加明天的“{event}”。", reminderGymJoined:"明天去健身房。", reminderGymUnanswered:"您尚未登记参加明天的健身房活动。", participantsPlanned:"{count}人计划参加", itemsSuffix:"条",
+      reminder:"提醒", messageBoard:"大家的留言板", postAndList:"发布／查看全部", noMessages:"目前还没有留言。", message:"留言", postingPeriod:"显示期限", days3:"3天", days7:"7天", days14:"14天", postMessage:"发布留言", messagePlaceholder:"例如：周日上午7点去小牧山跑步，欢迎一起参加！", messageError:"请确认当前用户和留言内容。", messageNote:"仅限文字，最多200字。到期留言会自动隐藏。", delete:"删除", memberGeneric:"成员", confirmDeleteMessage:"要删除这条留言吗？", messagePostFailed:"留言发布失败。请检查 Firestore 规则。", messageDeleteFailed:"留言删除失败。", eventGeneric:"活动", reminderJoined:"明天是“{event}”。", reminderUnanswered:"您尚未登记是否参加明天的“{event}”。", reminderGymJoined:"明天去健身房。", reminderGymUnanswered:"您尚未登记参加明天的健身房活动。", participantsPlanned:"{count}人计划参加", itemsSuffix:"条", profile:"自我介绍", openProfile:"打开自我介绍", editProfile:"编辑我的自我介绍", nickname:"昵称", introduction:"一句话介绍", department:"所属部门", hobbies:"兴趣爱好", runningHistory:"跑步经历", bestTime:"最佳成绩", goal:"当前目标", required:"必填", optional:"选填", save:"保存", profileNotRegistered:"尚未填写自我介绍。", profileRequiredError:"请输入昵称和一句话介绍。", profileSaveFailed:"自我介绍保存失败。请检查 Firestore 规则。",
       weekdays:["一","二","三","四","五","六","日"]
     }
   };
@@ -2316,6 +2406,18 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
     setText("#messageBoardError",m.messageError);
     setText("#postMessageBoardButton",m.postMessage);
     setText("#messageBoardModal .settings-note",m.messageNote);
+    setText("#memberProfileModal h2", `👤 ${m.profile}`);
+    setText("#editOwnProfileButton", m.editProfile);
+    setText("#memberProfileEditModal h2", `✏️ ${m.editProfile}`);
+    setText("label[for='profileNicknameInput']", `${m.nickname}（${m.required}）`);
+    setText("label[for='profileIntroductionInput']", `${m.introduction}（${m.required}）`);
+    setText("label[for='profileDepartmentInput']", `${m.department}（${m.optional}）`);
+    setText("label[for='profileHobbiesInput']", `${m.hobbies}（${m.optional}）`);
+    setText("label[for='profileRunningHistoryInput']", `${m.runningHistory}（${m.optional}）`);
+    setText("label[for='profileBestTimeInput']", `${m.bestTime}（${m.optional}）`);
+    setText("label[for='profileGoalInput']", `${m.goal}（${m.optional}）`);
+    setText("#profileEditError",m.profileRequiredError);
+    setText("#saveProfileButton",m.save);
     setText(".next-card .section-label", `✨ ${m.nextPlan}`);
     setText("#nextPlanContent", m.noNextPlan);
     setText("#runTab", `🏃 ${m.runWalk}`);
