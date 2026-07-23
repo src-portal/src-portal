@@ -34,6 +34,7 @@ let memberRecords=[];
 let eventRecords=[];
 let announcementRecords=[];
 let messageBoardRecords=[];
+function uiT(key,fallback){return window.SRC_I18N?.t?.(key) ?? fallback;}
 let selectedEvent=null;
 const defaultSystemSettings={
   run:{time:"19:00",place:"落合公園"},
@@ -801,8 +802,9 @@ function tomorrowKeyJST(){
 
 function reminderDateLabel(key){
   const [year,month,day]=key.split("-").map(Number);
-  const weekday=["日","月","火","水","木","金","土"][new Date(year,month-1,day).getDay()];
-  return `${month}月${day}日（${weekday}）`;
+  const language=window.SRC_I18N?.language||"ja";
+  const locale=language==="ko"?"ko-KR":language==="zh"?"zh-CN":language==="en"?"en-US":"ja-JP";
+  return new Intl.DateTimeFormat(locale,{month:"long",day:"numeric",weekday:"short",timeZone:"Asia/Tokyo"}).format(new Date(Date.UTC(year,month-1,day)));
 }
 
 function renderReminder(){
@@ -820,31 +822,28 @@ function renderReminder(){
   const gymParticipants=getNames("gym",key);
 
   if(runEvent){
-    const eventName=runEvent.title||runEvent.place||"イベント";
+    const eventName=runEvent.title||runEvent.place||uiT("eventGeneric","イベント");
     const time=runEvent.time||systemSettings.run.time;
     const place=runEvent.place||systemSettings.run.place;
-    if(runParticipants.includes(currentUser)){
-      items.push({
-        time,
-        html:`<div class="reminder-title">🔔 明日は「${escapeHtml(eventName)}」です</div><div class="reminder-detail">📅 ${reminderDateLabel(key)}　🕖 ${escapeHtml(time)}</div><div class="reminder-detail">📍 ${escapeHtml(place)}</div>`
-      });
-    }else{
-      items.push({
-        time,
-        html:`<div class="reminder-title">🔔 明日の「${escapeHtml(eventName)}」への参加をまだ登録していません</div><div class="reminder-detail">📅 ${reminderDateLabel(key)}　🕖 ${escapeHtml(time)}</div><div class="reminder-detail">📍 ${escapeHtml(place)}</div>`
-      });
-    }
+    const title=runParticipants.includes(currentUser)
+      ? uiT("reminderJoined",`明日は「${eventName}」です`).replace("{event}",eventName)
+      : uiT("reminderUnanswered",`明日の「${eventName}」への参加をまだ登録していません`).replace("{event}",eventName);
+    items.push({
+      time,
+      html:`<div class="reminder-title">🔔 ${escapeHtml(title)}</div><div class="reminder-detail">📅 ${escapeHtml(reminderDateLabel(key))}　🕖 ${escapeHtml(time)}</div><div class="reminder-detail">📍 ${escapeHtml(place)}</div>`
+    });
   }
 
   if(gymParticipants.includes(currentUser)){
     items.push({
       time:systemSettings.gym.time,
-      html:`<div class="reminder-title">🔔 明日はジムです</div><div class="reminder-detail">📅 ${reminderDateLabel(key)}　🕖 ${escapeHtml(systemSettings.gym.time)}</div><div class="reminder-detail">📍 ${escapeHtml(systemSettings.gym.place)}</div>`
+      html:`<div class="reminder-title">🔔 ${escapeHtml(uiT("reminderGymJoined","明日はジムです"))}</div><div class="reminder-detail">📅 ${escapeHtml(reminderDateLabel(key))}　🕖 ${escapeHtml(systemSettings.gym.time)}</div><div class="reminder-detail">📍 ${escapeHtml(systemSettings.gym.place)}</div>`
     });
   }else if(gymParticipants.length>0){
+    const participantText=uiT("participantsPlanned",`{count}名参加予定`).replace("{count}",String(gymParticipants.length));
     items.push({
       time:systemSettings.gym.time,
-      html:`<div class="reminder-title">🔔 明日のジム参加をまだ登録していません</div><div class="reminder-detail">📅 ${reminderDateLabel(key)}　🕖 ${escapeHtml(systemSettings.gym.time)}</div><div class="reminder-detail">📍 ${escapeHtml(systemSettings.gym.place)}　👥 ${gymParticipants.length}名参加予定</div>`
+      html:`<div class="reminder-title">🔔 ${escapeHtml(uiT("reminderGymUnanswered","明日のジム参加をまだ登録していません"))}</div><div class="reminder-detail">📅 ${escapeHtml(reminderDateLabel(key))}　🕖 ${escapeHtml(systemSettings.gym.time)}</div><div class="reminder-detail">📍 ${escapeHtml(systemSettings.gym.place)}　👥 ${escapeHtml(participantText)}</div>`
     });
   }
 
@@ -1344,7 +1343,7 @@ function buildMessageBoardItem(item,allowDelete){
   const head=document.createElement("div");
   head.className="message-board-item-head";
   const author=document.createElement("strong");
-  author.textContent=item.authorName||"メンバー";
+  author.textContent=item.authorName||uiT("memberGeneric","メンバー");
   const date=document.createElement("span");
   date.textContent=formatMessageBoardDate(item.createdAt);
   head.append(author,date);
@@ -1356,7 +1355,7 @@ function buildMessageBoardItem(item,allowDelete){
     const button=document.createElement("button");
     button.type="button";
     button.className="message-board-delete-button";
-    button.textContent="削除";
+    button.textContent=uiT("delete","削除");
     button.onclick=()=>deleteMessageBoardPost(item);
     wrapper.appendChild(button);
   }
@@ -1368,12 +1367,12 @@ function renderMessageBoard(){
   const active=activeMessageBoardRecords();
   if(preview){
     preview.innerHTML="";
-    if(active.length===0){preview.className="message-board-empty";preview.textContent="伝言はまだありません。";}
+    if(active.length===0){preview.className="message-board-empty";preview.textContent=uiT("noMessages","伝言はまだありません。");}
     else{preview.className="message-board-preview";active.slice(0,3).forEach(item=>preview.appendChild(buildMessageBoardItem(item,false)));}
   }
   if(list){
     list.innerHTML="";
-    if(active.length===0){const empty=document.createElement("div");empty.className="message-board-empty";empty.textContent="伝言はまだありません。";list.appendChild(empty);}
+    if(active.length===0){const empty=document.createElement("div");empty.className="message-board-empty";empty.textContent=uiT("noMessages","伝言はまだありません。");list.appendChild(empty);}
     else active.forEach(item=>{const canDelete=currentUserIsAdmin()||(item.authorName&&item.authorName===currentUser)||(item.authorId&&item.authorId===currentMemberRecord()?.id);list.appendChild(buildMessageBoardItem(item,canDelete));});
   }
 }
@@ -1390,12 +1389,12 @@ async function postMessageBoard(){
   try{
     await setDoc(doc(db,"messageBoard",`message_${Date.now()}`),{text,authorName:currentUser,authorId:member.id||"",createdAt:serverTimestamp(),expiresAt});
     input.value="";
-  }catch(e){console.error(e);alert("伝言の投稿に失敗しました。Firestoreルールを確認してください。");}
+  }catch(e){console.error(e);alert(uiT("messagePostFailed","伝言の投稿に失敗しました。Firestoreルールを確認してください。"));}
 }
 async function deleteMessageBoardPost(item){
   const allowed=currentUserIsAdmin()||(item.authorName&&item.authorName===currentUser)||(item.authorId&&item.authorId===currentMemberRecord()?.id);
-  if(!allowed||!confirm("この伝言を削除しますか？"))return;
-  try{await deleteDoc(doc(db,"messageBoard",item.id));}catch(e){console.error(e);alert("伝言の削除に失敗しました。");}
+  if(!allowed||!confirm(uiT("confirmDeleteMessage","この伝言を削除しますか？")))return;
+  try{await deleteDoc(doc(db,"messageBoard",item.id));}catch(e){console.error(e);alert(uiT("messageDeleteFailed","伝言の削除に失敗しました。"));}
 }
 
 function formatAnnouncementDate(timestamp){
@@ -1413,11 +1412,11 @@ function renderAnnouncementsPublic(){
 
   const active=announcementRecords.filter(a=>a.enabled);
   const heading=document.getElementById("announcementHeading");
-  if(heading)heading.textContent=`📢 お知らせ（${active.length}件）`;
+  if(heading)heading.textContent=`📢 ${uiT("announcements","お知らせ")}（${active.length}${uiT("itemsSuffix","件")}）`;
 
   if(active.length===0){
     announcementList.className="announcement-empty";
-    announcementList.textContent="現在のお知らせはありません。";
+    announcementList.textContent=uiT("noAnnouncements","現在のお知らせはありません。");
     return;
   }
 
@@ -2176,7 +2175,7 @@ window.addEventListener("resize",()=>{
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
 
-/* SRC Portal Ver.1.4.0 - basic-operation multilingual display
+/* SRC Portal Ver.1.4.0a - basic-operation multilingual display
    Detects the browser/device language: ja / ko / zh; all others use English.
    Only fixed user-facing labels are translated. Firestore content and admin screens remain unchanged. */
 (() => {
@@ -2208,6 +2207,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noParticipants:"まだ参加者はいません。", pastNoJoin:"過去の日付には参加登録できません。",
       pastEventReadOnly:"過去のイベントのため、参加・取消はできません。", cancelledNoJoin:"中止イベントには参加登録できません。",
       joined:"参加予定です。", notJoinedPerson:"まだ参加していません。", people:"名", times:"回",
+      reminder:"リマインダー", messageBoard:"みんなの伝言板", postAndList:"投稿・一覧", noMessages:"伝言はまだありません。", message:"伝言", postingPeriod:"掲載期間", days3:"3日間", days7:"7日間", days14:"14日間", postMessage:"伝言を投稿", messagePlaceholder:"例：日曜朝7時から小牧山を走ります。参加できる方どうぞ！", messageError:"現在のユーザーと伝言を確認してください。", messageNote:"テキストのみ・200文字まで。期限を過ぎた伝言は自動的に非表示になります。", delete:"削除", memberGeneric:"メンバー", confirmDeleteMessage:"この伝言を削除しますか？", messagePostFailed:"伝言の投稿に失敗しました。Firestoreルールを確認してください。", messageDeleteFailed:"伝言の削除に失敗しました。", eventGeneric:"イベント", reminderJoined:"明日は「{event}」です", reminderUnanswered:"明日の「{event}」への参加をまだ登録していません", reminderGymJoined:"明日はジムです", reminderGymUnanswered:"明日のジム参加をまだ登録していません", participantsPlanned:"{count}名参加予定", itemsSuffix:"件",
       weekdays:["月","火","水","木","金","土","日"]
     },
     en: {
@@ -2230,6 +2230,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noParticipants:"No participants yet.", pastNoJoin:"You cannot join a past date.",
       pastEventReadOnly:"This event is in the past. Participation cannot be changed.", cancelledNoJoin:"You cannot join a cancelled event.",
       joined:"is participating.", notJoinedPerson:"is not participating yet.", people:"", times:"times",
+      reminder:"Reminder", messageBoard:"Message board", postAndList:"Post / View all", noMessages:"There are no messages yet.", message:"Message", postingPeriod:"Display period", days3:"3 days", days7:"7 days", days14:"14 days", postMessage:"Post message", messagePlaceholder:"Example: I will run at Komakiyama from 7:00 Sunday morning. Join me!", messageError:"Check the current user and message.", messageNote:"Text only, up to 200 characters. Expired messages are hidden automatically.", delete:"Delete", memberGeneric:"Member", confirmDeleteMessage:"Delete this message?", messagePostFailed:"Failed to post the message. Check the Firestore rules.", messageDeleteFailed:"Failed to delete the message.", eventGeneric:"Event", reminderJoined:"Tomorrow is “{event}”.", reminderUnanswered:"You have not responded to tomorrow’s “{event}” yet.", reminderGymJoined:"You are going to the gym tomorrow.", reminderGymUnanswered:"You have not registered for tomorrow’s gym yet.", participantsPlanned:"{count} planning to attend", itemsSuffix:"",
       weekdays:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
     },
     ko: {
@@ -2252,6 +2253,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noParticipants:"아직 참가자가 없습니다.", pastNoJoin:"지난 날짜에는 참가 등록을 할 수 없습니다.",
       pastEventReadOnly:"지난 이벤트이므로 참가 상태를 변경할 수 없습니다.", cancelledNoJoin:"취소된 이벤트에는 참가할 수 없습니다.",
       joined:" 님은 참가 예정입니다.", notJoinedPerson:" 님은 아직 참가하지 않았습니다.", people:"명", times:"회",
+      reminder:"리마인더", messageBoard:"모두의 게시판", postAndList:"작성·목록", noMessages:"아직 전달 사항이 없습니다.", message:"전달 사항", postingPeriod:"게시 기간", days3:"3일", days7:"7일", days14:"14일", postMessage:"게시하기", messagePlaceholder:"예: 일요일 오전 7시부터 고마키산을 달립니다. 함께하실 분 환영합니다!", messageError:"현재 사용자와 내용을 확인하세요.", messageNote:"텍스트만, 최대 200자입니다. 기간이 지난 글은 자동으로 숨겨집니다.", delete:"삭제", memberGeneric:"멤버", confirmDeleteMessage:"이 글을 삭제하시겠습니까?", messagePostFailed:"게시하지 못했습니다. Firestore 규칙을 확인하세요.", messageDeleteFailed:"삭제하지 못했습니다.", eventGeneric:"이벤트", reminderJoined:"내일은 ‘{event}’입니다.", reminderUnanswered:"내일 ‘{event}’ 참가 여부를 아직 등록하지 않았습니다.", reminderGymJoined:"내일은 체육관에 갑니다.", reminderGymUnanswered:"내일 체육관 참가를 아직 등록하지 않았습니다.", participantsPlanned:"{count}명 참가 예정", itemsSuffix:"건",
       weekdays:["월","화","수","목","금","토","일"]
     },
     zh: {
@@ -2274,6 +2276,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noParticipants:"目前没有参加者。", pastNoJoin:"过去的日期不能报名参加。",
       pastEventReadOnly:"该活动已结束，不能更改参加状态。", cancelledNoJoin:"不能参加已取消的活动。",
       joined:"已计划参加。", notJoinedPerson:"尚未参加。", people:"人", times:"次",
+      reminder:"提醒", messageBoard:"大家的留言板", postAndList:"发布／查看全部", noMessages:"目前还没有留言。", message:"留言", postingPeriod:"显示期限", days3:"3天", days7:"7天", days14:"14天", postMessage:"发布留言", messagePlaceholder:"例如：周日上午7点去小牧山跑步，欢迎一起参加！", messageError:"请确认当前用户和留言内容。", messageNote:"仅限文字，最多200字。到期留言会自动隐藏。", delete:"删除", memberGeneric:"成员", confirmDeleteMessage:"要删除这条留言吗？", messagePostFailed:"留言发布失败。请检查 Firestore 规则。", messageDeleteFailed:"留言删除失败。", eventGeneric:"活动", reminderJoined:"明天是“{event}”。", reminderUnanswered:"您尚未登记是否参加明天的“{event}”。", reminderGymJoined:"明天去健身房。", reminderGymUnanswered:"您尚未登记参加明天的健身房活动。", participantsPlanned:"{count}人计划参加", itemsSuffix:"条",
       weekdays:["一","二","三","四","五","六","日"]
     }
   };
@@ -2300,6 +2303,19 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
     [m.members,m.monthlyRun,m.monthlyGym,m.nextEvent].forEach((text,i)=>{ if(dashboardLabels[i]) dashboardLabels[i].textContent=text; });
     setText("#announcementCard .section-label", `📢 ${m.announcements}`);
     setText("#announcementList", m.noAnnouncements);
+    setText("#messageBoardCard .section-label", `💬 ${m.messageBoard}`);
+    setText("#openMessageBoardButton", m.postAndList);
+    setText("#messageBoardPreview", m.noMessages);
+    setText("#reminderCard .section-label", `🔔 ${m.reminder}`);
+    setText("#messageBoardModal h2", `💬 ${m.messageBoard}`);
+    setText("#messageBoardModal label[for='messageBoardTextInput']", m.message);
+    setAttr("#messageBoardTextInput","placeholder",m.messagePlaceholder);
+    setText("#messageBoardModal label[for='messageBoardExpirySelect']", m.postingPeriod);
+    const expiryOptions=document.querySelectorAll("#messageBoardExpirySelect option");
+    [m.days3,m.days7,m.days14].forEach((text,i)=>{if(expiryOptions[i])expiryOptions[i].textContent=text;});
+    setText("#messageBoardError",m.messageError);
+    setText("#postMessageBoardButton",m.postMessage);
+    setText("#messageBoardModal .settings-note",m.messageNote);
     setText(".next-card .section-label", `✨ ${m.nextPlan}`);
     setText("#nextPlanContent", m.noNextPlan);
     setText("#runTab", `🏃 ${m.runWalk}`);
@@ -2341,7 +2357,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
     setText("#applyMonthJumpButton", m.show);
     document.querySelectorAll(".weekday-row span").forEach((el,i)=>{ el.textContent=m.weekdays[i] || el.textContent; });
     setAttr("#calendarTitle","aria-label",m.selectMonth);
-    document.querySelectorAll("#setupModal button[aria-label='閉じる'], #inviteAuthModal button[aria-label='閉じる'], #sameDayStatusModal button[aria-label='閉じる'], #monthJumpModal button[aria-label='閉じる']")
+    document.querySelectorAll("#setupModal button[aria-label='閉じる'], #inviteAuthModal button[aria-label='閉じる'], #sameDayStatusModal button[aria-label='閉じる'], #monthJumpModal button[aria-label='閉じる'], #messageBoardModal button[aria-label='閉じる']")
       .forEach(el=>el.setAttribute("aria-label",m.close));
   }
 
@@ -2352,6 +2368,9 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
     if (!text) return;
 
     if (el.id === "announcementList" && text === "現在のお知らせはありません。") el.textContent=m.noAnnouncements;
+    else if (el.id === "announcementHeading") {
+      const hit=text.match(/お知らせ（(\d+)件）/); if(hit) el.textContent=`📢 ${m.announcements}（${hit[1]}${m.itemsSuffix}）`;
+    } else if ((el.id === "messageBoardPreview" || el.classList.contains("message-board-empty")) && text === "伝言はまだありません。") el.textContent=m.noMessages;
     else if (el.id === "memberOverviewSummary") {
       const hit=text.match(/(今月|先月)の参加回数順／登録メンバー (\d+)名/);
       if(hit){
@@ -2408,7 +2427,10 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
 
   document.addEventListener("DOMContentLoaded", () => {
     applyStaticTranslations();
-    document.querySelectorAll("#homeView,#detailView,#setupModal,#inviteAuthModal,#userChangeConfirmModal,#sameDayStatusModal,#monthJumpModal").forEach(translateDynamicElement);
+    renderAnnouncementsPublic();
+    renderMessageBoard();
+    renderReminder();
+    document.querySelectorAll("#homeView,#detailView,#setupModal,#inviteAuthModal,#userChangeConfirmModal,#sameDayStatusModal,#monthJumpModal,#messageBoardModal").forEach(translateDynamicElement);
     const observer = new MutationObserver(records => {
       for (const record of records) {
         if (record.target.nodeType === Node.TEXT_NODE) translateDynamicElement(record.target.parentElement);
