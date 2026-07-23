@@ -3,7 +3,7 @@ import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, arrayRemo
 
 const firebaseConfig={apiKey:"AIzaSyAsqNE9tSB2eIDtHBR8dRSVkzGFD0sKh-c",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
-document.addEventListener("DOMContentLoaded",()=>{const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),nextEventContent=$("nextEventContent"),nextEventCard=$("nextEventCard"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
+document.addEventListener("DOMContentLoaded",()=>{const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),reminderCard=$("reminderCard"),reminderContent=$("reminderContent"),nextEventContent=$("nextEventContent"),nextEventCard=$("nextEventCard"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
 userChangeConfirmModal=$("userChangeConfirmModal"),
 cancelUserChangeButton=$("cancelUserChangeButton"),
 confirmUserChangeButton=$("confirmUserChangeButton"),
@@ -232,6 +232,7 @@ onSnapshot(collection(db,"events"),snap=>{
   });
   eventRecords=loaded.sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.type||"").localeCompare(b.type||""));
   renderNextEventPublic();
+  renderReminder();
   renderCalendar();
   renderDashboard();
   if(eventManageModal&&!eventManageModal.classList.contains("hidden"))renderAdminEvents();
@@ -580,7 +581,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="開催条件";ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderDashboard()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="開催条件";ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderDashboard()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -787,6 +788,75 @@ function renderNextPlan(){
   const label=p.type==="gym"?"🏋️ ジム":"🏃 ラン＆ウォーク";
   nextPlanContent.className="next-plan-item";
   nextPlanContent.innerHTML=`${label}<br>📅 ${fmt(p.key)}<br>🕖 ${p.time}<br>📍 ${escapeHtml(p.place)}`;
+}
+
+function tomorrowKeyJST(){
+  const parts=new Intl.DateTimeFormat("en-CA",{
+    timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"
+  }).formatToParts(new Date());
+  const values=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+  const tomorrow=new Date(Date.UTC(Number(values.year),Number(values.month)-1,Number(values.day)+1));
+  return `${tomorrow.getUTCFullYear()}-${pad2(tomorrow.getUTCMonth()+1)}-${pad2(tomorrow.getUTCDate())}`;
+}
+
+function reminderDateLabel(key){
+  const [year,month,day]=key.split("-").map(Number);
+  const weekday=["日","月","火","水","木","金","土"][new Date(year,month-1,day).getDay()];
+  return `${month}月${day}日（${weekday}）`;
+}
+
+function renderReminder(){
+  if(!reminderCard||!reminderContent)return;
+  if(!currentUser){
+    reminderContent.innerHTML="";
+    reminderCard.classList.add("hidden");
+    return;
+  }
+
+  const key=tomorrowKeyJST();
+  const items=[];
+  const runEvent=eventsByDate(key,"run").find(ev=>ev.status!=="cancelled")||null;
+  const runParticipants=getNames("run",key);
+  const gymParticipants=getNames("gym",key);
+
+  if(runEvent){
+    const eventName=runEvent.title||runEvent.place||"イベント";
+    const time=runEvent.time||systemSettings.run.time;
+    const place=runEvent.place||systemSettings.run.place;
+    if(runParticipants.includes(currentUser)){
+      items.push({
+        time,
+        html:`<div class="reminder-title">🔔 明日は「${escapeHtml(eventName)}」です</div><div class="reminder-detail">📅 ${reminderDateLabel(key)}　🕖 ${escapeHtml(time)}</div><div class="reminder-detail">📍 ${escapeHtml(place)}</div>`
+      });
+    }else{
+      items.push({
+        time,
+        html:`<div class="reminder-title">🔔 明日の「${escapeHtml(eventName)}」への参加をまだ登録していません</div><div class="reminder-detail">📅 ${reminderDateLabel(key)}　🕖 ${escapeHtml(time)}</div><div class="reminder-detail">📍 ${escapeHtml(place)}</div>`
+      });
+    }
+  }
+
+  if(gymParticipants.includes(currentUser)){
+    items.push({
+      time:systemSettings.gym.time,
+      html:`<div class="reminder-title">🔔 明日はジムです</div><div class="reminder-detail">📅 ${reminderDateLabel(key)}　🕖 ${escapeHtml(systemSettings.gym.time)}</div><div class="reminder-detail">📍 ${escapeHtml(systemSettings.gym.place)}</div>`
+    });
+  }else if(gymParticipants.length>0){
+    items.push({
+      time:systemSettings.gym.time,
+      html:`<div class="reminder-title">🔔 明日のジム参加をまだ登録していません</div><div class="reminder-detail">📅 ${reminderDateLabel(key)}　🕖 ${escapeHtml(systemSettings.gym.time)}</div><div class="reminder-detail">📍 ${escapeHtml(systemSettings.gym.place)}　👥 ${gymParticipants.length}名参加予定</div>`
+    });
+  }
+
+  if(items.length===0){
+    reminderContent.innerHTML="";
+    reminderCard.classList.add("hidden");
+    return;
+  }
+
+  items.sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+  reminderContent.innerHTML=items.map(item=>`<div class="reminder-item">${item.html}</div>`).join("");
+  reminderCard.classList.remove("hidden");
 }
 
 const SAME_DAY_STATUS_LABELS={
@@ -2106,7 +2176,7 @@ window.addEventListener("resize",()=>{
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
 
-/* SRC Portal Ver.1.3.0k - basic-operation multilingual display
+/* SRC Portal Ver.1.4.0 - basic-operation multilingual display
    Detects the browser/device language: ja / ko / zh; all others use English.
    Only fixed user-facing labels are translated. Firestore content and admin screens remain unchanged. */
 (() => {
