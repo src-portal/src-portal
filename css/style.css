@@ -1629,3 +1629,22 @@ body{
     font-size:9px;
   }
 }
+
+
+/* Ver.1.3.0k: force the next-event heading to the exact horizontal center */
+.dashboard-card-smart .dashboard-grid > button.dashboard-stat.dashboard-next-event{
+  width:100% !important;
+  box-sizing:border-box;
+  grid-template-columns:minmax(0,1fr);
+}
+.dashboard-card-smart .dashboard-grid > button.dashboard-stat.dashboard-next-event > .dashboard-label{
+  display:flex !important;
+  align-items:flex-start;
+  justify-content:center !important;
+  justify-self:stretch !important;
+  width:100% !important;
+  max-width:none !important;
+  box-sizing:border-box;
+  text-align:center !important;
+  white-space:nowrap;
+}
