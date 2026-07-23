@@ -1662,3 +1662,21 @@ body{
 .reminder-item{padding:13px 14px;border:1px solid #f4d58a;border-radius:16px;background:#fff8e6}
 .reminder-title{font-weight:900;line-height:1.5;color:#7a4d00}
 .reminder-detail{margin-top:4px;font-size:13px;font-weight:800;line-height:1.5;color:var(--muted)}
+
+/* Ver.1.5.0 Member Profiles */
+.member-profile-open-row{width:100%;font:inherit;text-align:left;cursor:pointer;appearance:none}
+.member-profile-open-row:active{transform:scale(.99)}
+.member-profile-chevron{margin-left:8px;color:#9ba6b3;font-size:22px;vertical-align:-2px}
+.member-profile-modal-card,.member-profile-edit-modal-card{max-height:min(84vh,760px);overflow-y:auto}
+.member-profile-identity{display:flex;align-items:center;gap:12px;padding:4px 2px 14px;border-bottom:1px solid #e8edf2}
+.member-profile-avatar{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#f2f6fb;font-size:28px}
+.member-profile-name{font-size:13px;font-weight:850;color:#687687}
+.member-profile-nickname{margin-top:2px;font-size:21px;font-weight:950;color:#152942}
+.member-profile-field{padding:13px 2px;border-bottom:1px solid #edf1f5}
+.member-profile-field-label{margin-bottom:5px;color:#657386;font-size:12px;font-weight:900}
+.member-profile-field-value{color:#172b45;font-size:15px;font-weight:750;line-height:1.55;overflow-wrap:anywhere}
+.member-profile-empty{margin:14px 0;padding:14px;border-radius:12px;background:#f5f7fa;color:#7d8997;font-size:13px;font-weight:800;text-align:center}
+.member-profile-attendance{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;padding:12px;border-radius:12px;background:#f7f9fc;color:#53657a;font-size:12px;font-weight:900}
+#editOwnProfileButton{margin-top:8px}
+.profile-edit-note{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#f3f7fc;color:#596a7e;font-size:12px;font-weight:750;line-height:1.55}
+.member-profile-edit-modal-card .admin-textarea{min-height:72px}
