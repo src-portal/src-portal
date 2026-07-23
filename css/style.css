@@ -1506,7 +1506,7 @@ body{
   display:block;
 }
 
-/* Ver.1.3.0i: use one shared three-row layout for all dashboard cards */
+/* Ver.1.3.0j: use one shared three-row layout for all dashboard cards */
 .dashboard-card-smart .dashboard-grid > .dashboard-stat{
   display:grid;
   grid-template-rows:38px 28px 1fr;
@@ -1540,7 +1540,7 @@ body{
   }
 }
 
-/* Ver.1.3.0i: match the next-event title row with the other dashboard cards */
+/* Ver.1.3.0j: match the next-event title row with the other dashboard cards */
 .dashboard-card-smart .dashboard-grid > .dashboard-stat.dashboard-next-event{
   row-gap:7px;
   text-align:center;
@@ -1553,5 +1553,79 @@ body{
 @media(max-width:420px){
   .dashboard-card-smart .dashboard-grid > .dashboard-stat.dashboard-next-event{
     row-gap:5px;
+  }
+}
+
+
+/* Ver.1.3.0j: rebuild next-event card with the same layout as the other dashboard cards */
+.dashboard-card-smart .dashboard-grid > button.dashboard-stat.dashboard-next-event{
+  display:grid;
+  grid-template-rows:38px 28px 1fr;
+  align-items:start;
+  justify-items:center;
+  row-gap:7px;
+  width:auto;
+  min-width:0;
+  height:132px;
+  margin:0;
+  padding:10px 5px 9px;
+  gap:7px;
+  text-align:center !important;
+  white-space:normal;
+}
+.dashboard-card-smart .dashboard-grid > button.dashboard-stat.dashboard-next-event > .dashboard-icon{
+  grid-row:1;
+  justify-self:center;
+  align-self:start;
+  margin:0;
+}
+.dashboard-card-smart .dashboard-grid > button.dashboard-stat.dashboard-next-event > .dashboard-label{
+  grid-row:2;
+  display:block;
+  width:100%;
+  min-height:28px;
+  margin:0;
+  padding:0;
+  justify-self:stretch;
+  align-self:start;
+  color:#162238;
+  font-size:10px;
+  font-weight:900;
+  line-height:1.35;
+  text-align:center !important;
+}
+.dashboard-card-smart .dashboard-grid > button.dashboard-stat.dashboard-next-event > .dashboard-next-event-content{
+  grid-row:3;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  justify-self:stretch;
+  align-self:start;
+  width:100%;
+  min-width:0;
+  margin:4px 0 0;
+  padding:0;
+  gap:3px;
+  text-align:center !important;
+}
+.dashboard-card-smart .dashboard-grid > button.dashboard-stat.dashboard-next-event .dashboard-next-date,
+.dashboard-card-smart .dashboard-grid > button.dashboard-stat.dashboard-next-event .dashboard-next-name{
+  width:100%;
+  margin:0;
+  padding:0;
+  text-align:center !important;
+}
+@media(max-width:420px){
+  .dashboard-card-smart .dashboard-grid > button.dashboard-stat.dashboard-next-event{
+    grid-template-rows:34px 26px 1fr;
+    height:124px;
+    padding:8px 3px;
+    row-gap:5px;
+    gap:5px;
+  }
+  .dashboard-card-smart .dashboard-grid > button.dashboard-stat.dashboard-next-event > .dashboard-label{
+    min-height:26px;
+    font-size:9px;
   }
 }
