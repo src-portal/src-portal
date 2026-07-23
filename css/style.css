@@ -1476,3 +1476,17 @@ body{
     height:124px;
   }
 }
+
+/* Ver.1.3.0e: align next-event date spacing with the other dashboard values */
+.dashboard-card-smart .dashboard-grid > .dashboard-stat.dashboard-next-event .dashboard-next-event-content{
+  margin-top:4px;
+}
+.dashboard-card-smart .dashboard-grid > .dashboard-stat.dashboard-next-event .dashboard-next-date{
+  font-size:21px;
+  line-height:1;
+}
+@media(max-width:420px){
+  .dashboard-card-smart .dashboard-grid > .dashboard-stat.dashboard-next-event .dashboard-next-date{
+    font-size:18px;
+  }
+}
