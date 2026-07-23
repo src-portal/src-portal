@@ -1135,7 +1135,7 @@ const openMessageBoardButton=document.getElementById("openMessageBoardButton");
 const closeMessageBoardButton=document.getElementById("closeMessageBoardButton");
 const postMessageBoardButton=document.getElementById("postMessageBoardButton");
 
-// Ver.1.3.0g: bind message-board controls only after their DOM references are initialized.
+// Ver.1.3.0h: bind message-board controls only after their DOM references are initialized.
 if(openMessageBoardButton)openMessageBoardButton.onclick=()=>{renderMessageBoard();show(messageBoardModal);};
 if(closeMessageBoardButton)closeMessageBoardButton.onclick=()=>hide(messageBoardModal);
 if(postMessageBoardButton)postMessageBoardButton.onclick=postMessageBoard;
@@ -2106,7 +2106,7 @@ window.addEventListener("resize",()=>{
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
 
-/* SRC Portal Ver.1.3.0g - basic-operation multilingual display
+/* SRC Portal Ver.1.3.0h - basic-operation multilingual display
    Detects the browser/device language: ja / ko / zh; all others use English.
    Only fixed user-facing labels are translated. Firestore content and admin screens remain unchanged. */
 (() => {
