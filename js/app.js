@@ -34,6 +34,7 @@ let memberRecords=[];
 let eventRecords=[];
 let announcementRecords=[];
 let messageBoardRecords=[];
+let kyroInfo={area:"",japanRank:"",aichiRank:"",news:"",goal:"",updatedAt:null};
 function uiT(key,fallback){return window.SRC_I18N?.t?.(key) ?? fallback;}
 let selectedEvent=null;
 const defaultSystemSettings={
@@ -66,7 +67,10 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "setupAdminUnlockModal",
     "inviteAuthModal",
     "memberProfileModal",
-    "memberProfileEditModal"
+    "memberProfileEditModal",
+    "mainMenuModal",
+    "kyroPageModal",
+    "adminKyroModal"
   ].includes(e.id)){
     positionMemberModalBelowHeader(e);
   }
@@ -153,6 +157,19 @@ onSnapshot(doc(db,"settings","system"),snap=>{
   console.error("settings read error",err);
 });
 
+onSnapshot(doc(db,"settings","kyro"),snap=>{
+  const data=snap.exists()?snap.data():{};
+  kyroInfo={
+    area:data.area||"",
+    japanRank:data.japanRank||"",
+    aichiRank:data.aichiRank||"",
+    news:data.news||"",
+    goal:data.goal||"",
+    updatedAt:data.updatedAt||null
+  };
+  renderKyroPublic();
+},err=>console.error("KYRO settings read error",err));
+
 onSnapshot(collection(db,"attendance"),snap=>{
   attendance={};
   attendanceStatuses={};
@@ -175,6 +192,7 @@ onSnapshot(collection(db,"members"),snap=>{
         id:d.id,
         name:data.name,
         admin:data.admin===true,
+        kyroMember:data.kyroMember===true,
         active:data.active!==false,
         order:data.order??999,
         inviteCode:data.inviteCode||"",
@@ -207,6 +225,7 @@ onSnapshot(collection(db,"members"),snap=>{
   }
   renderNameButtons();
   renderAll();
+  renderKyroPublic();
   if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
   if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))renderAdminMembers();
 },err=>{
@@ -530,7 +549,7 @@ function renderMemberOverview(){
     row.innerHTML=`
       <div class="member-today-status ${joiningToday?"joining":"not-joining"}" aria-label="${joiningToday?"今日参加予定":"今日参加予定なし"}">${joiningToday?"●":"○"}</div>
       <div class="member-overview-main">
-        <div class="member-overview-name">${medal}${escapeHtml(name)}</div>
+        <div class="member-overview-name">${medal}${escapeHtml(name)}${member.kyroMember?'<span class="kyro-badge member-kyro-badge">KYRO</span>':""}</div>
         <div class="member-overview-breakdown">
           <span>🏃 ${runCount}${uiT("times","回")}</span>
           <span>🏋️ ${gymCount}${uiT("times","回")}</span>
@@ -599,6 +618,50 @@ async function saveOwnProfile(){
     hide(memberProfileEditModal);
   }catch(e){console.error(e);alert(uiT("profileSaveFailed","自己紹介の保存に失敗しました。Firestoreルールを確認してください。"));}
 }
+function kyroUpdatedLabel(value){
+  if(!value)return "";
+  const date=value.toDate?value.toDate():new Date(value);
+  if(Number.isNaN(date.getTime()))return "";
+  return `最終更新 ${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())}`;
+}
+function renderKyroPublic(){
+  const kyroMembers=memberRecords.filter(member=>member.active!==false&&member.kyroMember);
+  if(kyroMemberCount)kyroMemberCount.textContent=`${kyroMembers.length}名`;
+  if(kyroArea)kyroArea.textContent=kyroInfo.area||"未登録";
+  if(kyroJapanRank)kyroJapanRank.textContent=kyroInfo.japanRank||"未登録";
+  if(kyroAichiRank)kyroAichiRank.textContent=kyroInfo.aichiRank||"未登録";
+  if(kyroNews)kyroNews.textContent=kyroInfo.news||"未登録です。";
+  if(kyroGoal)kyroGoal.textContent=kyroInfo.goal||"未登録です。";
+  if(kyroMemberList){
+    kyroMemberList.innerHTML=kyroMembers.length?kyroMembers.map(member=>`<span>${escapeHtml(member.name)} <span class="kyro-badge">KYRO</span></span>`).join(""):'<span class="kyro-empty">KYROメンバーは未登録です。</span>';
+  }
+  if(kyroUpdatedAt)kyroUpdatedAt.textContent=kyroUpdatedLabel(kyroInfo.updatedAt);
+  if(kyroMiniStatus){
+    const parts=[];
+    if(kyroInfo.japanRank)parts.push(`全国${kyroInfo.japanRank}`);
+    if(kyroInfo.area)parts.push(`領土${kyroInfo.area}`);
+    kyroMiniStatus.textContent=parts.length?parts.join("・"):`KYROメンバー ${kyroMembers.length}名`;
+  }
+}
+function openKyroPage(){renderKyroPublic();hide(mainMenuModal);show(kyroPageModal);}
+function openAdminKyro(){
+  kyroAreaInput.value=kyroInfo.area||"";
+  kyroJapanRankInput.value=kyroInfo.japanRank||"";
+  kyroAichiRankInput.value=kyroInfo.aichiRank||"";
+  kyroNewsInput.value=kyroInfo.news||"";
+  kyroGoalInput.value=kyroInfo.goal||"";
+  hide(adminMenuModal);show(adminKyroModal);
+}
+async function saveKyroInfo(){
+  try{
+    await setDoc(doc(db,"settings","kyro"),{
+      area:kyroAreaInput.value.trim(),japanRank:kyroJapanRankInput.value.trim(),aichiRank:kyroAichiRankInput.value.trim(),
+      news:kyroNewsInput.value.trim(),goal:kyroGoalInput.value.trim(),updatedAt:serverTimestamp()
+    },{merge:true});
+    alert("SRC-KYRO情報を保存しました。");hide(adminKyroModal);
+  }catch(e){console.error(e);alert("SRC-KYRO情報の保存に失敗しました。Firestoreルールを確認してください。");}
+}
+
 const dashboardAnimationState=new Map();
 
 function animateDashboardNumber(element,target,suffix){
@@ -1230,6 +1293,7 @@ const closeInvitePreviewButton=document.getElementById("closeInvitePreviewButton
 const memberAdminList=document.getElementById("memberAdminList");
 const newMemberNameInput=document.getElementById("newMemberNameInput");
 const newMemberAdminCheck=document.getElementById("newMemberAdminCheck");
+const newMemberKyroCheck=document.getElementById("newMemberKyroCheck");
 const newMemberInviteCodeInput=document.getElementById("newMemberInviteCodeInput");
 const generateInviteCodeButton=document.getElementById("generateInviteCodeButton");
 const addMemberButton=document.getElementById("addMemberButton");
@@ -1265,11 +1329,44 @@ const profileBestTimeInput=document.getElementById("profileBestTimeInput");
 const profileGoalInput=document.getElementById("profileGoalInput");
 const profileEditError=document.getElementById("profileEditError");
 const saveProfileButton=document.getElementById("saveProfileButton");
+const mainMenuButton=document.getElementById("mainMenuButton");
+const mainMenuModal=document.getElementById("mainMenuModal");
+const closeMainMenuButton=document.getElementById("closeMainMenuButton");
+const openKyroPageButton=document.getElementById("openKyroPageButton");
+const kyroMiniCard=document.getElementById("kyroMiniCard");
+const kyroMiniStatus=document.getElementById("kyroMiniStatus");
+const kyroPageModal=document.getElementById("kyroPageModal");
+const closeKyroPageButton=document.getElementById("closeKyroPageButton");
+const kyroMemberCount=document.getElementById("kyroMemberCount");
+const kyroArea=document.getElementById("kyroArea");
+const kyroJapanRank=document.getElementById("kyroJapanRank");
+const kyroAichiRank=document.getElementById("kyroAichiRank");
+const kyroNews=document.getElementById("kyroNews");
+const kyroGoal=document.getElementById("kyroGoal");
+const kyroMemberList=document.getElementById("kyroMemberList");
+const kyroUpdatedAt=document.getElementById("kyroUpdatedAt");
+const adminKyroManageButton=document.getElementById("adminKyroManageButton");
+const adminKyroModal=document.getElementById("adminKyroModal");
+const closeAdminKyroButton=document.getElementById("closeAdminKyroButton");
+const kyroAreaInput=document.getElementById("kyroAreaInput");
+const kyroJapanRankInput=document.getElementById("kyroJapanRankInput");
+const kyroAichiRankInput=document.getElementById("kyroAichiRankInput");
+const kyroNewsInput=document.getElementById("kyroNewsInput");
+const kyroGoalInput=document.getElementById("kyroGoalInput");
+const saveKyroInfoButton=document.getElementById("saveKyroInfoButton");
 let selectedProfileMember=null;
 if(closeMemberProfileButton)closeMemberProfileButton.onclick=()=>{hide(memberProfileModal);show(memberOverviewModal);};
 if(editOwnProfileButton)editOwnProfileButton.onclick=openOwnProfileEditor;
 if(closeMemberProfileEditButton)closeMemberProfileEditButton.onclick=()=>hide(memberProfileEditModal);
 if(saveProfileButton)saveProfileButton.onclick=saveOwnProfile;
+if(mainMenuButton)mainMenuButton.onclick=()=>show(mainMenuModal);
+if(closeMainMenuButton)closeMainMenuButton.onclick=()=>hide(mainMenuModal);
+if(openKyroPageButton)openKyroPageButton.onclick=openKyroPage;
+if(kyroMiniCard)kyroMiniCard.onclick=openKyroPage;
+if(closeKyroPageButton)closeKyroPageButton.onclick=()=>hide(kyroPageModal);
+if(adminKyroManageButton)adminKyroManageButton.onclick=openAdminKyro;
+if(closeAdminKyroButton)closeAdminKyroButton.onclick=()=>hide(adminKyroModal);
+if(saveKyroInfoButton)saveKyroInfoButton.onclick=saveKyroInfo;
 const dashboardMemberCount=document.getElementById("dashboardMemberCount");
 const dashboardRunCount=document.getElementById("dashboardRunCount");
 const dashboardGymCount=document.getElementById("dashboardGymCount");
@@ -1885,7 +1982,7 @@ function renderAdminMembers(){
 
     const title=document.createElement("div");
     title.className="member-admin-main";
-    title.textContent=`😊 ${m.name}`;
+    title.innerHTML=`😊 ${escapeHtml(m.name)}${m.kyroMember?'<span class="kyro-badge admin-kyro-badge">KYRO</span>':""}`;
 
     const status=document.createElement("div");
     status.className="member-admin-summary-status";
@@ -1909,6 +2006,7 @@ function renderAdminMembers(){
     meta.className="member-admin-meta-grid";
     meta.innerHTML=`
       <div><span>区分</span><strong>${m.admin?"管理者":"一般"}</strong></div>
+      <div><span>KYRO</span><strong>${m.kyroMember?"メンバー":"未参加"}</strong></div>
       <div><span>状態</span><strong>${m.active===false?"停止":"有効"}</strong></div>
       <div><span>表示順</span><strong>${m.order ?? "-"}</strong></div>
       <div><span>招待コード</span><strong class="member-code-value">${m.inviteCode?escapeHtml(m.inviteCode):"コードなし"}</strong></div>`;
@@ -1962,14 +2060,22 @@ function renderAdminMembers(){
     activeLabel.appendChild(activeCheck);
     activeLabel.appendChild(document.createTextNode(" 有効"));
 
+    const kyroLabel=document.createElement("label");
+    const kyroCheck=document.createElement("input");
+    kyroCheck.type="checkbox";
+    kyroCheck.checked=m.kyroMember===true;
+    kyroLabel.appendChild(kyroCheck);
+    kyroLabel.appendChild(document.createTextNode(" KYROメンバー"));
+
     checks.appendChild(adminLabel);
     checks.appendChild(activeLabel);
+    checks.appendChild(kyroLabel);
 
     const saveBtn=document.createElement("button");
     saveBtn.type="button";
     saveBtn.className="member-small-button primary";
     saveBtn.textContent="保存";
-    saveBtn.onclick=()=>saveMemberEdit(m.id,nameInput.value,adminCheck.checked,activeCheck.checked);
+    saveBtn.onclick=()=>saveMemberEdit(m.id,nameInput.value,adminCheck.checked,activeCheck.checked,kyroCheck.checked);
 
     const cancelBtn=document.createElement("button");
     cancelBtn.type="button";
@@ -2005,6 +2111,12 @@ function renderAdminMembers(){
     activeBtn.textContent=m.active===false ? "停止中" : "有効";
     activeBtn.onclick=()=>toggleMemberFlag(m.id,"active",m.active===false);
 
+    const kyroBtn=document.createElement("button");
+    kyroBtn.type="button";
+    kyroBtn.className=`member-toggle-button ${m.kyroMember ? "on kyro-on" : ""}`;
+    kyroBtn.textContent=m.kyroMember ? "KYRO ON" : "KYRO OFF";
+    kyroBtn.onclick=()=>toggleMemberFlag(m.id,"kyroMember",!m.kyroMember);
+
     const upBtn=document.createElement("button");
     upBtn.type="button";
     upBtn.className="member-small-button member-order-button";
@@ -2022,6 +2134,7 @@ function renderAdminMembers(){
     secondaryActions.appendChild(editBtn);
     secondaryActions.appendChild(adminBtn);
     secondaryActions.appendChild(activeBtn);
+    secondaryActions.appendChild(kyroBtn);
     secondaryActions.appendChild(upBtn);
     secondaryActions.appendChild(downBtn);
     detail.appendChild(secondaryActions);
@@ -2055,7 +2168,7 @@ async function toggleMemberFlag(memberId,field,value){
   }
 }
 
-async function saveMemberEdit(memberId,name,admin,active){
+async function saveMemberEdit(memberId,name,admin,active,kyroMember){
   const cleanName=name.trim();
   if(!memberId){
     alert("このメンバーはFirestoreのIDがないため変更できません。");
@@ -2070,6 +2183,7 @@ async function saveMemberEdit(memberId,name,admin,active){
       name:cleanName,
       admin,
       active,
+      kyroMember,
       updatedAt:serverTimestamp()
     });
     alert("メンバー情報を保存しました。");
@@ -2145,6 +2259,7 @@ async function addMember(){
     await setDoc(doc(db,"members",id),{
       name,
       admin:newMemberAdminCheck.checked,
+      kyroMember:newMemberKyroCheck.checked,
       active:true,
       order,
       inviteCode,
@@ -2157,6 +2272,7 @@ async function addMember(){
     const addedMember={id,name,inviteCode,inviteStatus:"pending",active:true};
     newMemberNameInput.value="";
     newMemberAdminCheck.checked=false;
+    newMemberKyroCheck.checked=false;
     newMemberInviteCodeInput.value="";
     const copied=await copyText(buildInviteMessage(addedMember));
     alert(copied?`メンバーを追加し、招待情報をコピーしました。\n招待コード：${inviteCode}`:`メンバーを追加しました。\n招待コード：${inviteCode}`);
@@ -2265,7 +2381,7 @@ window.addEventListener("resize",()=>{
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
 
-/* SRC Portal Ver.1.5.0a - basic-operation multilingual display
+/* SRC Portal Ver.1.6.0 - basic-operation multilingual display
    Detects the browser/device language: ja / ko / zh; all others use English.
    Only fixed user-facing labels are translated. Firestore content and admin screens remain unchanged. */
 (() => {
