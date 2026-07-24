@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.5.0a">
+<link rel="stylesheet" href="css/style.css?v=1.6.0">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -14,7 +14,7 @@
 <div class="app-shell">
   <header class="app-header app-header-image">
     <img src="images/src-header.jpg" alt="SRC Keep Moving Forward — Run Walk Gym Together" class="header-banner-image">
-    <button class="help-button header-help-button" id="helpButton" type="button">❓ ヘルプ</button>
+    <div class="header-action-buttons"><button class="header-menu-button" id="mainMenuButton" type="button" aria-label="メニュー">☰</button><button class="help-button header-help-button" id="helpButton" type="button">❓ ヘルプ</button></div>
   </header>
 
   <main class="main-content" id="homeView">
@@ -31,9 +31,12 @@
   </div>
 </section>
 
-    
-    
-    
+    <button class="kyro-mini-card" id="kyroMiniCard" type="button" aria-label="SRC-KYRO情報を開く">
+      <span class="kyro-mini-title">SRC-KYRO-Club</span>
+      <span class="kyro-mini-status" id="kyroMiniStatus">情報を確認中...</span>
+      <span class="kyro-mini-chevron">›</span>
+    </button>
+
     <section class="announcement-card" id="announcementCard">
       <div class="section-label" id="announcementHeading">📢 お知らせ（0件）</div>
       <div id="announcementList" class="announcement-empty">現在のお知らせはありません。</div>
@@ -62,10 +65,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.5.0a</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.6.0</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.24</div>
-  <div class="build-info" id="buildInfo">Build 2026/07/24 1.5.0a JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/07/24 1.6.0 JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -129,6 +132,8 @@
         <p>管理者からの正式な連絡です。「お知らせ（○件）」の枠内を上下にスクロールして確認できます。</p>
         <h3>💬 みんなの伝言板</h3>
         <p>メンバー同士の軽い情報共有に使います。「投稿・一覧」を押し、伝言と掲載期間（3日・7日・14日）を選んで投稿してください。自分の投稿は削除でき、管理者はすべての投稿を削除できます。期限切れの投稿は表示されません。</p>
+        <h3>🗺 SRC-KYRO</h3>
+        <p>トップのSRC-KYROカードまたは☰メニューから、クラブの領土・ランキング・最新ニュース・目標・参加メンバーを確認できます。登録メンバー一覧では、KYROメンバーの名前の横に黄色の「KYRO」バッジが表示されます。</p>
         <h3>👤 自己紹介</h3>
         <p>登録メンバー一覧で名前をタップすると、そのメンバーの自己紹介を確認できます。自分の自己紹介を開いた場合だけ「自分の自己紹介を編集」ボタンが表示されます。</p>
         <p><strong>必須項目：</strong>ニックネーム、ひとこと<br><strong>任意項目：</strong>所属、趣味・好きなこと、ランニング歴、ベストタイム、現在の目標</p>
@@ -231,7 +236,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.5.0a<br>Official Release<br>2026.07.24</strong></p>
+        <p><strong>SRC Portal<br>Version 1.6.0<br>Official Release<br>2026.07.24</strong></p>
       </section>
     </div>
 </div></div>
@@ -261,6 +266,9 @@
         <span id="memberOverviewTotalLegend">🔥 今月参加合計</span>
         <span>🏃 ラン</span>
         <span>🏋️ ジム</span>
+      </div>
+      <div class="member-legend-row member-kyro-legend-row">
+        <span class="kyro-badge">KYRO</span><span>＝ SRC-KYRO-Clubメンバー</span>
       </div>
     </div>
     <p class="member-overview-note">閲覧専用です。メンバー情報の編集はできません。</p>
@@ -374,6 +382,43 @@
   </div>
 </div>
 
+
+<div class="modal-overlay hidden" id="mainMenuModal">
+  <div class="modal-card menu-modal-card">
+    <div class="dialog-header"><h2>☰ メニュー</h2><button id="closeMainMenuButton" type="button" aria-label="閉じる">×</button></div>
+    <div class="main-menu-list"><button id="openKyroPageButton" type="button">🗺 SRC-KYRO</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="kyroPageModal">
+  <div class="modal-card kyro-page-card">
+    <div class="dialog-header"><h2>🗺 SRC-KYRO-Club</h2><button id="closeKyroPageButton" type="button" aria-label="閉じる">×</button></div>
+    <div class="kyro-stats-grid">
+      <div><span>👥 メンバー</span><strong id="kyroMemberCount">--</strong></div>
+      <div><span>🗺 領土</span><strong id="kyroArea">--</strong></div>
+      <div><span>🏆 全国順位</span><strong id="kyroJapanRank">--</strong></div>
+      <div><span>🏅 愛知県順位</span><strong id="kyroAichiRank">--</strong></div>
+    </div>
+    <section class="kyro-info-section"><h3>📢 最新ニュース</h3><p id="kyroNews">未登録です。</p></section>
+    <section class="kyro-info-section"><h3>🎯 次の目標</h3><p id="kyroGoal">未登録です。</p></section>
+    <section class="kyro-info-section"><h3>👥 KYRO参加メンバー</h3><div id="kyroMemberList" class="kyro-member-list"></div></section>
+    <p class="kyro-updated" id="kyroUpdatedAt"></p>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="adminKyroModal">
+  <div class="modal-card admin-fixed-modal-card">
+    <div class="dialog-header"><h2>🗺 SRC-KYRO情報管理</h2><button id="closeAdminKyroButton" type="button" aria-label="閉じる">×</button></div>
+    <label class="admin-form-label" for="kyroAreaInput">領土</label><input id="kyroAreaInput" class="admin-input" type="text" maxlength="30" placeholder="例：146.3㎢">
+    <label class="admin-form-label" for="kyroJapanRankInput">全国順位</label><input id="kyroJapanRankInput" class="admin-input" type="text" maxlength="20" placeholder="例：8位">
+    <label class="admin-form-label" for="kyroAichiRankInput">愛知県順位</label><input id="kyroAichiRankInput" class="admin-input" type="text" maxlength="20" placeholder="例：2位">
+    <label class="admin-form-label" for="kyroNewsInput">最新ニュース</label><textarea id="kyroNewsInput" class="admin-input admin-textarea" maxlength="150" placeholder="例：全国トップ10に入りました！"></textarea>
+    <label class="admin-form-label" for="kyroGoalInput">次の目標</label><textarea id="kyroGoalInput" class="admin-input admin-textarea" maxlength="150" placeholder="例：全国5位・領土200㎢"></textarea>
+    <button class="primary-button" id="saveKyroInfoButton" type="button">保存する</button>
+    <p class="settings-note">メンバー数と参加メンバー一覧は、メンバー管理のKYRO設定から自動表示されます。</p>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="adminPinModal">
   <div class="modal-card admin-fixed-modal-card">
     <div class="dialog-header">
@@ -401,6 +446,7 @@
       <button class="admin-menu-button" id="adminAnnouncementManageButton" type="button">📢 お知らせ管理</button>
       <button class="admin-menu-button" id="adminEventManageButton" type="button">📅 イベント管理</button>
       <button class="admin-menu-button" id="adminSystemSettingsButton" type="button">⚙️ システム設定</button>
+      <button class="admin-menu-button" id="adminKyroManageButton" type="button">🗺 SRC-KYRO情報管理</button>
     </div>
     <p class="setup-text">管理者入口：画面下の Version 表示を2秒長押し。</p>
   </div>
@@ -419,6 +465,10 @@
       <label class="admin-check-label">
         <input id="newMemberAdminCheck" type="checkbox">
         管理者にする
+      </label>
+      <label class="admin-check-label">
+        <input id="newMemberKyroCheck" type="checkbox">
+        SRC-KYRO-Clubメンバー
       </label>
       <div class="invite-code-create-row">
         <input id="newMemberInviteCodeInput" class="admin-input invite-code-input" type="text" readonly placeholder="招待コード">
@@ -585,6 +635,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.5.0a"></script>
+<script type="module" src="js/app.js?v=1.6.0"></script>
 </body>
 </html>
