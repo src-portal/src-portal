@@ -1728,3 +1728,16 @@ body{
 #kyroPageModal .modal-card{
   max-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
 }
+
+
+/* Ver.1.6.0b: all popup modals are displayed above the header */
+.modal-overlay{
+  z-index:200 !important;
+  align-items:flex-start !important;
+  padding-top:max(18px,env(safe-area-inset-top)) !important;
+  padding-bottom:max(18px,env(safe-area-inset-bottom)) !important;
+}
+
+.modal-overlay .modal-card{
+  max-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+}
