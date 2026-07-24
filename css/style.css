@@ -1712,3 +1712,19 @@ body{
 .kyro-empty{color:var(--muted);background:transparent!important;padding:0!important}
 .kyro-updated{margin:12px 2px 0;text-align:right;color:var(--muted);font-size:11px}
 @media(max-width:360px){.header-action-buttons{gap:5px}.header-menu-button{width:34px;height:34px;font-size:19px}.kyro-mini-status{font-size:12px}.kyro-stats-grid{grid-template-columns:1fr}}
+
+/* Ver.1.6.0a: member profile / KYRO modal header overlap fix */
+#memberProfileModal,
+#memberProfileEditModal,
+#kyroPageModal{
+  z-index:200;
+  align-items:flex-start;
+  padding-top:max(18px,env(safe-area-inset-top));
+  padding-bottom:max(18px,env(safe-area-inset-bottom));
+}
+
+#memberProfileModal .modal-card,
+#memberProfileEditModal .modal-card,
+#kyroPageModal .modal-card{
+  max-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
