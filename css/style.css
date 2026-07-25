@@ -1773,3 +1773,55 @@ body{
 .recommendation-owner-actions button{border:1px solid var(--border);border-radius:999px;background:#fff;padding:7px 9px;font-size:12px;font-weight:900}
 .recommendation-owner-actions .danger{border-color:rgba(214,69,69,.35);background:#fcebea;color:var(--red)}
 @media(max-width:380px){.recommendation-card{padding:12px}.recommendation-title{font-size:16px}}
+
+/* Ver.1.7.0a: header-under user/menu bar */
+.user-menu-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  width:100%;
+  padding:8px 14px;
+  border-bottom:1px solid #dfe5ec;
+  background:#fff;
+  box-shadow:0 3px 10px rgba(31,41,51,.06);
+}
+.top-user-button,
+.top-menu-button{
+  border:0;
+  background:transparent;
+  color:var(--text);
+  font:inherit;
+}
+.top-user-button{
+  display:inline-flex;
+  align-items:center;
+  min-width:0;
+  gap:7px;
+  padding:5px 2px;
+  text-align:left;
+}
+.top-user-button strong{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:17px;
+  font-weight:950;
+}
+.top-menu-button{
+  flex:0 0 auto;
+  padding:7px 9px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:900;
+}
+.top-user-button:active,
+.top-menu-button:active{background:#eef2f7}
+.top-user-button:focus-visible,
+.top-menu-button:focus-visible{outline:3px solid rgba(23,115,230,.28);outline-offset:1px}
+@media(max-width:360px){
+  .user-menu-bar{padding:7px 11px}
+  .top-user-button strong{font-size:16px}
+  .top-menu-button{font-size:13px}
+}
