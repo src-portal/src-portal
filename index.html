@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.7.0a">
+<link rel="stylesheet" href="css/style.css?v=1.7.0b">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -17,14 +17,19 @@
     <div class="header-action-buttons"><button class="help-button header-help-button" id="helpButton" type="button">❓ ヘルプ</button></div>
   </header>
 
-  <div class="user-menu-bar" aria-label="ユーザーとメニュー">
-    <button class="top-user-button" id="currentUserLabel" type="button"><span aria-hidden="true">😊</span><strong>未設定</strong></button>
-    <button class="top-menu-button" id="mainMenuButton" type="button" aria-label="メニューを開く">☰ メニュー</button>
-    <button class="hidden" id="changeUserButton" type="button" tabindex="-1">変更</button>
-  </div>
-
   <main class="main-content" id="homeView">
     <section class="connection-card hidden" id="connectionCard"><span id="connectionStatus">🟡 Firebase 接続確認中</span></section>
+    <section class="user-card user-menu-card" aria-label="現在のユーザーとメニュー">
+      <div class="user-menu-card-main">
+        <div class="small-label">現在のユーザー</div>
+        <div class="current-user">
+          <span class="current-user-emoji" aria-hidden="true">😊</span>
+          <button class="current-user-name-button" id="currentUserLabel" type="button"><strong>未設定</strong></button>
+        </div>
+      </div>
+      <button class="user-card-menu-button" id="mainMenuButton" type="button" aria-label="メニューを開く">☰ メニュー</button>
+      <button class="hidden" id="changeUserButton" type="button" tabindex="-1">変更</button>
+    </section>
 
     <section class="dashboard-card dashboard-card-smart" id="dashboardCard">
   <div class="dashboard-heading"><div class="section-label">📊 SRC Dashboard</div></div>
@@ -70,10 +75,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.7.0a</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.7.0b</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.25</div>
-  <div class="build-info" id="buildInfo">Build 2026/07/25 1.7.0a JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/07/25 1.7.0b JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -256,7 +261,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.7.0a<br>Official Release<br>2026.07.25</strong></p>
+        <p><strong>SRC Portal<br>Version 1.7.0b<br>Official Release<br>2026.07.25</strong></p>
       </section>
     </div>
 </div></div>
@@ -522,7 +527,6 @@
       <button class="admin-menu-button" id="adminChangeUserButton" type="button">👤 ユーザー変更</button>
       <button class="admin-menu-button" id="adminMemberListButton" type="button">👥 メンバー管理</button>
       <button class="admin-menu-button" id="adminInvitePreviewButton" type="button">📨 招待コード準備</button>
-      <button class="admin-menu-button" id="adminSeedMembersButton" type="button">🔧 初期メンバー登録</button>
       <button class="admin-menu-button" id="adminAnnouncementManageButton" type="button">📢 お知らせ管理</button>
       <button class="admin-menu-button" id="adminEventManageButton" type="button">📅 イベント管理</button>
       <button class="admin-menu-button" id="adminSystemSettingsButton" type="button">⚙️ システム設定</button>
@@ -715,6 +719,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.7.0a"></script>
+<script type="module" src="js/app.js?v=1.7.0b"></script>
 </body>
 </html>
