@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.6.0b">
+<link rel="stylesheet" href="css/style.css?v=1.7.0">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -65,10 +65,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.6.0b</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.7.0</button>
   <div class="official-release-label">Official Release</div>
-  <div class="release-date">2026.07.24</div>
-  <div class="build-info" id="buildInfo">Build 2026/07/24 1.6.0b JST</div>
+  <div class="release-date">2026.07.25</div>
+  <div class="build-info" id="buildInfo">Build 2026/07/25 1.7.0 JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -132,6 +132,10 @@
         <p>管理者からの正式な連絡です。「お知らせ（○件）」の枠内を上下にスクロールして確認できます。</p>
         <h3>💬 みんなの伝言板</h3>
         <p>メンバー同士の軽い情報共有に使います。「投稿・一覧」を押し、伝言と掲載期間（3日・7日・14日）を選んで投稿してください。自分の投稿は削除でき、管理者はすべての投稿を削除できます。期限切れの投稿は表示されません。</p>
+        <h3>⭐ みんなのおすすめ</h3>
+        <p>☰メニューから開き、SRCメンバーがおすすめするコース・お店・大会・グッズなどを共有できます。カテゴリで絞り込み、「新着順」と「人気順」を切り替えられます。</p>
+        <p>投稿項目はカテゴリ、タイトル、おすすめコメント、場所（任意）、リンク（任意）です。投稿者名と投稿日は自動表示され、写真は使用しません。自分の投稿は編集・削除でき、管理者はすべての投稿を削除できます。</p>
+        <p>「👍 いいね」は1人1回押すことができ、もう一度押すと取り消せます。誰が押したかは表示せず、合計数だけを表示します。</p>
         <h3>🗺 SRC-KYRO</h3>
         <p>トップのSRC-KYROカードまたは☰メニューから、クラブの領土・ランキング・最新ニュース・目標・参加メンバーを確認できます。登録メンバー一覧では、KYROメンバーの名前の横に黄色の「KYRO」バッジが表示されます。</p>
         <h3>👤 自己紹介</h3>
@@ -197,6 +201,17 @@
       <details class="help-details">
         <summary>📝 リリースノート</summary>
         <div class="help-document">
+          <h4>Version 1.7.x</h4>
+          <ul>
+            <li>「みんなのおすすめ」を追加</li>
+            <li>カテゴリ別の投稿・編集・削除、新着順／人気順表示に対応</li>
+            <li>1人1回の「👍 いいね」と取消に対応</li>
+          </ul>
+          <h4>Version 1.6.x</h4>
+          <ul>
+            <li>SRC-KYRO-Club情報ページとKYROメンバーバッジを追加</li>
+            <li>管理者がKYRO情報とKYROメンバー設定を更新可能</li>
+          </ul>
           <h4>Version 1.5.x</h4>
           <ul>
             <li>登録メンバーの自己紹介（プロフィール）機能を追加</li>
@@ -230,13 +245,13 @@
             <li>Help、利用規約、プライバシーポリシー、リリースノートを整備</li>
             <li>招待コードによる初回登録に対応</li>
           </ul>
-          <p class="help-document-date">更新日：2026年7月24日</p>
+          <p class="help-document-date">更新日：2026年7月25日</p>
         </div>
       </details>
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.6.0b<br>Official Release<br>2026.07.24</strong></p>
+        <p><strong>SRC Portal<br>Version 1.7.0<br>Official Release<br>2026.07.25</strong></p>
       </section>
     </div>
 </div></div>
@@ -386,7 +401,66 @@
 <div class="modal-overlay hidden" id="mainMenuModal">
   <div class="modal-card menu-modal-card">
     <div class="dialog-header"><h2>☰ メニュー</h2><button id="closeMainMenuButton" type="button" aria-label="閉じる">×</button></div>
-    <div class="main-menu-list"><button id="openKyroPageButton" type="button">🗺 SRC-KYRO</button></div>
+    <div class="main-menu-list">
+      <button id="openRecommendationsButton" type="button">⭐ みんなのおすすめ</button>
+      <button id="openKyroPageButton" type="button">🗺 SRC-KYRO</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="recommendationsModal">
+  <div class="modal-card recommendations-modal-card">
+    <div class="dialog-header">
+      <h2>⭐ みんなのおすすめ</h2>
+      <button id="closeRecommendationsButton" type="button" aria-label="閉じる">×</button>
+    </div>
+    <p class="recommendations-intro">SRCメンバーのおすすめを共有するページです。</p>
+    <div class="recommendations-toolbar">
+      <select id="recommendationCategoryFilter" aria-label="カテゴリで絞り込み">
+        <option value="all">すべてのカテゴリ</option>
+        <option value="course">🏃 コース・運動</option>
+        <option value="cafe">☕ カフェ・グルメ</option>
+        <option value="event">🏆 大会・イベント</option>
+        <option value="goods">👟 グッズ・用品</option>
+        <option value="kyro">🗺 KYRO</option>
+        <option value="relax">♨ 温泉・リラックス</option>
+        <option value="season">🌸 季節</option>
+        <option value="other">💡 その他</option>
+      </select>
+      <div class="recommendation-sort" role="group" aria-label="並び順">
+        <button id="recommendationNewestButton" class="active" type="button">新着順</button>
+        <button id="recommendationPopularButton" type="button">人気順</button>
+      </div>
+    </div>
+    <button class="primary-button recommendation-open-form-button" id="openRecommendationFormButton" type="button">＋ おすすめを投稿</button>
+    <div class="recommendation-form-box hidden" id="recommendationFormBox">
+      <div class="member-add-title" id="recommendationFormTitle">＋ おすすめを投稿</div>
+      <label class="admin-form-label" for="recommendationCategoryInput">カテゴリ（必須）</label>
+      <select id="recommendationCategoryInput" class="admin-input">
+        <option value="course">🏃 コース・運動</option>
+        <option value="cafe">☕ カフェ・グルメ</option>
+        <option value="event">🏆 大会・イベント</option>
+        <option value="goods">👟 グッズ・用品</option>
+        <option value="kyro">🗺 KYRO</option>
+        <option value="relax">♨ 温泉・リラックス</option>
+        <option value="season">🌸 季節</option>
+        <option value="other">💡 その他</option>
+      </select>
+      <label class="admin-form-label" for="recommendationTitleInput">タイトル（必須）</label>
+      <input id="recommendationTitleInput" class="admin-input" type="text" maxlength="60" placeholder="例：小牧山ランニングコース">
+      <label class="admin-form-label" for="recommendationCommentInput">おすすめコメント（必須）</label>
+      <textarea id="recommendationCommentInput" class="admin-input admin-textarea recommendation-comment-input" maxlength="200" placeholder="おすすめのポイントを200文字以内で入力してください"></textarea>
+      <label class="admin-form-label" for="recommendationLocationInput">場所（任意）</label>
+      <input id="recommendationLocationInput" class="admin-input" type="text" maxlength="80" placeholder="例：小牧市堀の内">
+      <label class="admin-form-label" for="recommendationUrlInput">リンク（任意）</label>
+      <input id="recommendationUrlInput" class="admin-input" type="url" maxlength="300" inputmode="url" placeholder="地図・大会・商品のURLなど">
+      <p class="admin-error hidden" id="recommendationFormError">現在のユーザー、タイトル、コメントを確認してください。</p>
+      <button class="primary-button" id="saveRecommendationButton" type="button">投稿する</button>
+      <button class="recommendation-cancel-button" id="cancelRecommendationFormButton" type="button">キャンセル</button>
+      <p class="settings-note">写真なし・1人20件まで。自分の投稿は編集・削除できます。</p>
+    </div>
+    <div class="recommendations-summary" id="recommendationsSummary"></div>
+    <div class="recommendations-list" id="recommendationsList"><div class="recommendations-empty">おすすめはまだありません。</div></div>
   </div>
 </div>
 
@@ -635,6 +709,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.6.0b"></script>
+<script type="module" src="js/app.js?v=1.7.0"></script>
 </body>
 </html>
