@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, getDoc, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, getDoc, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAsqNE9tSB2eIDtHBR8dRSVkzGFD0sKh-c",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
@@ -35,6 +35,10 @@ let eventRecords=[];
 let announcementRecords=[];
 let messageBoardRecords=[];
 let kyroInfo={area:"",japanRank:"",aichiRank:"",news:"",goal:"",updatedAt:null};
+let recommendationRecords=[];
+let recommendationSort="newest";
+let recommendationCategory="all";
+let editingRecommendationId=null;
 function uiT(key,fallback){return window.SRC_I18N?.t?.(key) ?? fallback;}
 let selectedEvent=null;
 const defaultSystemSettings={
@@ -69,6 +73,7 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "memberProfileModal",
     "memberProfileEditModal",
     "mainMenuModal",
+    "recommendationsModal",
     "kyroPageModal",
     "adminKyroModal"
   ].includes(e.id)){
@@ -246,6 +251,15 @@ onSnapshot(collection(db,"messageBoard"),snap=>{
   messageBoardRecords=loaded.sort((a,b)=>messageBoardDateValue(b.createdAt)-messageBoardDateValue(a.createdAt));
   renderMessageBoard();
 },err=>{console.error("messageBoard read error",err);});
+
+onSnapshot(collection(db,"recommendations"),snap=>{
+  recommendationRecords=snap.docs.map(item=>{
+    const data=item.data()||{};
+    return {id:item.id,...data,likes:Array.isArray(data.likes)?data.likes:[]};
+  });
+  if(typeof renderRecommendations==="function")renderRecommendations();
+},error=>console.error("Recommendations snapshot error",error));
+
 onSnapshot(collection(db,"events"),snap=>{
   const loaded=[];
   snap.forEach(d=>{
@@ -1354,12 +1368,153 @@ const kyroAichiRankInput=document.getElementById("kyroAichiRankInput");
 const kyroNewsInput=document.getElementById("kyroNewsInput");
 const kyroGoalInput=document.getElementById("kyroGoalInput");
 const saveKyroInfoButton=document.getElementById("saveKyroInfoButton");
+
+const recommendationsModal=document.getElementById("recommendationsModal");
+const openRecommendationsButton=document.getElementById("openRecommendationsButton");
+const closeRecommendationsButton=document.getElementById("closeRecommendationsButton");
+const recommendationCategoryFilter=document.getElementById("recommendationCategoryFilter");
+const recommendationNewestButton=document.getElementById("recommendationNewestButton");
+const recommendationPopularButton=document.getElementById("recommendationPopularButton");
+const openRecommendationFormButton=document.getElementById("openRecommendationFormButton");
+const recommendationFormBox=document.getElementById("recommendationFormBox");
+const recommendationFormTitle=document.getElementById("recommendationFormTitle");
+const recommendationCategoryInput=document.getElementById("recommendationCategoryInput");
+const recommendationTitleInput=document.getElementById("recommendationTitleInput");
+const recommendationCommentInput=document.getElementById("recommendationCommentInput");
+const recommendationLocationInput=document.getElementById("recommendationLocationInput");
+const recommendationUrlInput=document.getElementById("recommendationUrlInput");
+const recommendationFormError=document.getElementById("recommendationFormError");
+const saveRecommendationButton=document.getElementById("saveRecommendationButton");
+const cancelRecommendationFormButton=document.getElementById("cancelRecommendationFormButton");
+const recommendationsSummary=document.getElementById("recommendationsSummary");
+const recommendationsList=document.getElementById("recommendationsList");
+const recommendationCategoryLabels={course:"🏃 コース・運動",cafe:"☕ カフェ・グルメ",event:"🏆 大会・イベント",goods:"👟 グッズ・用品",kyro:"🗺 KYRO",relax:"♨ 温泉・リラックス",season:"🌸 季節",other:"💡 その他"};
+
+function recommendationDateValue(value){
+  if(value&&typeof value.toDate==="function")return value.toDate();
+  if(value instanceof Date)return value;
+  if(typeof value==="string"||typeof value==="number"){
+    const date=new Date(value);if(!Number.isNaN(date.getTime()))return date;
+  }
+  return new Date(0);
+}
+function recommendationDateLabel(value){
+  const date=recommendationDateValue(value);
+  if(!date.getTime())return "投稿直後";
+  return `${date.getFullYear()}/${String(date.getMonth()+1).padStart(2,"0")}/${String(date.getDate()).padStart(2,"0")}`;
+}
+function currentMemberRecord(){return memberRecords.find(member=>member.name===currentUser&&member.active!==false)||null;}
+function isCurrentAdmin(){const member=currentMemberRecord();return !!(member&&member.admin===true);}
+function safeRecommendationUrl(value){
+  const text=String(value||"").trim();if(!text)return "";
+  try{const url=new URL(text);return ["http:","https:"].includes(url.protocol)?url.href:"";}catch{return "";}
+}
+function resetRecommendationForm(){
+  editingRecommendationId=null;
+  recommendationFormTitle.textContent="＋ おすすめを投稿";
+  saveRecommendationButton.textContent="投稿する";
+  recommendationCategoryInput.value="course";
+  recommendationTitleInput.value="";recommendationCommentInput.value="";recommendationLocationInput.value="";recommendationUrlInput.value="";
+  recommendationFormError.classList.add("hidden");
+}
+function closeRecommendationForm(){resetRecommendationForm();recommendationFormBox.classList.add("hidden");openRecommendationFormButton.classList.remove("hidden");}
+function openRecommendationForm(record=null){
+  if(!currentUser){alert("最初に自分の名前を選択してください。");return;}
+  recommendationFormError.classList.add("hidden");
+  if(record){
+    editingRecommendationId=record.id;recommendationFormTitle.textContent="✏️ おすすめを編集";saveRecommendationButton.textContent="更新する";
+    recommendationCategoryInput.value=record.category||"other";recommendationTitleInput.value=record.title||"";recommendationCommentInput.value=record.comment||"";recommendationLocationInput.value=record.location||"";recommendationUrlInput.value=record.url||"";
+  }else resetRecommendationForm();
+  recommendationFormBox.classList.remove("hidden");openRecommendationFormButton.classList.add("hidden");
+  setTimeout(()=>recommendationTitleInput.focus(),50);
+}
+function renderRecommendations(){
+  if(!recommendationsList)return;
+  let list=recommendationRecords.filter(record=>recommendationCategory==="all"||record.category===recommendationCategory);
+  list.sort((a,b)=>{
+    const likeDiff=(Array.isArray(b.likes)?b.likes.length:0)-(Array.isArray(a.likes)?a.likes.length:0);
+    const dateDiff=recommendationDateValue(b.createdAt).getTime()-recommendationDateValue(a.createdAt).getTime();
+    return recommendationSort==="popular"?(likeDiff||dateDiff):dateDiff;
+  });
+  recommendationNewestButton.classList.toggle("active",recommendationSort==="newest");
+  recommendationPopularButton.classList.toggle("active",recommendationSort==="popular");
+  recommendationsSummary.textContent=`${list.length}件を${recommendationSort==="popular"?"人気順":"新着順"}で表示`;
+  if(!list.length){recommendationsList.innerHTML='<div class="recommendations-empty">おすすめはまだありません。</div>';return;}
+  recommendationsList.innerHTML=list.map(record=>{
+    const likes=Array.isArray(record.likes)?record.likes:[];
+    const liked=currentUser&&likes.includes(currentUser);
+    const own=currentUser&&record.authorName===currentUser;
+    const canDelete=own||isCurrentAdmin();
+    const url=safeRecommendationUrl(record.url);
+    return `<article class="recommendation-card" data-recommendation-id="${escapeHtml(record.id)}">
+      <div class="recommendation-card-head"><div><div class="recommendation-category">${escapeHtml(recommendationCategoryLabels[record.category]||recommendationCategoryLabels.other)}</div><div class="recommendation-title">${escapeHtml(record.title||"")}</div></div></div>
+      <div class="recommendation-comment">${escapeHtml(record.comment||"")}</div>
+      ${record.location?`<div class="recommendation-location">📍 ${escapeHtml(record.location)}</div>`:""}
+      ${url?`<a class="recommendation-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">🔗 リンクを開く</a>`:""}
+      <div class="recommendation-meta">😊 ${escapeHtml(record.authorName||"メンバー")} ・ ${recommendationDateLabel(record.createdAt)}</div>
+      <div class="recommendation-card-actions"><button class="recommendation-like-button ${liked?"liked":""}" type="button" data-action="like">👍 いいね ${likes.length}</button>
+      ${(own||canDelete)?`<div class="recommendation-owner-actions">${own?'<button type="button" data-action="edit">編集</button>':""}${canDelete?'<button class="danger" type="button" data-action="delete">削除</button>':""}</div>`:""}</div>
+    </article>`;
+  }).join("");
+}
+async function saveRecommendation(){
+  const member=currentMemberRecord();
+  const title=recommendationTitleInput.value.trim(),comment=recommendationCommentInput.value.trim();
+  if(!member||!title||!comment){recommendationFormError.classList.remove("hidden");return;}
+  const urlText=recommendationUrlInput.value.trim();
+  if(urlText&&!safeRecommendationUrl(urlText)){recommendationFormError.textContent="リンクは http:// または https:// で始まるURLを入力してください。";recommendationFormError.classList.remove("hidden");return;}
+  recommendationFormError.textContent="現在のユーザー、タイトル、コメントを確認してください。";
+  const ownCount=recommendationRecords.filter(record=>record.authorName===currentUser).length;
+  if(!editingRecommendationId&&ownCount>=20){alert("投稿は1人20件までです。不要な投稿を削除してから追加してください。");return;}
+  const fields={category:recommendationCategoryInput.value,title,comment,location:recommendationLocationInput.value.trim(),url:urlText,updatedAt:serverTimestamp()};
+  try{
+    if(editingRecommendationId){
+      const record=recommendationRecords.find(item=>item.id===editingRecommendationId);
+      if(!record||record.authorName!==currentUser){alert("自分の投稿だけ編集できます。");return;}
+      await updateDoc(doc(db,"recommendations",editingRecommendationId),fields);
+    }else{
+      await addDoc(collection(db,"recommendations"),{...fields,authorId:member.id,authorName:member.name,createdAt:serverTimestamp(),likes:[]});
+    }
+    closeRecommendationForm();
+  }catch(error){console.error(error);alert("保存できませんでした。Firestoreルールを確認してください。");}
+}
+async function toggleRecommendationLike(record){
+  if(!currentUser){alert("最初に自分の名前を選択してください。");return;}
+  const likes=Array.isArray(record.likes)?record.likes:[];
+  try{await updateDoc(doc(db,"recommendations",record.id),{likes:likes.includes(currentUser)?arrayRemove(currentUser):arrayUnion(currentUser),updatedAt:serverTimestamp()});}
+  catch(error){console.error(error);alert("いいねを更新できませんでした。Firestoreルールを確認してください。");}
+}
+async function removeRecommendation(record){
+  const own=currentUser&&record.authorName===currentUser;
+  if(!own&&!isCurrentAdmin())return;
+  if(!confirm(`「${record.title||"この投稿"}」を削除しますか？`))return;
+  try{await deleteDoc(doc(db,"recommendations",record.id));if(editingRecommendationId===record.id)closeRecommendationForm();}
+  catch(error){console.error(error);alert("削除できませんでした。Firestoreルールを確認してください。");}
+}
+function openRecommendations(){hide(mainMenuModal);recommendationCategory="all";recommendationCategoryFilter.value="all";recommendationSort="newest";closeRecommendationForm();renderRecommendations();show(recommendationsModal);}
+
 let selectedProfileMember=null;
 if(closeMemberProfileButton)closeMemberProfileButton.onclick=()=>{hide(memberProfileModal);show(memberOverviewModal);};
 if(editOwnProfileButton)editOwnProfileButton.onclick=openOwnProfileEditor;
 if(closeMemberProfileEditButton)closeMemberProfileEditButton.onclick=()=>hide(memberProfileEditModal);
 if(saveProfileButton)saveProfileButton.onclick=saveOwnProfile;
 if(mainMenuButton)mainMenuButton.onclick=()=>show(mainMenuModal);
+if(openRecommendationsButton)openRecommendationsButton.onclick=openRecommendations;
+if(closeRecommendationsButton)closeRecommendationsButton.onclick=()=>{closeRecommendationForm();hide(recommendationsModal);};
+if(openRecommendationFormButton)openRecommendationFormButton.onclick=()=>openRecommendationForm();
+if(cancelRecommendationFormButton)cancelRecommendationFormButton.onclick=closeRecommendationForm;
+if(saveRecommendationButton)saveRecommendationButton.onclick=saveRecommendation;
+if(recommendationCategoryFilter)recommendationCategoryFilter.onchange=()=>{recommendationCategory=recommendationCategoryFilter.value;renderRecommendations();};
+if(recommendationNewestButton)recommendationNewestButton.onclick=()=>{recommendationSort="newest";renderRecommendations();};
+if(recommendationPopularButton)recommendationPopularButton.onclick=()=>{recommendationSort="popular";renderRecommendations();};
+if(recommendationsList)recommendationsList.addEventListener("click",event=>{
+  const button=event.target.closest("button[data-action]");if(!button)return;
+  const card=button.closest("[data-recommendation-id]");const record=recommendationRecords.find(item=>item.id===card?.dataset.recommendationId);if(!record)return;
+  if(button.dataset.action==="like")toggleRecommendationLike(record);
+  else if(button.dataset.action==="edit")openRecommendationForm(record);
+  else if(button.dataset.action==="delete")removeRecommendation(record);
+});
+
 if(closeMainMenuButton)closeMainMenuButton.onclick=()=>hide(mainMenuModal);
 if(openKyroPageButton)openKyroPageButton.onclick=openKyroPage;
 if(kyroMiniCard)kyroMiniCard.onclick=openKyroPage;
@@ -2381,7 +2536,7 @@ window.addEventListener("resize",()=>{
 
 renderNameButtons();updateUser();renderAll();requireName(false)});
 
-/* SRC Portal Ver.1.6.0b - basic-operation multilingual display
+/* SRC Portal Ver.1.7.0 - basic-operation multilingual display
    Detects the browser/device language: ja / ko / zh; all others use English.
    Only fixed user-facing labels are translated. Firestore content and admin screens remain unchanged. */
 (() => {
