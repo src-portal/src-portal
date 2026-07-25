@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.7.0">
+<link rel="stylesheet" href="css/style.css?v=1.7.0a">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -14,12 +14,17 @@
 <div class="app-shell">
   <header class="app-header app-header-image">
     <img src="images/src-header.jpg" alt="SRC Keep Moving Forward — Run Walk Gym Together" class="header-banner-image">
-    <div class="header-action-buttons"><button class="header-menu-button" id="mainMenuButton" type="button" aria-label="メニュー">☰</button><button class="help-button header-help-button" id="helpButton" type="button">❓ ヘルプ</button></div>
+    <div class="header-action-buttons"><button class="help-button header-help-button" id="helpButton" type="button">❓ ヘルプ</button></div>
   </header>
+
+  <div class="user-menu-bar" aria-label="ユーザーとメニュー">
+    <button class="top-user-button" id="currentUserLabel" type="button"><span aria-hidden="true">😊</span><strong>未設定</strong></button>
+    <button class="top-menu-button" id="mainMenuButton" type="button" aria-label="メニューを開く">☰ メニュー</button>
+    <button class="hidden" id="changeUserButton" type="button" tabindex="-1">変更</button>
+  </div>
 
   <main class="main-content" id="homeView">
     <section class="connection-card hidden" id="connectionCard"><span id="connectionStatus">🟡 Firebase 接続確認中</span></section>
-    <section class="user-card"><div><div class="small-label">現在のユーザー</div><div class="current-user"><span class="current-user-emoji">😊</span><button class="current-user-name-button" id="currentUserLabel" type="button">未設定</button></div></div><button class="small-button" id="changeUserButton" type="button">変更</button></section>
 
     <section class="dashboard-card dashboard-card-smart" id="dashboardCard">
   <div class="dashboard-heading"><div class="section-label">📊 SRC Dashboard</div></div>
@@ -65,10 +70,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.7.0</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.7.0a</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.25</div>
-  <div class="build-info" id="buildInfo">Build 2026/07/25 1.7.0 JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/07/25 1.7.0a JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -137,7 +142,7 @@
         <p>投稿項目はカテゴリ、タイトル、おすすめコメント、場所（任意）、リンク（任意）です。投稿者名と投稿日は自動表示され、写真は使用しません。自分の投稿は編集・削除でき、管理者はすべての投稿を削除できます。</p>
         <p>「👍 いいね」は1人1回押すことができ、もう一度押すと取り消せます。誰が押したかは表示せず、合計数だけを表示します。</p>
         <h3>🗺 SRC-KYRO</h3>
-        <p>トップのSRC-KYROカードまたは☰メニューから、クラブの領土・ランキング・最新ニュース・目標・参加メンバーを確認できます。登録メンバー一覧では、KYROメンバーの名前の横に黄色の「KYRO」バッジが表示されます。</p>
+        <p>トップのSRC-KYROカードから、クラブの領土・ランキング・最新ニュース・目標・参加メンバーを確認できます。登録メンバー一覧では、KYROメンバーの名前の横に黄色の「KYRO」バッジが表示されます。</p>
         <h3>👤 自己紹介</h3>
         <p>登録メンバー一覧で名前をタップすると、そのメンバーの自己紹介を確認できます。自分の自己紹介を開いた場合だけ「自分の自己紹介を編集」ボタンが表示されます。</p>
         <p><strong>必須項目：</strong>ニックネーム、ひとこと<br><strong>任意項目：</strong>所属、趣味・好きなこと、ランニング歴、ベストタイム、現在の目標</p>
@@ -251,7 +256,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.7.0<br>Official Release<br>2026.07.25</strong></p>
+        <p><strong>SRC Portal<br>Version 1.7.0a<br>Official Release<br>2026.07.25</strong></p>
       </section>
     </div>
 </div></div>
@@ -403,7 +408,8 @@
     <div class="dialog-header"><h2>☰ メニュー</h2><button id="closeMainMenuButton" type="button" aria-label="閉じる">×</button></div>
     <div class="main-menu-list">
       <button id="openRecommendationsButton" type="button">⭐ みんなのおすすめ</button>
-      <button id="openKyroPageButton" type="button">🗺 SRC-KYRO</button>
+      <button id="openMessageBoardFromMenuButton" type="button">💬 みんなの伝言板</button>
+      <button class="hidden" id="openAdminFromMainMenuButton" type="button">⚙️ 管理者メニュー</button>
     </div>
   </div>
 </div>
@@ -709,6 +715,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.7.0"></script>
+<script type="module" src="js/app.js?v=1.7.0a"></script>
 </body>
 </html>
