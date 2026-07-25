@@ -2475,7 +2475,7 @@ eventTypeInput.onchange=fillEventDefaults;
 addEventButton.onclick=addEvent;
 
 adminInvitePreviewButton.onclick=()=>show(invitePreviewModal);
-adminSeedMembersButton.onclick=seedMembers;
+if(adminSeedMembersButton)adminSeedMembersButton.onclick=seedMembers;
 closeAdminMemberButton.onclick=()=>hide(adminMemberModal);
 closeInvitePreviewButton.onclick=()=>hide(invitePreviewModal);
 if(generateInviteCodeButton)generateInviteCodeButton.onclick=()=>{newMemberInviteCodeInput.value=generateInviteCode();addMemberError.classList.add("hidden");};
