@@ -1774,7 +1774,7 @@ body{
 .recommendation-owner-actions .danger{border-color:rgba(214,69,69,.35);background:#fcebea;color:var(--red)}
 @media(max-width:380px){.recommendation-card{padding:12px}.recommendation-title{font-size:16px}}
 
-/* Ver.1.7.0a: header-under user/menu bar */
+/* Ver.1.7.0a: header-under user/menu bar (superseded in 1.7.0b) */
 .user-menu-bar{
   display:flex;
   align-items:center;
@@ -1824,4 +1824,74 @@ body{
   .user-menu-bar{padding:7px 11px}
   .top-user-button strong{font-size:16px}
   .top-menu-button{font-size:13px}
+}
+
+
+/* Ver.1.7.0b: restore the existing user card design and add menu inside it */
+.user-menu-bar{display:none!important}
+.user-menu-card{
+  gap:12px;
+  margin-bottom:14px;
+  padding:12px 14px;
+}
+.user-menu-card-main{
+  min-width:0;
+  flex:1 1 auto;
+}
+.user-menu-card .current-user{
+  min-width:0;
+}
+.user-menu-card .current-user-name-button{
+  min-width:0;
+}
+.user-menu-card .current-user-name-button strong{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:18px;
+  font-weight:950;
+}
+.user-card-menu-button{
+  flex:0 0 auto;
+  border:0;
+  border-radius:999px;
+  background:#eef2f7;
+  color:var(--charcoal);
+  padding:9px 12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.user-card-menu-button:active{opacity:.7}
+.user-card-menu-button:focus-visible{
+  outline:3px solid rgba(23,115,230,.28);
+  outline-offset:2px;
+}
+@media(max-width:360px){
+  .user-menu-card{padding:11px 12px;gap:8px}
+  .user-menu-card .current-user-name-button strong{font-size:17px}
+  .user-card-menu-button{padding:8px 10px;font-size:13px}
+}
+
+/* Ver.1.7.0b: admin menu uses the same vertical scale as the member window */
+#adminMenuModal{
+  align-items:flex-start;
+  padding-top:var(--member-modal-top,180px);
+  padding-bottom:var(--member-modal-bottom,16px);
+}
+#adminMenuModal .admin-fixed-modal-card{
+  height:calc(100dvh - var(--member-modal-top,180px) - var(--member-modal-bottom,16px));
+  max-height:calc(100dvh - var(--member-modal-top,180px) - var(--member-modal-bottom,16px)) !important;
+}
+#adminMenuModal .admin-menu-list{
+  align-content:start;
+}
+@media(max-height:760px){
+  #adminMenuModal{
+    padding-top:var(--member-modal-top,160px);
+  }
+  #adminMenuModal .admin-fixed-modal-card{
+    height:calc(100dvh - var(--member-modal-top,160px) - 16px);
+    max-height:calc(100dvh - var(--member-modal-top,160px) - 16px) !important;
+  }
 }
