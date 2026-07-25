@@ -398,7 +398,9 @@ async function authenticateInvitedMember(){
 }
 
 function updateUser(){
-  currentUserLabel.textContent=currentUser||"未設定";
+  const currentUserNameText=currentUserLabel.querySelector("strong");
+  if(currentUserNameText)currentUserNameText.textContent=currentUser||"未設定";
+  else currentUserLabel.textContent=currentUser||"未設定";
 }
 function renderNameButtons(){
   nameButtonGrid.innerHTML="";
@@ -1371,6 +1373,8 @@ const saveKyroInfoButton=document.getElementById("saveKyroInfoButton");
 
 const recommendationsModal=document.getElementById("recommendationsModal");
 const openRecommendationsButton=document.getElementById("openRecommendationsButton");
+const openMessageBoardFromMenuButton=document.getElementById("openMessageBoardFromMenuButton");
+const openAdminFromMainMenuButton=document.getElementById("openAdminFromMainMenuButton");
 const closeRecommendationsButton=document.getElementById("closeRecommendationsButton");
 const recommendationCategoryFilter=document.getElementById("recommendationCategoryFilter");
 const recommendationNewestButton=document.getElementById("recommendationNewestButton");
@@ -1498,8 +1502,13 @@ if(closeMemberProfileButton)closeMemberProfileButton.onclick=()=>{hide(memberPro
 if(editOwnProfileButton)editOwnProfileButton.onclick=openOwnProfileEditor;
 if(closeMemberProfileEditButton)closeMemberProfileEditButton.onclick=()=>hide(memberProfileEditModal);
 if(saveProfileButton)saveProfileButton.onclick=saveOwnProfile;
-if(mainMenuButton)mainMenuButton.onclick=()=>show(mainMenuModal);
+if(mainMenuButton)mainMenuButton.onclick=()=>{
+  if(openAdminFromMainMenuButton)openAdminFromMainMenuButton.classList.toggle("hidden",!isCurrentAdmin());
+  show(mainMenuModal);
+};
 if(openRecommendationsButton)openRecommendationsButton.onclick=openRecommendations;
+if(openMessageBoardFromMenuButton)openMessageBoardFromMenuButton.onclick=()=>{hide(mainMenuModal);renderMessageBoard();show(messageBoardModal);};
+if(openAdminFromMainMenuButton)openAdminFromMainMenuButton.onclick=()=>{hide(mainMenuModal);openAdminPin();};
 if(closeRecommendationsButton)closeRecommendationsButton.onclick=()=>{closeRecommendationForm();hide(recommendationsModal);};
 if(openRecommendationFormButton)openRecommendationFormButton.onclick=()=>openRecommendationForm();
 if(cancelRecommendationFormButton)cancelRecommendationFormButton.onclick=closeRecommendationForm;
@@ -2549,7 +2558,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
 
   const messages = {
     ja: {
-      help:"ヘルプ", currentUser:"現在のユーザー", unset:"未設定", change:"変更",
+      help:"ヘルプ", currentUser:"現在のユーザー", unset:"未設定", change:"変更", menu:"メニュー", recommendations:"みんなのおすすめ", adminMenu:"管理者メニュー",
       members:"登録メンバー", monthlyRun:"今月ラン参加", monthlyGym:"今月ジム参加", announcements:"お知らせ",
       noAnnouncements:"現在のお知らせはありません。", nextPlan:"あなたの次回参加予定", noNextPlan:"参加予定はまだありません。",
       nextEvent:"次回イベント", noNextEvent:"今後のイベントは登録されていません。", openEvent:"このイベントを開く",
@@ -2572,7 +2581,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       weekdays:["月","火","水","木","金","土","日"]
     },
     en: {
-      help:"Help", currentUser:"Current user", unset:"Not selected", change:"Change",
+      help:"Help", currentUser:"Current user", unset:"Not selected", change:"Change", menu:"Menu", recommendations:"Recommendations", adminMenu:"Admin menu",
       members:"Members", monthlyRun:"Run this month", monthlyGym:"Gym this month", announcements:"Announcements",
       noAnnouncements:"There are no announcements.", nextPlan:"Your next plan", noNextPlan:"You have no upcoming plans.",
       nextEvent:"Next event", noNextEvent:"There are no upcoming events.", openEvent:"Open this event",
@@ -2595,7 +2604,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       weekdays:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
     },
     ko: {
-      help:"도움말", currentUser:"현재 사용자", unset:"미설정", change:"변경",
+      help:"도움말", currentUser:"현재 사용자", unset:"미설정", change:"변경", menu:"메뉴", recommendations:"모두의 추천", adminMenu:"관리자 메뉴",
       members:"등록 멤버", monthlyRun:"이번 달 러닝", monthlyGym:"이번 달 체육관", announcements:"공지사항",
       noAnnouncements:"현재 공지사항이 없습니다.", nextPlan:"다음 참가 예정", noNextPlan:"참가 예정이 없습니다.",
       nextEvent:"다음 이벤트", noNextEvent:"예정된 이벤트가 없습니다.", openEvent:"이 이벤트 열기",
@@ -2618,7 +2627,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       weekdays:["월","화","수","목","금","토","일"]
     },
     zh: {
-      help:"帮助", currentUser:"当前用户", unset:"未设置", change:"更改",
+      help:"帮助", currentUser:"当前用户", unset:"未设置", change:"更改", menu:"菜单", recommendations:"大家的推荐", adminMenu:"管理员菜单",
       members:"注册成员", monthlyRun:"本月跑步", monthlyGym:"本月健身", announcements:"通知",
       noAnnouncements:"目前没有通知。", nextPlan:"您的下次参加计划", noNextPlan:"目前没有参加计划。",
       nextEvent:"下次活动", noNextEvent:"目前没有即将举行的活动。", openEvent:"打开此活动",
@@ -2657,8 +2666,12 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
   function applyStaticTranslations() {
     if (language === "ja") return;
     setText("#helpButton", `❓ ${m.help}`);
-    setText(".user-card .small-label", m.currentUser);
-    setText("#currentUserLabel", m.unset);
+    setText("#currentUserLabel strong", m.unset);
+    setText("#mainMenuButton", `☰ ${m.menu}`);
+    setText("#mainMenuModal h2", `☰ ${m.menu}`);
+    setText("#openRecommendationsButton", `⭐ ${m.recommendations}`);
+    setText("#openMessageBoardFromMenuButton", `💬 ${m.messageBoard}`);
+    setText("#openAdminFromMainMenuButton", `⚙️ ${m.adminMenu}`);
     setText("#changeUserButton", m.change);
     const dashboardLabels = document.querySelectorAll("#dashboardCard .dashboard-label");
     [m.members,m.monthlyRun,m.monthlyGym,m.nextEvent].forEach((text,i)=>{ if(dashboardLabels[i]) dashboardLabels[i].textContent=text; });
