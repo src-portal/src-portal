@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.7.1">
+<link rel="stylesheet" href="css/style.css?v=1.7.1a">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -54,13 +54,13 @@
       <div id="announcementList" class="announcement-empty">現在のお知らせはありません。</div>
     </section>
 
-    <section class="message-board-card" id="messageBoardCard">
-      <div class="message-board-heading">
-        <div class="section-label">💬 みんなの伝言板</div>
-        <button class="message-board-open-button" id="openMessageBoardButton" type="button">投稿・一覧</button>
-      </div>
-      <div id="messageBoardPreview" class="message-board-empty">伝言はまだありません。</div>
-    </section>
+    <button class="message-board-card" id="messageBoardCard" type="button" aria-label="みんなの伝言板を開く">
+      <span class="message-board-card-main">
+        <span class="section-label">💬 みんなの伝言板</span>
+        <span id="messageBoardPreview" class="message-board-empty">伝言はまだありません。</span>
+      </span>
+      <span class="message-board-chevron">›</span>
+    </button>
 
     <button class="recommendation-mini-card" id="recommendationMiniCard" type="button" aria-label="みんなのおすすめを開く">
       <span class="recommendation-mini-main"><span class="recommendation-mini-title">⭐ みんなのおすすめ</span><span class="recommendation-mini-preview" id="recommendationMiniPreview">おすすめはまだありません。</span></span>
@@ -80,10 +80,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.7.1</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.7.1a</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.25</div>
-  <div class="build-info" id="buildInfo">Build 2026/07/25 1.7.1 JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/07/25 1.7.1a JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -268,7 +268,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.7.1<br>Official Release<br>2026.07.25</strong></p>
+        <p><strong>SRC Portal<br>Version 1.7.1a<br>Official Release<br>2026.07.25</strong></p>
       </section>
     </div>
 </div></div>
@@ -726,6 +726,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.7.1"></script>
+<script type="module" src="js/app.js?v=1.7.1a"></script>
 </body>
 </html>
