@@ -1895,3 +1895,31 @@ body{
     max-height:calc(100dvh - var(--member-modal-top,160px) - 16px) !important;
   }
 }
+
+
+/* Ver.1.7.0c: wrap long calendar event names inside the day cell */
+.calendar-grid{
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  align-items:stretch;
+}
+.day-cell{
+  min-width:0;
+  height:100%;
+  overflow:hidden;
+}
+.day-cell.has-event .calendar-event-label{
+  display:-webkit-box;
+  width:100%;
+  max-width:100%;
+  margin-top:4px;
+  padding:2px 1px;
+  overflow:hidden;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:break-all;
+  text-overflow:ellipsis;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  line-clamp:2;
+  line-height:1.2;
+}
