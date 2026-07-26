@@ -2022,4 +2022,49 @@ body{
 }
 
 
-/* Ver.1.7.1a: message board card interaction unified with recommendations */
+/* Ver.1.7.1b: message board card interaction unified with recommendations */
+
+/* Ver.1.7.1b: expand every window opened from the administrator menu */
+#setupModal,
+#adminMemberModal,
+#invitePreviewModal,
+#announcementManageModal,
+#eventManageModal,
+#systemSettingsModal,
+#adminKyroModal{
+  align-items:flex-start;
+  padding-top:var(--member-modal-top,180px);
+  padding-bottom:var(--member-modal-bottom,16px);
+}
+#setupModal .user-change-fixed-modal-card,
+#adminMemberModal .admin-fixed-modal-card,
+#invitePreviewModal .admin-fixed-modal-card,
+#announcementManageModal .admin-fixed-modal-card,
+#eventManageModal .admin-fixed-modal-card,
+#systemSettingsModal .admin-fixed-modal-card,
+#adminKyroModal .admin-fixed-modal-card{
+  height:calc(100dvh - var(--member-modal-top,180px) - var(--member-modal-bottom,16px));
+  max-height:calc(100dvh - var(--member-modal-top,180px) - var(--member-modal-bottom,16px)) !important;
+  overflow:auto;
+}
+@media(max-height:760px){
+  #setupModal,
+  #adminMemberModal,
+  #invitePreviewModal,
+  #announcementManageModal,
+  #eventManageModal,
+  #systemSettingsModal,
+  #adminKyroModal{
+    padding-top:var(--member-modal-top,160px);
+  }
+  #setupModal .user-change-fixed-modal-card,
+  #adminMemberModal .admin-fixed-modal-card,
+  #invitePreviewModal .admin-fixed-modal-card,
+  #announcementManageModal .admin-fixed-modal-card,
+  #eventManageModal .admin-fixed-modal-card,
+  #systemSettingsModal .admin-fixed-modal-card,
+  #adminKyroModal .admin-fixed-modal-card{
+    height:calc(100dvh - var(--member-modal-top,160px) - 16px);
+    max-height:calc(100dvh - var(--member-modal-top,160px) - 16px) !important;
+  }
+}
