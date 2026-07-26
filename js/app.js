@@ -1066,7 +1066,7 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
   detailDate.textContent=fmt(selectedKey);
   detailEvent.textContent=currentType==="gym"
     ? "🏋️ ジムトレーニング"
-    : "🏃 ラン＆ウォーク";
+    : `🏃 ${ev?.title||"ラン＆ウォーク"}`;
 
   detailTime.textContent=currentType==="gym"
     ? `${systemSettings.gym.time}〜`
