@@ -51,6 +51,7 @@ let requiredMembers=systemSettings.gym.minParticipants;
 const storageUserKey="srcPortalCurrentUser";
 const storageMemberIdKey="srcPortalCurrentMemberId";
 let userSelectionMode="public";
+let returnToAdminMenuAfterSetup=false;
 let pendingInviteMember=null;
 let setupAdminLongPressTimer=null;
 let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},selectedSameDayUser="";
@@ -436,6 +437,10 @@ function renderNameButtons(){
         updateCurrentUserLastActive();
         hide(setupModal);
         renderAll();
+        if(returnToAdminMenuAfterSetup){
+          returnToAdminMenuAfterSetup=false;
+          show(adminMenuModal);
+        }
       };
       nameButtonGrid.appendChild(b);
     });
@@ -668,7 +673,7 @@ function openAdminKyro(){
   kyroAichiRankInput.value=kyroInfo.aichiRank||"";
   kyroNewsInput.value=kyroInfo.news||"";
   kyroGoalInput.value=kyroInfo.goal||"";
-  hide(adminMenuModal);show(adminKyroModal);
+  openAdminChildModal(adminKyroModal);
 }
 async function saveKyroInfo(){
   try{
@@ -676,7 +681,7 @@ async function saveKyroInfo(){
       area:kyroAreaInput.value.trim(),japanRank:kyroJapanRankInput.value.trim(),aichiRank:kyroAichiRankInput.value.trim(),
       news:kyroNewsInput.value.trim(),goal:kyroGoalInput.value.trim(),updatedAt:serverTimestamp()
     },{merge:true});
-    alert("SRC-KYRO情報を保存しました。");hide(adminKyroModal);
+    alert("SRC-KYRO情報を保存しました。");closeAdminChildModal(adminKyroModal);
   }catch(e){console.error(e);alert("SRC-KYRO情報の保存に失敗しました。Firestoreルールを確認してください。");}
 }
 
@@ -1233,6 +1238,7 @@ cancelUserChangeButton.onclick=()=>hide(userChangeConfirmModal);
 confirmUserChangeButton.onclick=()=>{
   hide(userChangeConfirmModal);
   userSelectionMode="public";
+  returnToAdminMenuAfterSetup=false;
   renderNameButtons();
   setupModalTitle.textContent="👤 ユーザー変更";
   setupModalText.textContent="変更するユーザーを選んでください。";
@@ -1241,7 +1247,14 @@ confirmUserChangeButton.onclick=()=>{
   show(setupModal);
 };
 
-closeSetupModalButton.onclick=()=>{if(currentUser)hide(setupModal)};
+closeSetupModalButton.onclick=()=>{
+  if(!currentUser)return;
+  hide(setupModal);
+  if(returnToAdminMenuAfterSetup){
+    returnToAdminMenuAfterSetup=false;
+    show(adminMenuModal);
+  }
+};
 closeInviteAuthButton.onclick=closeInviteAuthentication;
 confirmInviteAuthButton.onclick=authenticateInvitedMember;
 inviteAuthCodeInput.addEventListener("input",()=>{
@@ -1314,8 +1327,17 @@ adminPinSubmitButton.onclick=()=>{
 };
 closeAdminPinButton.onclick=()=>hide(adminPinModal);
 closeAdminMenuButton.onclick=()=>hide(adminMenuModal);
+function openAdminChildModal(modal){
+  hide(adminMenuModal);
+  show(modal);
+}
+function closeAdminChildModal(modal){
+  hide(modal);
+  show(adminMenuModal);
+}
 adminChangeUserButton.onclick=()=>{
   userSelectionMode="admin";
+  returnToAdminMenuAfterSetup=true;
   renderNameButtons();
   hide(adminMenuModal);
   requireName(true);
@@ -1569,7 +1591,7 @@ if(openKyroPageButton)openKyroPageButton.onclick=openKyroPage;
 if(kyroMiniCard)kyroMiniCard.onclick=openKyroPage;
 if(closeKyroPageButton)closeKyroPageButton.onclick=()=>hide(kyroPageModal);
 if(adminKyroManageButton)adminKyroManageButton.onclick=openAdminKyro;
-if(closeAdminKyroButton)closeAdminKyroButton.onclick=()=>hide(adminKyroModal);
+if(closeAdminKyroButton)closeAdminKyroButton.onclick=()=>closeAdminChildModal(adminKyroModal);
 if(saveKyroInfoButton)saveKyroInfoButton.onclick=saveKyroInfo;
 const dashboardMemberCount=document.getElementById("dashboardMemberCount");
 const dashboardRunCount=document.getElementById("dashboardRunCount");
@@ -1698,7 +1720,7 @@ async function saveSystemSettings(){
       gym:{time:gymTime,place:gymPlace,minParticipants,deadlineLabel},
       updatedAt:serverTimestamp()
     },{merge:true});
-    hide(systemSettingsModal);
+    closeAdminChildModal(systemSettingsModal);
     alert("システム設定を保存しました。");
   }catch(e){
     console.error(e);
@@ -2490,18 +2512,18 @@ async function addMember(){
 adminMemberListButton.onclick=()=>{
   renderAdminMembers();
   positionMemberModalBelowHeader(adminMemberModal);
-  show(adminMemberModal);
+  openAdminChildModal(adminMemberModal);
 };
 closeEventDetailButton.onclick=()=>hide(eventDetailModal);
 eventDetailJoinButton.onclick=openSelectedEventAttendance;
 adminSystemSettingsButton.onclick=()=>{
   applySystemSettingsToInputs();
-  show(systemSettingsModal);
+  openAdminChildModal(systemSettingsModal);
 };
-closeSystemSettingsButton.onclick=()=>hide(systemSettingsModal);
+closeSystemSettingsButton.onclick=()=>closeAdminChildModal(systemSettingsModal);
 saveSystemSettingsButton.onclick=saveSystemSettings;
-adminAnnouncementManageButton.onclick=()=>{renderAdminAnnouncements();show(announcementManageModal);};
-closeAnnouncementManageButton.onclick=()=>hide(announcementManageModal);
+adminAnnouncementManageButton.onclick=()=>{renderAdminAnnouncements();openAdminChildModal(announcementManageModal);};
+closeAnnouncementManageButton.onclick=()=>closeAdminChildModal(announcementManageModal);
 addAnnouncementButton.onclick=addAnnouncement;
 adminEventManageButton.onclick=()=>{
   // システム設定の最新値を、新規イベント入力欄へ毎回反映する
@@ -2509,16 +2531,16 @@ adminEventManageButton.onclick=()=>{
   eventPlaceInput.value=systemSettings.run.place;
   if(!eventTitleInput.value)eventTitleInput.value="ラン＆ウォーク";
   renderAdminEvents();
-  show(eventManageModal);
+  openAdminChildModal(eventManageModal);
 };
-closeEventManageButton.onclick=()=>hide(eventManageModal);
+closeEventManageButton.onclick=()=>closeAdminChildModal(eventManageModal);
 eventTypeInput.onchange=fillEventDefaults;
 addEventButton.onclick=addEvent;
 
-adminInvitePreviewButton.onclick=()=>show(invitePreviewModal);
+adminInvitePreviewButton.onclick=()=>openAdminChildModal(invitePreviewModal);
 if(adminSeedMembersButton)adminSeedMembersButton.onclick=seedMembers;
-closeAdminMemberButton.onclick=()=>hide(adminMemberModal);
-closeInvitePreviewButton.onclick=()=>hide(invitePreviewModal);
+closeAdminMemberButton.onclick=()=>closeAdminChildModal(adminMemberModal);
+closeInvitePreviewButton.onclick=()=>closeAdminChildModal(invitePreviewModal);
 if(generateInviteCodeButton)generateInviteCodeButton.onclick=()=>{newMemberInviteCodeInput.value=generateInviteCode();addMemberError.classList.add("hidden");};
 newMemberNameInput.addEventListener("input",()=>{if(!newMemberInviteCodeInput.value)newMemberInviteCodeInput.value=generateInviteCode();});
 addMemberButton.onclick=addMember;
