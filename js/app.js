@@ -1821,11 +1821,12 @@ function showEventDetail(ev){
 
   const statusText=ev.status==="cancelled"?"中止":"開催予定";
   const statusIcon=ev.status==="cancelled"?"🔴":"🟢";
-  const label=ev.type==="run"?"🏃 ラン＆ウォーク":"🏋️ ジム";
+  const typeIcon=ev.type==="run"?"🏃":"🏋️";
+  const displayTitle=(ev.title||eventTypeLabel(ev.type)).trim();
 
   eventDetailContent.innerHTML=`
     <div class="event-detail-card">
-      <div class="event-detail-title">${statusIcon} ${label} ${statusText}</div>
+      <div class="event-detail-title">${statusIcon} ${typeIcon} ${escapeHtml(displayTitle)} ${statusText}</div>
       <div class="event-detail-sub">📅 ${fmt(ev.date)}<br>🕖 ${ev.time||"19:00"}<br>📍 ${ev.place||"-"}</div>
       ${ev.memo?`<div class="event-detail-memo">📝 ${ev.memo}</div>`:""}
     </div>
