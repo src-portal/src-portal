@@ -39,6 +39,7 @@ let recommendationRecords=[];
 let recommendationSort="newest";
 let recommendationCategory="all";
 let editingRecommendationId=null;
+let nextPlanTarget=null;
 function uiT(key,fallback){return window.SRC_I18N?.t?.(key) ?? fallback;}
 let selectedEvent=null;
 const defaultSystemSettings={
@@ -258,6 +259,7 @@ onSnapshot(collection(db,"recommendations"),snap=>{
     return {id:item.id,...data,likes:Array.isArray(data.likes)?data.likes:[]};
   });
   if(typeof renderRecommendations==="function")renderRecommendations();
+  if(typeof renderRecommendationPreview==="function")renderRecommendationPreview();
 },error=>console.error("Recommendations snapshot error",error));
 
 onSnapshot(collection(db,"events"),snap=>{
@@ -731,7 +733,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="開催条件";ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderDashboard()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="開催条件";ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -886,9 +888,12 @@ function openNextEventInCalendar(){
 }
 
 function renderNextPlan(){
+  nextPlanTarget=null;
+  const nextPlanCard=document.getElementById("nextPlanCard");
   if(!currentUser){
     nextPlanContent.className="next-plan-empty";
     nextPlanContent.textContent="名前を選択すると表示されます。";
+    nextPlanCard?.classList.add("is-empty");
     return;
   }
 
@@ -906,12 +911,7 @@ function renderNextPlan(){
     if(!participants.includes(currentUser)||key<todayKey)return;
 
     if(type==="gym"){
-      plans.push({
-        type,
-        key,
-        time:systemSettings.gym.time,
-        place:systemSettings.gym.place
-      });
+      plans.push({type,key,time:systemSettings.gym.time,place:systemSettings.gym.place,title:"ジム"});
       return;
     }
 
@@ -921,7 +921,8 @@ function renderNextPlan(){
         type,
         key,
         time:ev.time||systemSettings.run.time,
-        place:ev.place||systemSettings.run.place
+        place:ev.place||systemSettings.run.place,
+        title:ev.title||"ラン＆ウォーク"
       });
     }
   });
@@ -931,15 +932,28 @@ function renderNextPlan(){
   if(plans.length===0){
     nextPlanContent.className="next-plan-empty";
     nextPlanContent.textContent="参加予定はまだありません。";
+    nextPlanCard?.classList.add("is-empty");
     return;
   }
 
   const p=plans[0];
-  const label=p.type==="gym"?"🏋️ ジム":"🏃 ラン＆ウォーク";
-  nextPlanContent.className="next-plan-item";
-  nextPlanContent.innerHTML=`${label}<br>📅 ${fmt(p.key)}<br>🕖 ${p.time}<br>📍 ${escapeHtml(p.place)}`;
+  nextPlanTarget=p;
+  const label=p.type==="gym"?"🏋️ ジム":`🏃 ${escapeHtml(p.title||"ラン＆ウォーク")}`;
+  nextPlanContent.className="next-plan-item next-plan-compact";
+  nextPlanContent.innerHTML=`<span class="next-plan-name">${label}</span><span class="next-plan-meta">📅 ${fmt(p.key)}　🕖${escapeHtml(p.time)}　📍${escapeHtml(p.place)}</span>`;
+  nextPlanCard?.classList.remove("is-empty");
 }
 
+function openNextPlanInCalendar(){
+  if(!nextPlanTarget)return;
+  currentType=nextPlanTarget.type==="gym"?"gym":"run";
+  selectedKey=nextPlanTarget.key;
+  const [year,month]=nextPlanTarget.key.split("-").map(Number);
+  currentYear=year;
+  currentMonth=month-1;
+  setType(currentType);
+  requestAnimationFrame(()=>scrollToBelowHeader(document.querySelector(".calendar-card"),8));
+}
 function tomorrowKeyJST(){
   const parts=new Intl.DateTimeFormat("en-CA",{
     timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"
@@ -1190,6 +1204,14 @@ monthJumpCurrentButton.onclick=()=>{
   const now=new Date();
   moveToMonth(now.getFullYear(),now.getMonth());
 };helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);
+const nextPlanCard=document.getElementById("nextPlanCard");
+if(nextPlanCard){
+  nextPlanCard.addEventListener("click",openNextPlanInCalendar);
+  nextPlanCard.addEventListener("keydown",event=>{
+    if(event.key==="Enter"||event.key===" "){event.preventDefault();openNextPlanInCalendar();}
+  });
+}
+
 if(nextEventCard){
   nextEventCard.addEventListener("click",openNextEventInCalendar);
   nextEventCard.addEventListener("keydown",event=>{
@@ -1432,6 +1454,22 @@ function openRecommendationForm(record=null){
   recommendationFormBox.classList.remove("hidden");openRecommendationFormButton.classList.add("hidden");
   setTimeout(()=>recommendationTitleInput.focus(),50);
 }
+function renderRecommendationPreview(){
+  const preview=document.getElementById("recommendationMiniPreview");
+  const card=document.getElementById("recommendationMiniCard");
+  if(!preview||!card)return;
+  if(!recommendationRecords.length){
+    preview.textContent="おすすめ情報を投稿してみよう";
+    card.classList.add("is-empty");
+    return;
+  }
+  const latest=[...recommendationRecords].sort((a,b)=>recommendationDateValue(b.createdAt).getTime()-recommendationDateValue(a.createdAt).getTime())[0];
+  const likes=Array.isArray(latest.likes)?latest.likes.length:0;
+  const category=recommendationCategoryLabels[latest.category]||recommendationCategoryLabels.other;
+  preview.innerHTML=`<span>${escapeHtml(category)} ${escapeHtml(latest.title||"")}</span><span class="recommendation-mini-likes">👍 ${likes}</span>`;
+  card.classList.remove("is-empty");
+}
+
 function renderRecommendations(){
   if(!recommendationsList)return;
   let list=recommendationRecords.filter(record=>recommendationCategory==="all"||record.category===recommendationCategory);
@@ -1507,6 +1545,8 @@ if(mainMenuButton)mainMenuButton.onclick=()=>{
   show(mainMenuModal);
 };
 if(openRecommendationsButton)openRecommendationsButton.onclick=openRecommendations;
+const recommendationMiniCard=document.getElementById("recommendationMiniCard");
+if(recommendationMiniCard)recommendationMiniCard.onclick=openRecommendations;
 if(openMessageBoardFromMenuButton)openMessageBoardFromMenuButton.onclick=()=>{hide(mainMenuModal);renderMessageBoard();show(messageBoardModal);};
 if(openAdminFromMainMenuButton)openAdminFromMainMenuButton.onclick=()=>{hide(mainMenuModal);openAdminPin();};
 if(closeRecommendationsButton)closeRecommendationsButton.onclick=()=>{closeRecommendationForm();hide(recommendationsModal);};
