@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.7.0e">
+<link rel="stylesheet" href="css/style.css?v=1.7.1">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -41,6 +41,8 @@
   </div>
 </section>
 
+    <section class="next-card next-card-link" id="nextPlanCard" role="button" tabindex="0" aria-label="次回参加予定をカレンダーで開く"><div class="section-label">✨ あなたの次回参加予定</div><div id="nextPlanContent" class="next-plan-empty">参加予定はまだありません。</div></section>
+
     <button class="kyro-mini-card" id="kyroMiniCard" type="button" aria-label="SRC-KYRO情報を開く">
       <span class="kyro-mini-title">SRC-KYRO-Club</span>
       <span class="kyro-mini-status" id="kyroMiniStatus">情報を確認中...</span>
@@ -60,7 +62,10 @@
       <div id="messageBoardPreview" class="message-board-empty">伝言はまだありません。</div>
     </section>
 
-    <section class="next-card"><div class="section-label">✨ あなたの次回参加予定</div><div id="nextPlanContent" class="next-plan-empty">参加予定はまだありません。</div></section>
+    <button class="recommendation-mini-card" id="recommendationMiniCard" type="button" aria-label="みんなのおすすめを開く">
+      <span class="recommendation-mini-main"><span class="recommendation-mini-title">⭐ みんなのおすすめ</span><span class="recommendation-mini-preview" id="recommendationMiniPreview">おすすめはまだありません。</span></span>
+      <span class="recommendation-mini-chevron">›</span>
+    </button>
     <section class="reminder-card hidden" id="reminderCard" aria-live="polite">
       <div class="section-label">🔔 リマインダー</div>
       <div id="reminderContent" class="reminder-content"></div>
@@ -75,10 +80,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.7.0e</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.7.1</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.25</div>
-  <div class="build-info" id="buildInfo">Build 2026/07/25 1.7.0e JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/07/25 1.7.1 JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -216,6 +221,8 @@
             <li>「みんなのおすすめ」を追加</li>
             <li>カテゴリ別の投稿・編集・削除、新着順／人気順表示に対応</li>
             <li>1人1回の「👍 いいね」と取消に対応</li>
+            <li>トップ画面に最新投稿といいね数を表示するミニカードを追加</li>
+            <li>次回参加予定をコンパクトな1行表示にし、タップで対象月のカレンダーへ移動</li>
           </ul>
           <h4>Version 1.6.x</h4>
           <ul>
@@ -261,7 +268,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.7.0e<br>Official Release<br>2026.07.25</strong></p>
+        <p><strong>SRC Portal<br>Version 1.7.1<br>Official Release<br>2026.07.25</strong></p>
       </section>
     </div>
 </div></div>
@@ -719,6 +726,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.7.0e"></script>
+<script type="module" src="js/app.js?v=1.7.1"></script>
 </body>
 </html>
