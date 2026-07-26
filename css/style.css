@@ -1923,3 +1923,22 @@ body{
   line-clamp:2;
   line-height:1.2;
 }
+
+
+/* Ver.1.7.0d: expand event management window to member-window height */
+#eventManageModal{
+  align-items:flex-start;
+  padding-top:var(--member-modal-top,180px);
+  padding-bottom:var(--member-modal-bottom,16px);
+}
+#eventManageModal .admin-fixed-modal-card{
+  height:calc(100dvh - var(--member-modal-top,180px) - var(--member-modal-bottom,16px));
+  max-height:calc(100dvh - var(--member-modal-top,180px) - var(--member-modal-bottom,16px)) !important;
+}
+@media(max-height:760px){
+  #eventManageModal{padding-top:var(--member-modal-top,160px)}
+  #eventManageModal .admin-fixed-modal-card{
+    height:calc(100dvh - var(--member-modal-top,160px) - 16px);
+    max-height:calc(100dvh - var(--member-modal-top,160px) - 16px) !important;
+  }
+}
