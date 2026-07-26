@@ -2069,49 +2069,64 @@ body{
   }
 }
 
-
-/* Ver.1.7.1c: pin administrator child windows between the existing top position and the viewport bottom */
-#setupModal,
-#adminMemberModal,
-#invitePreviewModal,
-#announcementManageModal,
-#eventManageModal,
-#systemSettingsModal,
-#adminKyroModal{
-  position:fixed;
-  inset:0;
-  align-items:stretch !important;
-  justify-content:center;
-  padding:0 18px !important;
-}
-#setupModal .user-change-fixed-modal-card,
-#adminMemberModal .admin-fixed-modal-card,
-#invitePreviewModal .admin-fixed-modal-card,
-#announcementManageModal .admin-fixed-modal-card,
-#eventManageModal .admin-fixed-modal-card,
-#systemSettingsModal .admin-fixed-modal-card,
-#adminKyroModal .admin-fixed-modal-card{
-  position:absolute;
-  top:var(--member-modal-top,180px);
-  right:18px;
-  bottom:max(12px, env(safe-area-inset-bottom));
-  left:18px;
-  width:auto;
-  height:auto !important;
-  max-height:none !important;
-  margin:0 auto;
+/* Ver.1.7.1d: expand all modal windows while preserving iPhone Safari scrolling */
+.modal-overlay{
   overflow:hidden !important;
-  display:flex !important;
-  flex-direction:column !important;
 }
+.modal-overlay .modal-card{
+  width:min(92vw,420px);
+  height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  min-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  max-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+}
+.modal-overlay .modal-card > .dialog-header{
+  position:sticky;
+  top:-18px;
+  z-index:5;
+  margin:-18px -18px 12px;
+  padding:18px 18px 10px;
+  background:#fff;
+}
+
+/* Keep administrator-related windows at their existing top position and extend only downward. */
+#setupModal .modal-card,
+#adminPinModal .modal-card,
+#adminMenuModal .modal-card,
+#adminMemberModal .modal-card,
+#invitePreviewModal .modal-card,
+#announcementManageModal .modal-card,
+#eventManageModal .modal-card,
+#systemSettingsModal .modal-card,
+#adminKyroModal .modal-card{
+  height:calc(100dvh - var(--member-modal-top,180px) - 12px - env(safe-area-inset-bottom)) !important;
+  min-height:calc(100dvh - var(--member-modal-top,180px) - 12px - env(safe-area-inset-bottom)) !important;
+  max-height:calc(100dvh - var(--member-modal-top,180px) - 12px - env(safe-area-inset-bottom)) !important;
+}
+
+/* Empty community screens also retain the expanded window size. */
+#messageBoardModal .message-board-modal-card,
+#recommendationsModal .recommendations-modal-card{
+  height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  min-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+}
+
 @media(max-height:760px){
-  #setupModal .user-change-fixed-modal-card,
-  #adminMemberModal .admin-fixed-modal-card,
-  #invitePreviewModal .admin-fixed-modal-card,
-  #announcementManageModal .admin-fixed-modal-card,
-  #eventManageModal .admin-fixed-modal-card,
-  #systemSettingsModal .admin-fixed-modal-card,
-  #adminKyroModal .admin-fixed-modal-card{
-    top:var(--member-modal-top,160px);
+  #setupModal .modal-card,
+  #adminPinModal .modal-card,
+  #adminMenuModal .modal-card,
+  #adminMemberModal .modal-card,
+  #invitePreviewModal .modal-card,
+  #announcementManageModal .modal-card,
+  #eventManageModal .modal-card,
+  #systemSettingsModal .modal-card,
+  #adminKyroModal .modal-card{
+    height:calc(100dvh - var(--member-modal-top,160px) - 10px - env(safe-area-inset-bottom)) !important;
+    min-height:calc(100dvh - var(--member-modal-top,160px) - 10px - env(safe-area-inset-bottom)) !important;
+    max-height:calc(100dvh - var(--member-modal-top,160px) - 10px - env(safe-area-inset-bottom)) !important;
   }
 }
