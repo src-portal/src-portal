@@ -2068,3 +2068,50 @@ body{
     max-height:calc(100dvh - var(--member-modal-top,160px) - 16px) !important;
   }
 }
+
+
+/* Ver.1.7.1c: pin administrator child windows between the existing top position and the viewport bottom */
+#setupModal,
+#adminMemberModal,
+#invitePreviewModal,
+#announcementManageModal,
+#eventManageModal,
+#systemSettingsModal,
+#adminKyroModal{
+  position:fixed;
+  inset:0;
+  align-items:stretch !important;
+  justify-content:center;
+  padding:0 18px !important;
+}
+#setupModal .user-change-fixed-modal-card,
+#adminMemberModal .admin-fixed-modal-card,
+#invitePreviewModal .admin-fixed-modal-card,
+#announcementManageModal .admin-fixed-modal-card,
+#eventManageModal .admin-fixed-modal-card,
+#systemSettingsModal .admin-fixed-modal-card,
+#adminKyroModal .admin-fixed-modal-card{
+  position:absolute;
+  top:var(--member-modal-top,180px);
+  right:18px;
+  bottom:max(12px, env(safe-area-inset-bottom));
+  left:18px;
+  width:auto;
+  height:auto !important;
+  max-height:none !important;
+  margin:0 auto;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+@media(max-height:760px){
+  #setupModal .user-change-fixed-modal-card,
+  #adminMemberModal .admin-fixed-modal-card,
+  #invitePreviewModal .admin-fixed-modal-card,
+  #announcementManageModal .admin-fixed-modal-card,
+  #eventManageModal .admin-fixed-modal-card,
+  #systemSettingsModal .admin-fixed-modal-card,
+  #adminKyroModal .admin-fixed-modal-card{
+    top:var(--member-modal-top,160px);
+  }
+}
