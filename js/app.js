@@ -1591,12 +1591,12 @@ const addAnnouncementButton=document.getElementById("addAnnouncementButton");
 const addAnnouncementError=document.getElementById("addAnnouncementError");
 const announcementAdminList=document.getElementById("announcementAdminList");
 const messageBoardModal=document.getElementById("messageBoardModal");
-const openMessageBoardButton=document.getElementById("openMessageBoardButton");
+const messageBoardCard=document.getElementById("messageBoardCard");
 const closeMessageBoardButton=document.getElementById("closeMessageBoardButton");
 const postMessageBoardButton=document.getElementById("postMessageBoardButton");
 
 // Ver.1.3.0k: bind message-board controls only after their DOM references are initialized.
-if(openMessageBoardButton)openMessageBoardButton.onclick=()=>{renderMessageBoard();show(messageBoardModal);};
+if(messageBoardCard)messageBoardCard.onclick=()=>{renderMessageBoard();show(messageBoardModal);};
 if(closeMessageBoardButton)closeMessageBoardButton.onclick=()=>hide(messageBoardModal);
 if(postMessageBoardButton)postMessageBoardButton.onclick=postMessageBoard;
 const eventDetailModal=document.getElementById("eventDetailModal");
