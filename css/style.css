@@ -2069,105 +2069,191 @@ body{
   }
 }
 
-/* Ver.1.7.1e: unified tall modal viewport and full-card scrolling */
+/* Ver.1.7.1f: expand all modal windows while preserving iPhone Safari scrolling */
 .modal-overlay{
-  align-items:flex-start;
-  padding-top:calc(var(--member-modal-top,180px) + 8px);
-  padding-bottom:max(12px, env(safe-area-inset-bottom));
-  overflow:hidden;
+  overflow:hidden !important;
+}
+.modal-overlay .modal-card{
+  width:min(92vw,420px);
+  height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  min-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  max-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+}
+.modal-overlay .modal-card > .dialog-header{
+  position:sticky;
+  top:-18px;
+  z-index:5;
+  margin:-18px -18px 12px;
+  padding:18px 18px 10px;
+  background:#fff;
 }
 
-.modal-overlay .modal-card,
-#helpModal .modal-card,
-#messageBoardModal .modal-card,
-#recommendationsModal .modal-card,
-#memberOverviewModal .modal-card,
-#memberProfileModal .modal-card,
-#memberProfileEditModal .modal-card,
-#kyroPageModal .modal-card,
-#eventDetailModal .modal-card,
+/* Keep administrator-related windows at their existing top position and extend only downward. */
+#setupModal .modal-card,
 #adminPinModal .modal-card,
 #adminMenuModal .modal-card,
-#setupModal .modal-card,
 #adminMemberModal .modal-card,
 #invitePreviewModal .modal-card,
 #announcementManageModal .modal-card,
 #eventManageModal .modal-card,
 #systemSettingsModal .modal-card,
 #adminKyroModal .modal-card{
-  width:min(92vw,420px);
-  height:calc(100dvh - var(--member-modal-top,180px) - 20px);
-  min-height:calc(100dvh - var(--member-modal-top,180px) - 20px);
-  max-height:calc(100dvh - var(--member-modal-top,180px) - 20px) !important;
-  display:block !important;
-  overflow-x:hidden !important;
-  overflow-y:auto !important;
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;
-  scroll-behavior:smooth;
-  padding-bottom:max(24px, env(safe-area-inset-bottom));
+  height:calc(100dvh - var(--member-modal-top,180px) - 12px - env(safe-area-inset-bottom)) !important;
+  min-height:calc(100dvh - var(--member-modal-top,180px) - 12px - env(safe-area-inset-bottom)) !important;
+  max-height:calc(100dvh - var(--member-modal-top,180px) - 12px - env(safe-area-inset-bottom)) !important;
 }
 
-.modal-overlay .modal-card > .dialog-header{
-  position:sticky;
-  top:-18px;
-  z-index:30;
-  margin:-18px -18px 12px;
-  padding:18px 18px 14px;
-  background:#fff;
-  border-bottom:1px solid #e7ebf0;
-}
-
-/* Let the outer modal card own the scrolling area. */
-#helpModal .help-content,
-.message-board-modal-card,
-.recommendations-modal-card,
-.member-overview-modal-card,
-.member-profile-modal-card,
-.member-profile-edit-modal-card,
-.admin-fixed-modal-card,
-.user-change-fixed-modal-card{
-  min-height:0 !important;
-}
-
-#helpModal .help-content{
-  display:block !important;
-  height:auto !important;
-  max-height:none !important;
-  overflow:visible !important;
-  -webkit-overflow-scrolling:auto;
-}
-
-.admin-fixed-modal-card > .dialog-header ~ *,
-.user-change-fixed-modal-card > .dialog-header ~ *{
-  max-height:none !important;
-  overflow:visible !important;
+/* Empty community screens also retain the expanded window size. */
+#messageBoardModal .message-board-modal-card,
+#recommendationsModal .recommendations-modal-card{
+  height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  min-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
 }
 
 @media(max-height:760px){
-  .modal-overlay{
-    padding-top:calc(var(--member-modal-top,160px) + 6px);
-  }
-  .modal-overlay .modal-card,
-  #helpModal .modal-card,
-  #messageBoardModal .modal-card,
-  #recommendationsModal .modal-card,
-  #memberOverviewModal .modal-card,
-  #memberProfileModal .modal-card,
-  #memberProfileEditModal .modal-card,
-  #kyroPageModal .modal-card,
-  #eventDetailModal .modal-card,
+  #setupModal .modal-card,
   #adminPinModal .modal-card,
   #adminMenuModal .modal-card,
-  #setupModal .modal-card,
   #adminMemberModal .modal-card,
   #invitePreviewModal .modal-card,
   #announcementManageModal .modal-card,
   #eventManageModal .modal-card,
   #systemSettingsModal .modal-card,
   #adminKyroModal .modal-card{
-    height:calc(100dvh - var(--member-modal-top,160px) - 18px);
-    min-height:calc(100dvh - var(--member-modal-top,160px) - 18px);
-    max-height:calc(100dvh - var(--member-modal-top,160px) - 18px) !important;
+    height:calc(100dvh - var(--member-modal-top,160px) - 10px - env(safe-area-inset-bottom)) !important;
+    min-height:calc(100dvh - var(--member-modal-top,160px) - 10px - env(safe-area-inset-bottom)) !important;
+    max-height:calc(100dvh - var(--member-modal-top,160px) - 10px - env(safe-area-inset-bottom)) !important;
+  }
+}
+
+
+/* Ver.1.7.1f: expanded primary modals with one reliable Safari scroll area */
+/* Compact confirmations and short pickers intentionally keep their original size. */
+#setupModal,
+#messageBoardModal,
+#helpModal,
+#memberOverviewModal,
+#memberProfileModal,
+#memberProfileEditModal,
+#mainMenuModal,
+#recommendationsModal,
+#kyroPageModal,
+#adminKyroModal,
+#adminPinModal,
+#adminMenuModal,
+#adminMemberModal,
+#eventDetailModal,
+#announcementManageModal,
+#eventManageModal,
+#systemSettingsModal,
+#invitePreviewModal{
+  align-items:flex-start !important;
+  justify-content:center !important;
+  padding-top:max(10px,env(safe-area-inset-top)) !important;
+  padding-right:12px !important;
+  padding-bottom:max(10px,env(safe-area-inset-bottom)) !important;
+  padding-left:12px !important;
+  overflow:hidden !important;
+}
+
+#setupModal > .modal-card,
+#messageBoardModal > .modal-card,
+#helpModal > .modal-card,
+#memberOverviewModal > .modal-card,
+#memberProfileModal > .modal-card,
+#memberProfileEditModal > .modal-card,
+#mainMenuModal > .modal-card,
+#recommendationsModal > .modal-card,
+#kyroPageModal > .modal-card,
+#adminKyroModal > .modal-card,
+#adminPinModal > .modal-card,
+#adminMenuModal > .modal-card,
+#adminMemberModal > .modal-card,
+#eventDetailModal > .modal-card,
+#announcementManageModal > .modal-card,
+#eventManageModal > .modal-card,
+#systemSettingsModal > .modal-card,
+#invitePreviewModal > .modal-card{
+  display:block !important;
+  width:min(94vw,620px) !important;
+  height:calc(100dvh - max(10px,env(safe-area-inset-top)) - max(10px,env(safe-area-inset-bottom))) !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain !important;
+  -webkit-overflow-scrolling:touch !important;
+  touch-action:pan-y !important;
+  padding:18px !important;
+  scroll-padding-top:76px;
+}
+
+/* Use the enlarged card itself as the only vertical scroll container. */
+#helpModal .help-content,
+#memberOverviewModal .member-overview-list,
+#setupModal .name-button-grid,
+#adminMenuModal .admin-menu-list,
+#messageBoardModal .message-board-list,
+#recommendationsModal .recommendations-list,
+#recommendationsModal .recommendation-list{
+  max-height:none !important;
+  height:auto !important;
+  overflow:visible !important;
+  flex:none !important;
+}
+
+/* Keep title and close control visible while the card scrolls. */
+#setupModal .dialog-header,
+#messageBoardModal .dialog-header,
+#helpModal .dialog-header,
+#memberOverviewModal .dialog-header,
+#memberProfileModal .dialog-header,
+#memberProfileEditModal .dialog-header,
+#mainMenuModal .dialog-header,
+#recommendationsModal .dialog-header,
+#kyroPageModal .dialog-header,
+#adminKyroModal .dialog-header,
+#adminPinModal .dialog-header,
+#adminMenuModal .dialog-header,
+#adminMemberModal .dialog-header,
+#eventDetailModal .dialog-header,
+#announcementManageModal .dialog-header,
+#eventManageModal .dialog-header,
+#systemSettingsModal .dialog-header,
+#invitePreviewModal .dialog-header{
+  position:sticky !important;
+  top:-18px !important;
+  z-index:30 !important;
+  margin:-18px -18px 12px !important;
+  padding:18px 18px 12px !important;
+  background:#fff !important;
+  border-bottom:1px solid #e8edf3;
+}
+
+@supports not (height:100dvh){
+  #setupModal > .modal-card,
+  #messageBoardModal > .modal-card,
+  #helpModal > .modal-card,
+  #memberOverviewModal > .modal-card,
+  #memberProfileModal > .modal-card,
+  #memberProfileEditModal > .modal-card,
+  #mainMenuModal > .modal-card,
+  #recommendationsModal > .modal-card,
+  #kyroPageModal > .modal-card,
+  #adminKyroModal > .modal-card,
+  #adminPinModal > .modal-card,
+  #adminMenuModal > .modal-card,
+  #adminMemberModal > .modal-card,
+  #eventDetailModal > .modal-card,
+  #announcementManageModal > .modal-card,
+  #eventManageModal > .modal-card,
+  #systemSettingsModal > .modal-card,
+  #invitePreviewModal > .modal-card{
+    height:calc(100vh - 20px) !important;
   }
 }
