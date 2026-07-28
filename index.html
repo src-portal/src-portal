@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.7.1j">
+<link rel="stylesheet" href="css/style.css?v=1.8.0a">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -43,6 +43,24 @@
 
     <section class="next-card next-card-link" id="nextPlanCard" role="button" tabindex="0" aria-label="次回参加予定をカレンダーで開く"><div class="section-label">✨ あなたの次回参加予定</div><div id="nextPlanContent" class="next-plan-empty">参加予定はまだありません。</div></section>
 
+    <section class="season-activity-card hidden" id="seasonActivityCard" aria-live="polite">
+      <div class="season-activity-heading">
+        <div class="section-label">📈 シーズン活動記録（確認版）</div>
+        <span class="season-activity-admin-badge hidden" id="seasonActivityAdminBadge">管理者確認中</span>
+      </div>
+      <div class="season-activity-period" id="seasonActivityPeriod">シーズンを確認中...</div>
+      <div class="season-activity-user">👤 <strong id="seasonActivityUserName">--</strong></div>
+      <div class="season-activity-count-grid">
+        <div class="season-activity-count"><span>🏃 ラン＆ウォーク</span><strong id="seasonActivityRunCount">--回</strong></div>
+        <div class="season-activity-count"><span>🏋️ ジム</span><strong id="seasonActivityGymCount">--回</strong></div>
+      </div>
+      <div class="season-activity-team">
+        <span>参考：参加したメンバー <strong id="seasonActivityTeamMembers">--人</strong></span>
+        <span>平均参加回数 <strong id="seasonActivityTeamAverage">--回</strong></span>
+      </div>
+      <p class="season-activity-note">開催済みの実績のみ集計（ラン中止・ジム3人未満は除外）</p>
+    </section>
+
     <button class="kyro-mini-card" id="kyroMiniCard" type="button" aria-label="SRC-KYRO情報を開く">
       <span class="kyro-mini-title">SRC-KYRO-Club</span>
       <span class="kyro-mini-status" id="kyroMiniStatus">情報を確認中...</span>
@@ -80,10 +98,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.7.1j</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.8.0a</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.26</div>
-  <div class="build-info" id="buildInfo">Build 2026/07/28 1.7.1j JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/07/28 1.8.0a JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -268,7 +286,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.7.1j<br>Official Release<br>2026.07.28</strong></p>
+        <p><strong>SRC Portal<br>Version 1.8.0a<br>Administrator Preview<br>2026.07.28</strong></p>
       </section>
     </div>
 </div></div>
@@ -689,6 +707,15 @@
       <input id="settingsGymDeadline" class="admin-input" type="text" value="前日18:00">
       <p class="settings-note">締切は表示だけです。参加・取消を自動停止しません。</p>
     </div>
+    <div class="settings-section">
+      <h3>📈 新機能の公開設定</h3>
+      <label class="admin-form-label" for="settingsSeasonActivityVisibility">シーズン活動記録</label>
+      <select id="settingsSeasonActivityVisibility" class="admin-input">
+        <option value="admin">管理者のみ</option>
+        <option value="public">全員公開</option>
+      </select>
+      <p class="settings-note">初期状態は「管理者のみ」です。管理者は実データによる集計結果を確認できます。</p>
+    </div>
     <button class="primary-button" id="saveSystemSettingsButton" type="button">設定を保存</button>
     <p class="admin-error hidden" id="systemSettingsError">入力内容を確認してください。</p>
   </div>
@@ -726,6 +753,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.7.1j"></script>
+<script type="module" src="js/app.js?v=1.8.0a"></script>
 </body>
 </html>
