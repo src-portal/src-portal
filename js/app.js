@@ -28,7 +28,7 @@ inviteAuthMemberName=$("inviteAuthMemberName"),
 inviteAuthCodeInput=$("inviteAuthCodeInput"),
 inviteAuthError=$("inviteAuthError"),
 confirmInviteAuthButton=$("confirmInviteAuthButton");
-const app=initializeApp(firebaseConfig);const db=getFirestore(app);const today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
+const app=initializeApp(firebaseConfig);const db=getFirestore(app);let today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
 let members=[...defaultMembers];
 let memberRecords=[];
 let eventRecords=[];
@@ -94,6 +94,25 @@ function todayKeyJST(){
   return `${values.year}-${values.month}-${values.day}`;
 }
 function isPastKey(key){return Boolean(key)&&key<todayKeyJST()}
+
+let lastKnownTodayKey=todayKeyJST();
+function refreshAfterAppResume(){
+  const currentTodayKey=todayKeyJST();
+  if(currentTodayKey===lastKnownTodayKey)return;
+
+  lastKnownTodayKey=currentTodayKey;
+  today=new Date();
+  renderAll();
+  if(selectedKey)renderDetail();
+  if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
+  if(eventManageModal&&!eventManageModal.classList.contains("hidden"))renderAdminEvents();
+}
+
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible")refreshAfterAppResume();
+});
+window.addEventListener("pageshow",refreshAfterAppResume);
+window.addEventListener("focus",refreshAfterAppResume);
 
 async function migrateExistingMemberInvitationFields(records){
   if(memberInvitationMigrationStarted)return;
