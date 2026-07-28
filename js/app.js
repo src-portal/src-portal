@@ -44,7 +44,8 @@ function uiT(key,fallback){return window.SRC_I18N?.t?.(key) ?? fallback;}
 let selectedEvent=null;
 const defaultSystemSettings={
   run:{time:"19:00",place:"落合公園"},
-  gym:{time:"19:00",place:"サンフロッグ春日井",minParticipants:3,deadlineLabel:"前日18:00"}
+  gym:{time:"19:00",place:"サンフロッグ春日井",minParticipants:3,deadlineLabel:"前日18:00"},
+  features:{seasonActivityVisibility:"admin"}
 };
 let systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
 let requiredMembers=systemSettings.gym.minParticipants;
@@ -173,6 +174,9 @@ onSnapshot(doc(db,"settings","system"),snap=>{
       place:data.gym?.place||defaultSystemSettings.gym.place,
       minParticipants:Number(data.gym?.minParticipants)||defaultSystemSettings.gym.minParticipants,
       deadlineLabel:data.gym?.deadlineLabel||defaultSystemSettings.gym.deadlineLabel
+    },
+    features:{
+      seasonActivityVisibility:data.features?.seasonActivityVisibility==="public"?"public":"admin"
     }
   };
   requiredMembers=systemSettings.gym.minParticipants;
@@ -757,7 +761,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="開催条件";ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="開催条件";ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -1386,6 +1390,15 @@ const settingsGymTime=document.getElementById("settingsGymTime");
 const settingsGymPlace=document.getElementById("settingsGymPlace");
 const settingsGymMinParticipants=document.getElementById("settingsGymMinParticipants");
 const settingsGymDeadline=document.getElementById("settingsGymDeadline");
+const settingsSeasonActivityVisibility=document.getElementById("settingsSeasonActivityVisibility");
+const seasonActivityCard=document.getElementById("seasonActivityCard");
+const seasonActivityAdminBadge=document.getElementById("seasonActivityAdminBadge");
+const seasonActivityPeriod=document.getElementById("seasonActivityPeriod");
+const seasonActivityUserName=document.getElementById("seasonActivityUserName");
+const seasonActivityRunCount=document.getElementById("seasonActivityRunCount");
+const seasonActivityGymCount=document.getElementById("seasonActivityGymCount");
+const seasonActivityTeamMembers=document.getElementById("seasonActivityTeamMembers");
+const seasonActivityTeamAverage=document.getElementById("seasonActivityTeamAverage");
 const saveSystemSettingsButton=document.getElementById("saveSystemSettingsButton");
 const systemSettingsError=document.getElementById("systemSettingsError");
 const memberOverviewModal=document.getElementById("memberOverviewModal");
@@ -1709,6 +1722,76 @@ async function seedMembers(){
 
 
 
+
+function currentSeasonInfo(referenceDate=new Date()){
+  const parts=new Intl.DateTimeFormat("en-CA",{
+    timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"
+  }).formatToParts(referenceDate);
+  const values=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+  const year=Number(values.year);
+  const month=Number(values.month);
+  if(month>=4&&month<=9){
+    return {label:`${year}年度 上期`,start:`${year}-04-01`,end:`${year}-09-30`};
+  }
+  const fiscalYear=month>=10?year:year-1;
+  return {label:`${fiscalYear}年度 下期`,start:`${fiscalYear}-10-01`,end:`${fiscalYear+1}-03-31`};
+}
+
+function seasonCompletedRunIds(season){
+  const todayKey=todayKeyJST();
+  return eventRecords
+    .filter(event=>event.type==="run"&&event.status!=="cancelled"&&event.date>=season.start&&event.date<=season.end&&event.date<todayKey)
+    .map(event=>eventId("run",event.date));
+}
+
+function seasonCompletedGymIds(season){
+  const todayKey=todayKeyJST();
+  return Object.keys(attendance).filter(id=>{
+    if(!id.startsWith("gym_"))return false;
+    const dateKey=id.slice(4);
+    const participants=attendance[id];
+    return dateKey>=season.start&&dateKey<=season.end&&dateKey<todayKey&&Array.isArray(participants)&&participants.length>=requiredMembers;
+  });
+}
+
+function seasonActivityStats(season){
+  const runIds=[...new Set(seasonCompletedRunIds(season))];
+  const gymIds=[...new Set(seasonCompletedGymIds(season))];
+  const countFor=(ids,name)=>ids.reduce((count,id)=>count+(Array.isArray(attendance[id])&&attendance[id].includes(name)?1:0),0);
+  const participantTotals=new Map();
+  [...runIds,...gymIds].forEach(id=>{
+    const uniqueNames=[...new Set(Array.isArray(attendance[id])?attendance[id]:[])];
+    uniqueNames.forEach(name=>participantTotals.set(name,(participantTotals.get(name)||0)+1));
+  });
+  const teamMembers=participantTotals.size;
+  const teamTotal=[...participantTotals.values()].reduce((sum,value)=>sum+value,0);
+  return {
+    runCount:currentUser?countFor(runIds,currentUser):0,
+    gymCount:currentUser?countFor(gymIds,currentUser):0,
+    teamMembers,
+    teamAverage:teamMembers>0?teamTotal/teamMembers:0
+  };
+}
+
+function renderSeasonActivity(){
+  if(!seasonActivityCard)return;
+  const visibility=systemSettings.features?.seasonActivityVisibility||"admin";
+  const admin=isCurrentAdmin();
+  const canView=visibility==="public"||admin;
+  seasonActivityCard.classList.toggle("hidden",!canView);
+  if(!canView)return;
+
+  const season=currentSeasonInfo();
+  const stats=seasonActivityStats(season);
+  seasonActivityAdminBadge.classList.toggle("hidden",visibility!=="admin");
+  seasonActivityPeriod.textContent=`${season.label}（${season.start.replaceAll("-","/")}～${season.end.replaceAll("-","/")}）`;
+  seasonActivityUserName.textContent=currentUser||"ユーザー未選択";
+  seasonActivityRunCount.textContent=`${stats.runCount}回`;
+  seasonActivityGymCount.textContent=`${stats.gymCount}回`;
+  seasonActivityTeamMembers.textContent=`${stats.teamMembers}人`;
+  seasonActivityTeamAverage.textContent=`${stats.teamAverage.toFixed(1)}回`;
+}
+
 function applySystemSettingsToInputs(){
   if(!settingsRunTime)return;
   settingsRunTime.value=systemSettings.run.time;
@@ -1717,6 +1800,9 @@ function applySystemSettingsToInputs(){
   settingsGymPlace.value=systemSettings.gym.place;
   settingsGymMinParticipants.value=String(systemSettings.gym.minParticipants);
   settingsGymDeadline.value=systemSettings.gym.deadlineLabel;
+  if(settingsSeasonActivityVisibility){
+    settingsSeasonActivityVisibility.value=systemSettings.features?.seasonActivityVisibility||"admin";
+  }
 }
 
 async function saveSystemSettings(){
@@ -1726,6 +1812,7 @@ async function saveSystemSettings(){
   const gymPlace=settingsGymPlace.value.trim();
   const minParticipants=Number(settingsGymMinParticipants.value);
   const deadlineLabel=settingsGymDeadline.value.trim();
+  const seasonActivityVisibility=settingsSeasonActivityVisibility?.value==="public"?"public":"admin";
 
   if(!runPlace||!gymPlace||!Number.isInteger(minParticipants)||minParticipants<1||!deadlineLabel){
     systemSettingsError.classList.remove("hidden");
@@ -1737,6 +1824,7 @@ async function saveSystemSettings(){
     await setDoc(doc(db,"settings","system"),{
       run:{time:runTime,place:runPlace},
       gym:{time:gymTime,place:gymPlace,minParticipants,deadlineLabel},
+      features:{seasonActivityVisibility},
       updatedAt:serverTimestamp()
     },{merge:true});
     closeAdminChildModal(systemSettingsModal);
