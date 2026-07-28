@@ -1857,6 +1857,16 @@ function formatMessageBoardDate(value){
   const date=new Date(time);
   return `${date.getMonth()+1}/${date.getDate()}`;
 }
+function formatMessageBoardPeriod(createdAt,expiresAt){
+  const startTime=messageBoardDateValue(createdAt);
+  if(!startTime)return "";
+  const start=new Date(startTime);
+  const endTime=messageBoardDateValue(expiresAt);
+  if(!endTime)return `${start.getMonth()+1}/${start.getDate()}`;
+  const end=new Date(endTime);
+  end.setDate(end.getDate()-1);
+  return `${start.getMonth()+1}/${start.getDate()}～${end.getMonth()+1}/${end.getDate()}`;
+}
 function buildMessageBoardItem(item,allowDelete){
   const wrapper=document.createElement("article");
   wrapper.className="message-board-item";
@@ -1865,7 +1875,7 @@ function buildMessageBoardItem(item,allowDelete){
   const author=document.createElement("strong");
   author.textContent=item.authorName||uiT("memberGeneric","メンバー");
   const date=document.createElement("span");
-  date.textContent=formatMessageBoardDate(item.createdAt);
+  date.textContent=formatMessageBoardPeriod(item.createdAt,item.expiresAt);
   head.append(author,date);
   const body=document.createElement("div");
   body.className="message-board-item-body";
