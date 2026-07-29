@@ -2257,6 +2257,7 @@ body{
 
 /* Ver.1.8.0a: administrator-preview season activity summary */
 .season-activity-card{
+  margin-bottom:14px;
   background:#fff;
   border:1px solid #d9e7f5;
   border-radius:20px;
