@@ -44,7 +44,7 @@ function uiT(key,fallback){return window.SRC_I18N?.t?.(key) ?? fallback;}
 let selectedEvent=null;
 const defaultSystemSettings={
   run:{time:"19:00",place:"落合公園"},
-  gym:{time:"19:00",place:"サンフロッグ春日井",minParticipants:3,deadlineLabel:"前日18:00"},
+  gym:{time:"19:00",place:"サンフロッグ春日井",minParticipants:3,calendarUrl:"https://www.spofure-kasugai.or.jp/sports/pool/calendar/"},
   features:{seasonActivityVisibility:"admin"}
 };
 let systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
@@ -173,7 +173,7 @@ onSnapshot(doc(db,"settings","system"),snap=>{
       time:data.gym?.time||defaultSystemSettings.gym.time,
       place:data.gym?.place||defaultSystemSettings.gym.place,
       minParticipants:Number(data.gym?.minParticipants)||defaultSystemSettings.gym.minParticipants,
-      deadlineLabel:data.gym?.deadlineLabel||defaultSystemSettings.gym.deadlineLabel
+      calendarUrl:data.gym?.calendarUrl||defaultSystemSettings.gym.calendarUrl
     },
     features:{
       seasonActivityVisibility:data.features?.seasonActivityVisibility==="public"?"public":"admin"
@@ -761,7 +761,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="開催条件";ruleValue.textContent=`${requiredMembers}名以上で開催／締切表示 ${systemSettings.gym.deadlineLabel}`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>開催</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -833,13 +833,13 @@ function renderCalendar(){
     let eventLabel="";
 
     if(currentType==="gym"){
-      // Gym: any date can be selected. 3 participants confirms.
+      // Gym: any date can be selected. 3 participants qualifies for the subsidy.
       if(count===1)cell.classList.add("one");
       if(count===2)cell.classList.add("warn");
       if(count>=requiredMembers)cell.classList.add("confirmed");
 
       note=count>=requiredMembers
-        ? "開催"
+        ? "補助"
         : count===2
           ? "あと1"
           : count===1
@@ -1110,15 +1110,19 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
     ? "🏋️ ジムトレーニング"
     : `🏃 ${ev?.title||"ラン＆ウォーク"}`;
 
-  detailTime.textContent=currentType==="gym"
-    ? `${systemSettings.gym.time}〜`
-    : (ev?.time ? `${ev.time}〜` : `${systemSettings.run.time}〜`);
-
-  detailPlace.textContent=`📍 ${
-    currentType==="gym"
-      ? systemSettings.gym.place
-      : (ev?.place||systemSettings.run.place)
-  }`;
+  if(currentType==="gym"){
+    detailTime.classList.add("hidden");
+    const safePlace=escapeHtml(systemSettings.gym.place);
+    const safeTime=escapeHtml(`${systemSettings.gym.time}〜`);
+    const url=String(systemSettings.gym.calendarUrl||"").trim();
+    const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";
+    const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";
+    detailPlace.innerHTML=`📍 ${safePlace}${calendarLink}<span class="gym-detail-time">🕖 ${safeTime}</span>`;
+  }else{
+    detailTime.classList.remove("hidden");
+    detailTime.textContent=ev?.time ? `${ev.time}〜` : `${systemSettings.run.time}〜`;
+    detailPlace.textContent=`📍 ${ev?.place||systemSettings.run.place}`;
+  }
 
   participantTitle.textContent=`参加者（${count}名）`;
   participantList.innerHTML="";
@@ -1165,9 +1169,9 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
 
     if(count>=requiredMembers){
       progressBox.classList.add("confirmed");
-      progressText.textContent=`🟢 開催決定（${count}名参加）`;
+      progressText.innerHTML=`🟢 補助対象です（${count}名参加）<div class="progress-subtext">💰 利用料300円/人補助</div>`;
     }else{
-      progressText.textContent=`🟡 あと${remain}名で開催`;
+      progressText.innerHTML=`🟡 あと${remain}名で補助<div class="progress-subtext">💰 ${requiredMembers}人集まれば利用料300円/人補助</div>`;
     }
 
     if(isPast){
@@ -1179,8 +1183,6 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
       return;
     }
 
-    eventMessage.textContent=`参加締切表示：${systemSettings.gym.deadlineLabel}（表示のみ）`;
-    eventMessage.classList.remove("hidden");
     updateButtons();
     return;
   }
@@ -1389,7 +1391,7 @@ const settingsRunPlace=document.getElementById("settingsRunPlace");
 const settingsGymTime=document.getElementById("settingsGymTime");
 const settingsGymPlace=document.getElementById("settingsGymPlace");
 const settingsGymMinParticipants=document.getElementById("settingsGymMinParticipants");
-const settingsGymDeadline=document.getElementById("settingsGymDeadline");
+const settingsGymCalendarUrl=document.getElementById("settingsGymCalendarUrl");
 const settingsSeasonActivityVisibility=document.getElementById("settingsSeasonActivityVisibility");
 const seasonActivityCard=document.getElementById("seasonActivityCard");
 const seasonActivityAdminBadge=document.getElementById("seasonActivityAdminBadge");
@@ -1750,7 +1752,7 @@ function seasonCompletedGymIds(season){
     if(!id.startsWith("gym_"))return false;
     const dateKey=id.slice(4);
     const participants=attendance[id];
-    return dateKey>=season.start&&dateKey<=season.end&&dateKey<todayKey&&Array.isArray(participants)&&participants.length>=requiredMembers;
+    return dateKey>=season.start&&dateKey<=season.end&&dateKey<todayKey&&Array.isArray(participants)&&participants.length>0;
   });
 }
 
@@ -1799,7 +1801,7 @@ function applySystemSettingsToInputs(){
   settingsGymTime.value=systemSettings.gym.time;
   settingsGymPlace.value=systemSettings.gym.place;
   settingsGymMinParticipants.value=String(systemSettings.gym.minParticipants);
-  settingsGymDeadline.value=systemSettings.gym.deadlineLabel;
+  settingsGymCalendarUrl.value=systemSettings.gym.calendarUrl||"";
   if(settingsSeasonActivityVisibility){
     settingsSeasonActivityVisibility.value=systemSettings.features?.seasonActivityVisibility||"admin";
   }
@@ -1811,10 +1813,10 @@ async function saveSystemSettings(){
   const gymTime=settingsGymTime.value||"19:00";
   const gymPlace=settingsGymPlace.value.trim();
   const minParticipants=Number(settingsGymMinParticipants.value);
-  const deadlineLabel=settingsGymDeadline.value.trim();
+  const calendarUrl=settingsGymCalendarUrl.value.trim();
   const seasonActivityVisibility=settingsSeasonActivityVisibility?.value==="public"?"public":"admin";
 
-  if(!runPlace||!gymPlace||!Number.isInteger(minParticipants)||minParticipants<1||!deadlineLabel){
+  if(!runPlace||!gymPlace||!Number.isInteger(minParticipants)||minParticipants<1||(calendarUrl&&!/^https?:\/\//i.test(calendarUrl))){
     systemSettingsError.classList.remove("hidden");
     return;
   }
@@ -1823,7 +1825,7 @@ async function saveSystemSettings(){
   try{
     await setDoc(doc(db,"settings","system"),{
       run:{time:runTime,place:runPlace},
-      gym:{time:gymTime,place:gymPlace,minParticipants,deadlineLabel},
+      gym:{time:gymTime,place:gymPlace,minParticipants,calendarUrl},
       features:{seasonActivityVisibility},
       updatedAt:serverTimestamp()
     },{merge:true});
@@ -2744,7 +2746,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       nextEvent:"次回イベント", noNextEvent:"今後のイベントは登録されていません。", openEvent:"このイベントを開く",
       runWalk:"ラン＆ウォーク", gym:"ジム", calendarBack:"カレンダーへ戻る",
       runSummary:"イベント管理で登録された開催日を表示します。", gymSummary:"好きな日を選んで参加表明",
-      runRuleTitle:"開催状態", runRuleValue:"管理者がイベントごとに設定", gymRuleTitle:"開催条件",
+      runRuleTitle:"開催状態", runRuleValue:"管理者がイベントごとに設定", gymRuleTitle:"補助条件",
       participants:"参加者", notJoined:"まだ参加していません。", join:"参加する", cancelJoin:"参加取消",
       chooseUser:"ユーザー変更", chooseName:"自分の名前を選んでください。", confirmUserChange:"現在のユーザーを変更しますか？",
       cancel:"キャンセル", changeUser:"変更する", close:"閉じる",
@@ -2767,7 +2769,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       nextEvent:"Next event", noNextEvent:"There are no upcoming events.", openEvent:"Open this event",
       runWalk:"Run & Walk", gym:"Gym", calendarBack:"Back to calendar",
       runSummary:"Shows dates registered in Event Management.", gymSummary:"Choose any date to join.",
-      runRuleTitle:"Event status", runRuleValue:"Set for each event by the administrator", gymRuleTitle:"Event conditions",
+      runRuleTitle:"Event status", runRuleValue:"Set for each event by the administrator", gymRuleTitle:"Subsidy conditions",
       participants:"Participants", notJoined:"You are not joining yet.", join:"Join", cancelJoin:"Cancel participation",
       chooseUser:"Select user", chooseName:"Select your name.", confirmUserChange:"Change the current user?",
       cancel:"Cancel", changeUser:"Change", close:"Close",
@@ -2790,7 +2792,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       nextEvent:"다음 이벤트", noNextEvent:"예정된 이벤트가 없습니다.", openEvent:"이 이벤트 열기",
       runWalk:"러닝 & 워킹", gym:"체육관", calendarBack:"달력으로 돌아가기",
       runSummary:"이벤트 관리에 등록된 개최일을 표시합니다.", gymSummary:"원하는 날짜를 선택해 참가 의사를 표시합니다.",
-      runRuleTitle:"개최 상태", runRuleValue:"관리자가 이벤트별로 설정", gymRuleTitle:"개최 조건",
+      runRuleTitle:"개최 상태", runRuleValue:"관리자가 이벤트별로 설정", gymRuleTitle:"지원 조건",
       participants:"참가자", notJoined:"아직 참가하지 않았습니다.", join:"참가하기", cancelJoin:"참가 취소",
       chooseUser:"사용자 선택", chooseName:"본인의 이름을 선택하세요.", confirmUserChange:"현재 사용자를 변경하시겠습니까?",
       cancel:"취소", changeUser:"변경", close:"닫기",
@@ -2813,7 +2815,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       nextEvent:"下次活动", noNextEvent:"目前没有即将举行的活动。", openEvent:"打开此活动",
       runWalk:"跑步与健走", gym:"健身房", calendarBack:"返回日历",
       runSummary:"显示在活动管理中登记的举办日期。", gymSummary:"选择任意日期报名参加。",
-      runRuleTitle:"活动状态", runRuleValue:"由管理员按活动设置", gymRuleTitle:"举办条件",
+      runRuleTitle:"活动状态", runRuleValue:"由管理员按活动设置", gymRuleTitle:"补助条件",
       participants:"参加者", notJoined:"您尚未参加。", join:"参加", cancelJoin:"取消参加",
       chooseUser:"选择用户", chooseName:"请选择您的姓名。", confirmUserChange:"要更改当前用户吗？",
       cancel:"取消", changeUser:"更改", close:"关闭",
