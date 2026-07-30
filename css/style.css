@@ -2274,3 +2274,11 @@ body{
 .season-activity-team{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px;padding-top:11px;border-top:1px solid #e6edf4;font-size:12px;color:#5a6f84}
 .season-activity-note{margin:9px 0 0;color:#7a8998;font-size:11px;line-height:1.5}
 @media(max-width:360px){.season-activity-count-grid{grid-template-columns:1fr}}
+
+/* Ver.1.8.0a3: gym subsidy detail */
+.detail-place{line-height:1.65}
+.gym-calendar-link{color:var(--blue);text-decoration:none;font-weight:900;white-space:nowrap}
+.gym-calendar-link:focus,.gym-calendar-link:hover{text-decoration:underline}
+.gym-detail-time{display:inline-block;margin-left:10px;white-space:nowrap}
+.progress-subtext{margin-top:8px;font-size:14px;line-height:1.5;font-weight:800;color:#52606d}
+.progress-box.confirmed .progress-subtext{color:#28724a}
