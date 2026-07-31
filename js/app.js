@@ -43,7 +43,7 @@ let nextPlanTarget=null;
 function uiT(key,fallback){return window.SRC_I18N?.t?.(key) ?? fallback;}
 let selectedEvent=null;
 const defaultSystemSettings={
-  run:{time:"19:00",place:"落合公園"},
+  run:{time:"19:00",place:"落合公園",mapUrl:"https://www.google.com/maps?q=35.2705363,136.9915385"},
   gym:{time:"19:00",place:"サンフロッグ春日井",minParticipants:3,calendarUrl:"https://www.spofure-kasugai.or.jp/sports/pool/calendar/"},
   features:{seasonActivityVisibility:"admin"}
 };
@@ -167,7 +167,8 @@ onSnapshot(doc(db,"settings","system"),snap=>{
   systemSettings={
     run:{
       time:data.run?.time||defaultSystemSettings.run.time,
-      place:data.run?.place||defaultSystemSettings.run.place
+      place:data.run?.place||defaultSystemSettings.run.place,
+      mapUrl:data.run?.mapUrl||defaultSystemSettings.run.mapUrl
     },
     gym:{
       time:data.gym?.time||defaultSystemSettings.gym.time,
@@ -761,7 +762,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`📍 ${safePlace}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl="https://www.google.com/maps?q=35.2705363,136.9915385";eventPlace.innerHTML=`<a class="run-location-link" href="${runMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a><span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`📍 ${safePlace}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -1388,6 +1389,7 @@ const adminSystemSettingsButton=document.getElementById("adminSystemSettingsButt
 const closeSystemSettingsButton=document.getElementById("closeSystemSettingsButton");
 const settingsRunTime=document.getElementById("settingsRunTime");
 const settingsRunPlace=document.getElementById("settingsRunPlace");
+const settingsRunMapUrl=document.getElementById("settingsRunMapUrl");
 const settingsGymTime=document.getElementById("settingsGymTime");
 const settingsGymPlace=document.getElementById("settingsGymPlace");
 const settingsGymMinParticipants=document.getElementById("settingsGymMinParticipants");
@@ -1798,6 +1800,7 @@ function applySystemSettingsToInputs(){
   if(!settingsRunTime)return;
   settingsRunTime.value=systemSettings.run.time;
   settingsRunPlace.value=systemSettings.run.place;
+  settingsRunMapUrl.value=systemSettings.run.mapUrl||"";
   settingsGymTime.value=systemSettings.gym.time;
   settingsGymPlace.value=systemSettings.gym.place;
   settingsGymMinParticipants.value=String(systemSettings.gym.minParticipants);
@@ -1810,13 +1813,14 @@ function applySystemSettingsToInputs(){
 async function saveSystemSettings(){
   const runTime=settingsRunTime.value||"19:00";
   const runPlace=settingsRunPlace.value.trim();
+  const runMapUrl=settingsRunMapUrl.value.trim();
   const gymTime=settingsGymTime.value||"19:00";
   const gymPlace=settingsGymPlace.value.trim();
   const minParticipants=Number(settingsGymMinParticipants.value);
   const calendarUrl=settingsGymCalendarUrl.value.trim();
   const seasonActivityVisibility=settingsSeasonActivityVisibility?.value==="public"?"public":"admin";
 
-  if(!runPlace||!gymPlace||!Number.isInteger(minParticipants)||minParticipants<1||(calendarUrl&&!/^https?:\/\//i.test(calendarUrl))){
+  if(!runPlace||!gymPlace||!Number.isInteger(minParticipants)||minParticipants<1||(runMapUrl&&!/^https?:\/\//i.test(runMapUrl))||(calendarUrl&&!/^https?:\/\//i.test(calendarUrl))){
     systemSettingsError.classList.remove("hidden");
     return;
   }
@@ -1824,7 +1828,7 @@ async function saveSystemSettings(){
 
   try{
     await setDoc(doc(db,"settings","system"),{
-      run:{time:runTime,place:runPlace},
+      run:{time:runTime,place:runPlace,mapUrl:runMapUrl},
       gym:{time:gymTime,place:gymPlace,minParticipants,calendarUrl},
       features:{seasonActivityVisibility},
       updatedAt:serverTimestamp()
