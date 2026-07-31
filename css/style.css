@@ -2384,3 +2384,38 @@ body{
 .season-activity-modal-card .modal-header .modal-header-close-button{
   justify-self:end;
 }
+
+
+/* Ver.1.8.0c: member legend position and season summary mobile layout */
+#memberOverviewModal .member-overview-legend{
+  margin:10px 0 12px;
+}
+.season-activity-count{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:5px;
+  padding:10px 10px;
+}
+.season-activity-count > span{
+  min-width:0;
+  white-space:nowrap;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:-0.02em;
+}
+.season-activity-count strong{
+  flex:none;
+  white-space:nowrap;
+  font-size:24px;
+}
+@media(max-width:390px){
+  .season-activity-count-grid{gap:8px;}
+  .season-activity-count{padding:9px 8px;gap:3px;}
+  .season-activity-count > span{font-size:11.5px;}
+  .season-activity-count strong{font-size:23px;}
+}
+@media(max-width:340px){
+  .season-activity-count-grid{grid-template-columns:1fr;}
+  .season-activity-count > span{font-size:13px;}
+}
