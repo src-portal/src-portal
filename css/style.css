@@ -2255,7 +2255,7 @@ body{
 }
 
 
-/* Ver.1.8.0b1: compact season summary and detail modal */
+/* Ver.1.8.0b2: compact season summary and detail modal */
 .season-activity-card{
   width:100%;margin:0 0 14px;padding:15px 16px;border-radius:18px;border:1px solid #cfe1f5;
   background:linear-gradient(135deg,#fff 0%,#f5f9ff 100%);box-shadow:0 10px 24px rgba(28,54,84,.08);
@@ -2325,7 +2325,7 @@ body{
 @media (max-width:430px){.run-summary-time{margin-left:6px}}
 
 
-/* Ver.1.8.0b1: unify all top location link colors before/after visit */
+/* Ver.1.8.0b2: unify all top location link colors before/after visit */
 .run-location-link:link,
 .run-location-link:visited,
 .run-location-link:hover,
@@ -2347,7 +2347,7 @@ body{
 }
 
 
-/* Ver.1.8.0b1: unify season card spacing and modal close buttons */
+/* Ver.1.8.0b2: unify season card spacing and modal close buttons */
 .modal-header-close-button{
   width:32px;
   height:32px;
