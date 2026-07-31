@@ -2294,3 +2294,25 @@ body{
 .run-location-link:focus,.run-location-link:hover{color:var(--blue);text-decoration:underline}
 .run-summary-time{display:inline-block;margin-left:10px;white-space:nowrap}
 @media (max-width:430px){.run-summary-time{margin-left:6px}}
+
+
+/* Ver.1.8.0a10: unify all top location link colors before/after visit */
+.run-location-link:link,
+.run-location-link:visited,
+.run-location-link:hover,
+.run-location-link:active,
+.run-location-link:focus,
+.gym-location-link:link,
+.gym-location-link:visited,
+.gym-location-link:hover,
+.gym-location-link:active,
+.gym-location-link:focus,
+.gym-calendar-link:link,
+.gym-calendar-link:visited,
+.gym-calendar-link:hover,
+.gym-calendar-link:active,
+.gym-calendar-link:focus{
+  color:var(--blue);
+  text-decoration:underline;
+  font-weight:900;
+}
