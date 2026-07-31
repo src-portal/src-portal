@@ -301,7 +301,8 @@ onSnapshot(collection(db,"events"),snap=>{
       time:data.time||"19:00",
       place:data.place||"",
       status:data.status||"scheduled",
-      memo:data.memo||""
+      memo:data.memo||"",
+      trainingResults:Array.isArray(data.trainingResults)?data.trainingResults.filter(v=>typeof v==="string"):[]
     });
   });
   eventRecords=loaded.sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.type||"").localeCompare(b.type||""));
@@ -2085,15 +2086,48 @@ function showEventDetail(ev){
   const statusIcon=ev.status==="cancelled"?"🔴":"🟢";
   const typeIcon=ev.type==="run"?"🏃":"🏋️";
   const displayTitle=(ev.title||eventTypeLabel(ev.type)).trim();
+  const results=Array.isArray(ev.trainingResults)?ev.trainingResults.filter(Boolean):[];
+  const resultsHtml=ev.type==="run"&&results.length
+    ? `<div class="training-results-box"><div class="training-results-title">🏃 今日の練習</div><div class="training-results-list">${results.map(line=>`<div class="training-result-row">${escapeHtml(line)}</div>`).join("")}</div></div>`
+    : "";
+  const adminEditHtml=ev.type==="run"&&isCurrentAdmin()
+    ? `<div class="training-results-admin"><label class="admin-form-label" for="eventTrainingResultsInput">🏃 今日の練習（管理者編集）</label><textarea id="eventTrainingResultsInput" class="admin-input admin-textarea" placeholder="1グループ1行で入力\n例：A 1.5km×5周 5:30/km\nB 1.5km×4周 7:15/km">${escapeHtml(results.join("\n"))}</textarea><p class="training-results-note">過去のイベントにも入力・修正できます。空欄で保存すると表示されません。</p><button class="event-small-button primary" id="saveEventTrainingResultsButton" type="button">練習実績を保存</button></div>`
+    : "";
 
   eventDetailContent.innerHTML=`
     <div class="event-detail-card">
       <div class="event-detail-title">${statusIcon} ${typeIcon} ${escapeHtml(displayTitle)} ${statusText}</div>
       <div class="event-detail-sub">📅 ${fmt(ev.date)}<br>🕖 ${ev.time||"19:00"}<br>📍 ${ev.place||"-"}</div>
-      ${ev.memo?`<div class="event-detail-memo">📝 ${ev.memo}</div>`:""}
+      ${ev.memo?`<div class="event-detail-memo">📝 ${escapeHtml(ev.memo)}</div>`:""}
     </div>
+    ${resultsHtml}
+    ${adminEditHtml}
   `;
+  const saveTrainingButton=document.getElementById("saveEventTrainingResultsButton");
+  if(saveTrainingButton)saveTrainingButton.onclick=saveSelectedEventTrainingResults;
   show(eventDetailModal);
+}
+
+async function saveSelectedEventTrainingResults(){
+  if(!selectedEvent||selectedEvent.type!=="run"||!isCurrentAdmin())return;
+  const input=document.getElementById("eventTrainingResultsInput");
+  if(!input)return;
+  const trainingResults=input.value
+    .split(/\r?\n/)
+    .map(line=>line.trim())
+    .filter(Boolean);
+  try{
+    await updateDoc(doc(db,"events",selectedEvent.id),{
+      trainingResults,
+      updatedAt:serverTimestamp()
+    });
+    selectedEvent={...selectedEvent,trainingResults};
+    alert("練習実績を保存しました。");
+    showEventDetail(selectedEvent);
+  }catch(e){
+    console.error(e);
+    alert("練習実績の保存に失敗しました。Firestoreルールを確認してください。");
+  }
 }
 
 function openSelectedEventAttendance(){
@@ -2199,6 +2233,7 @@ function createEventAdminItem(ev){
     </select>
     <label class="admin-form-label">メモ</label>
     <textarea class="admin-input admin-textarea event-edit-memo">${escapeHtml(ev.memo||"")}</textarea>
+    ${ev.type==="run"?`<label class="admin-form-label">今日の練習（1グループ1行）</label><textarea class="admin-input admin-textarea event-edit-training-results" placeholder="A 1.5km×5周 5:30/km\nB 1.5km×4周 7:15/km">${escapeHtml((ev.trainingResults||[]).join("\n"))}</textarea>`:""}
     <button class="event-small-button primary event-save-button" type="button">保存</button>
     <button class="event-small-button event-cancel-button" type="button">キャンセル</button>`;
 
@@ -2231,6 +2266,10 @@ async function saveEventEdit(eventId,editBox){
   const place=editBox.querySelector(".event-edit-place").value.trim();
   const status=editBox.querySelector(".event-edit-status").value;
   const memo=editBox.querySelector(".event-edit-memo").value.trim();
+  const trainingInput=editBox.querySelector(".event-edit-training-results");
+  const trainingResults=trainingInput
+    ? trainingInput.value.split(/\r?\n/).map(line=>line.trim()).filter(Boolean)
+    : [];
 
   try{
     await updateDoc(doc(db,"events",eventId),{
@@ -2239,6 +2278,7 @@ async function saveEventEdit(eventId,editBox){
       place,
       status,
       memo,
+      ...(trainingInput?{trainingResults}:{}),
       updatedAt:serverTimestamp()
     });
     alert("イベントを保存しました。");
