@@ -78,7 +78,8 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "mainMenuModal",
     "recommendationsModal",
     "kyroPageModal",
-    "adminKyroModal"
+    "adminKyroModal",
+    "seasonActivityModal"
   ].includes(e.id)){
     positionMemberModalBelowHeader(e);
   }
@@ -1406,8 +1407,23 @@ const seasonActivityPeriod=document.getElementById("seasonActivityPeriod");
 const seasonActivityUserName=document.getElementById("seasonActivityUserName");
 const seasonActivityRunCount=document.getElementById("seasonActivityRunCount");
 const seasonActivityGymCount=document.getElementById("seasonActivityGymCount");
-const seasonActivityTeamMembers=document.getElementById("seasonActivityTeamMembers");
-const seasonActivityTeamAverage=document.getElementById("seasonActivityTeamAverage");
+const seasonActivityModal=document.getElementById("seasonActivityModal");
+const closeSeasonActivityModalButton=document.getElementById("closeSeasonActivityModalButton");
+const seasonDetailPeriod=document.getElementById("seasonDetailPeriod");
+const seasonDetailUserName=document.getElementById("seasonDetailUserName");
+const seasonDetailRunCurrent=document.getElementById("seasonDetailRunCurrent");
+const seasonDetailRunPrevious=document.getElementById("seasonDetailRunPrevious");
+const seasonDetailRunDifference=document.getElementById("seasonDetailRunDifference");
+const seasonDetailRunMessage=document.getElementById("seasonDetailRunMessage");
+const seasonDetailGymCurrent=document.getElementById("seasonDetailGymCurrent");
+const seasonDetailGymPrevious=document.getElementById("seasonDetailGymPrevious");
+const seasonDetailGymDifference=document.getElementById("seasonDetailGymDifference");
+const seasonDetailGymMessage=document.getElementById("seasonDetailGymMessage");
+const seasonDetailTeamMembers=document.getElementById("seasonDetailTeamMembers");
+const seasonDetailTeamAverage=document.getElementById("seasonDetailTeamAverage");
+const seasonDetailPreviousButton=document.getElementById("seasonDetailPreviousButton");
+const seasonDetailNextButton=document.getElementById("seasonDetailNextButton");
+const seasonDetailNavigationLabel=document.getElementById("seasonDetailNavigationLabel");
 const saveSystemSettingsButton=document.getElementById("saveSystemSettingsButton");
 const systemSettingsError=document.getElementById("systemSettingsError");
 const memberOverviewModal=document.getElementById("memberOverviewModal");
@@ -1732,6 +1748,8 @@ async function seedMembers(){
 
 
 
+let seasonDetailOffset=0;
+
 function currentSeasonInfo(referenceDate=new Date()){
   const parts=new Intl.DateTimeFormat("en-CA",{
     timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"
@@ -1744,6 +1762,31 @@ function currentSeasonInfo(referenceDate=new Date()){
   }
   const fiscalYear=month>=10?year:year-1;
   return {label:`${fiscalYear}年度 下期`,start:`${fiscalYear}-10-01`,end:`${fiscalYear+1}-03-31`};
+}
+
+function shiftSeasonInfo(season,offset){
+  const [year,month]=season.start.split("-").map(Number);
+  const startDate=new Date(year,month-1+offset*6,1,12,0,0);
+  return currentSeasonInfo(startDate);
+}
+
+function seasonComparisonPresentation(current,previous){
+  const difference=current-previous;
+  if(difference>0){
+    return {className:"increase",difference:`＋${difference}回 ↑`,message:`✨ 前期より${difference}回増えました！`};
+  }
+  if(difference===0){
+    return {className:"same",difference:"変わらず",message:"😊 今期も同じペースです"};
+  }
+  return {className:"decrease",difference:`${difference}回`,message:`前期 ${previous}回`};
+}
+
+function applySeasonComparison(element,messageElement,current,previous){
+  const presentation=seasonComparisonPresentation(current,previous);
+  element.className=`season-detail-difference ${presentation.className}`;
+  element.textContent=presentation.difference;
+  messageElement.className=`season-detail-message ${presentation.className}`;
+  messageElement.textContent=presentation.message;
 }
 
 function seasonCompletedRunIds(season){
@@ -1788,17 +1831,44 @@ function renderSeasonActivity(){
   const admin=isCurrentAdmin();
   const canView=visibility==="public"||admin;
   seasonActivityCard.classList.toggle("hidden",!canView);
-  if(!canView)return;
+  if(!canView){
+    if(seasonActivityModal)hide(seasonActivityModal);
+    return;
+  }
 
   const season=currentSeasonInfo();
   const stats=seasonActivityStats(season);
   seasonActivityAdminBadge.classList.toggle("hidden",visibility!=="admin");
   seasonActivityPeriod.textContent=`${season.label}（${season.start.replaceAll("-","/")}～${season.end.replaceAll("-","/")}）`;
-  seasonActivityUserName.textContent=currentUser||"ユーザー未選択";
   seasonActivityRunCount.textContent=`${stats.runCount}回`;
   seasonActivityGymCount.textContent=`${stats.gymCount}回`;
-  seasonActivityTeamMembers.textContent=`${stats.teamMembers}人`;
-  seasonActivityTeamAverage.textContent=`${stats.teamAverage.toFixed(1)}回`;
+  if(seasonActivityModal&&!seasonActivityModal.classList.contains("hidden"))renderSeasonActivityDetail();
+}
+
+function renderSeasonActivityDetail(){
+  const currentBase=currentSeasonInfo();
+  const selectedSeason=shiftSeasonInfo(currentBase,seasonDetailOffset);
+  const previousSeason=shiftSeasonInfo(selectedSeason,-1);
+  const currentStats=seasonActivityStats(selectedSeason);
+  const previousStats=seasonActivityStats(previousSeason);
+  seasonDetailPeriod.textContent=`${selectedSeason.label}（${selectedSeason.start.replaceAll("-","/")}～${selectedSeason.end.replaceAll("-","/")}）`;
+  seasonDetailNavigationLabel.textContent=selectedSeason.label;
+  seasonDetailUserName.textContent=currentUser||"ユーザー未選択";
+  seasonDetailRunCurrent.textContent=`${currentStats.runCount}回`;
+  seasonDetailRunPrevious.textContent=`${previousStats.runCount}回`;
+  seasonDetailGymCurrent.textContent=`${currentStats.gymCount}回`;
+  seasonDetailGymPrevious.textContent=`${previousStats.gymCount}回`;
+  applySeasonComparison(seasonDetailRunDifference,seasonDetailRunMessage,currentStats.runCount,previousStats.runCount);
+  applySeasonComparison(seasonDetailGymDifference,seasonDetailGymMessage,currentStats.gymCount,previousStats.gymCount);
+  seasonDetailTeamMembers.textContent=`${currentStats.teamMembers}人`;
+  seasonDetailTeamAverage.textContent=`${currentStats.teamAverage.toFixed(1)}回`;
+  seasonDetailNextButton.disabled=seasonDetailOffset>=0;
+}
+
+function openSeasonActivityDetail(){
+  seasonDetailOffset=0;
+  renderSeasonActivityDetail();
+  show(seasonActivityModal);
 }
 
 function applySystemSettingsToInputs(){
@@ -2701,6 +2771,12 @@ function scrollToBelowHeader(element,extraGap=8){
     behavior:"smooth"
   });
 }
+
+seasonActivityCard?.addEventListener("click",openSeasonActivityDetail);
+closeSeasonActivityModalButton?.addEventListener("click",()=>hide(seasonActivityModal));
+seasonActivityModal?.addEventListener("click",event=>{if(event.target===seasonActivityModal)hide(seasonActivityModal);});
+seasonDetailPreviousButton?.addEventListener("click",()=>{seasonDetailOffset-=1;renderSeasonActivityDetail();});
+seasonDetailNextButton?.addEventListener("click",()=>{if(seasonDetailOffset<0){seasonDetailOffset+=1;renderSeasonActivityDetail();}});
 
 closeMemberOverviewButton.addEventListener("click",()=>hide(memberOverviewModal));
 memberOverviewMonthSelect?.addEventListener("change",()=>{
