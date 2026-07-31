@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.8.0b2">
+<link rel="stylesheet" href="css/style.css?v=1.8.0">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -92,10 +92,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.8.0b2</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.8.0</button>
   <div class="official-release-label">Official Release</div>
-  <div class="release-date">2026.07.26</div>
-  <div class="build-info" id="buildInfo">Build 2026/07/31 1.8.0b2 JST</div>
+  <div class="release-date">2026.07.31</div>
+  <div class="build-info" id="buildInfo">Build 2026/07/31 1.8.0 JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -202,6 +202,20 @@
         </ol>
         <p>参加人数や参加者はリアルタイムで更新されます。ダッシュボードの「次回イベント」をタップすると、該当月のカレンダーへ移動します。</p>
         <p>翌日に予定がある場合は、「あなたの次回参加予定」の下にリマインダーが表示されます。参加予定のイベントは名称・日時・場所を表示し、未回答のイベントや、ほかのメンバーが参加登録している翌日のジムがある場合は参加登録を案内します。</p>
+        <h3>📈 シーズン活動記録</h3>
+        <p>上期（4～9月）・下期（10～3月）ごとに、自分のラン＆ウォークとジムの参加回数を確認できます。トップ画面には今期の回数を表示し、カードをタップすると前期との比較やチームの参考値を確認できます。</p>
+        <p>増加した場合は少し強調し、同じ場合は穏やかに表示します。減少した場合は評価せず、回数の事実だけを表示します。個人順位は表示しません。</p>
+        <p>ラン＆ウォークには通常活動・大会・駅伝を含みます。中止イベントと「行けなくなりました」は集計から除外します。ジムは実際に参加登録が残っている日を実績として集計します。</p>
+        <h3>🏋️ ジムの参加・料金</h3>
+        <p>ジムは1人から利用できます。参加できる日が決まったら、カレンダーから参加登録してください。3人以上集まった場合は、ジム利用料300円／人をクラブ費から補助します。</p>
+        <ul>
+          <li>登録カード料：初回のみ200円</li>
+          <li>ロッカー利用料：50円</li>
+          <li>ジム利用料：300円（3人以上でクラブ費補助）</li>
+        </ul>
+        <p>登録カード料とロッカー利用料は補助対象外です。サンフロッグ春日井の場所と休場日は、ジム画面のリンクから確認できます。</p>
+        <h3>📍 場所・休場日のリンク</h3>
+        <p>ラン＆ウォークの「落合公園」と、ジムの「サンフロッグ春日井」をタップすると地図を開きます。ジムの「休場日を確認」から施設カレンダーを確認できます。</p>
         <h3>📢 お知らせ</h3>
         <p>管理者からの正式な連絡です。「お知らせ（○件）」の枠内を上下にスクロールして確認できます。</p>
         <h3>💬 みんなの伝言板</h3>
@@ -275,6 +289,15 @@
       <details class="help-details">
         <summary>📝 リリースノート</summary>
         <div class="help-document">
+          <h4>Version 1.8.x</h4>
+          <ul>
+            <li>上期・下期ごとの「シーズン活動記録」を追加</li>
+            <li>トップ画面に今期の参加回数を表示し、詳細画面で前期比較とチーム参考値を確認可能</li>
+            <li>管理者のみ表示／全員公開の切替に対応</li>
+            <li>ジムの3人条件を開催条件から利用料補助条件へ変更</li>
+            <li>ラン・ジムの集合場所リンクと、ジム休場日カレンダーへのリンクを追加</li>
+            <li>伝言板に掲載期間を表示</li>
+          </ul>
           <h4>Version 1.7.x</h4>
           <ul>
             <li>「みんなのおすすめ」を追加</li>
@@ -321,13 +344,13 @@
             <li>Help、利用規約、プライバシーポリシー、リリースノートを整備</li>
             <li>招待コードによる初回登録に対応</li>
           </ul>
-          <p class="help-document-date">更新日：2026年7月25日</p>
+          <p class="help-document-date">更新日：2026年7月31日</p>
         </div>
       </details>
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.8.0b2<br>Administrator Preview<br>2026.07.31</strong></p>
+        <p><strong>SRC Portal<br>Version 1.8.0<br>Official Release<br>2026.07.31</strong></p>
       </section>
     </div>
 </div></div>
@@ -716,7 +739,7 @@
       <summary>▶ 終了したイベント（<span id="pastEventCount">0</span>件）</summary>
       <div class="event-admin-list" id="pastEventAdminList"></div>
     </details>
-    <p class="setup-text">Ver.0.8.5aではラン＆ウォークのみeventsで管理します。ジムは日付を自由に選び、3名で開催です。</p>
+    <p class="setup-text">ラン＆ウォークはeventsで管理します。ジムは日付を自由に選んで参加登録し、3名以上で利用料300円／人が補助対象になります。</p>
   </div>
 </div>
 
@@ -798,6 +821,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.8.0b2"></script>
+<script type="module" src="js/app.js?v=1.8.0"></script>
 </body>
 </html>
