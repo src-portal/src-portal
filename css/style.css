@@ -2282,3 +2282,7 @@ body{
 .gym-detail-time{display:inline-block;margin-left:10px;white-space:nowrap}
 .progress-subtext{margin-top:8px;font-size:14px;line-height:1.5;font-weight:800;color:#52606d}
 .progress-box.confirmed .progress-subtext{color:#28724a}
+
+/* Ver.1.8.0a4: gym top summary link and time */
+.gym-summary-time{display:inline-block;margin-left:10px;white-space:nowrap}
+@media (max-width:430px){.gym-summary-time{margin-left:6px}}
