@@ -1,4 +1,4 @@
-SRC Portal Ver.1.8.0
+SRC Portal Ver.1.8.0c
 
 Official Release: 2026.07.31
 
@@ -11,4 +11,8 @@ Official Release: 2026.07.31
 ・伝言板に掲載期間を表示
 ・ヘルプとリリースノートをVer.1.8.0仕様へ更新
 
-Base: Ver.1.8.0b2 (ALL OK)
+Base: Ver.1.8.0 (ALL OK)
+
+Minor UI fixes:
+・登録メンバー画面のアイコン説明を上部へ移動
+・シーズン活動記録カードのラン＆ウォーク表示をiPhone向けに調整
