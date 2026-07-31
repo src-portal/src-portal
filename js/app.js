@@ -44,7 +44,7 @@ function uiT(key,fallback){return window.SRC_I18N?.t?.(key) ?? fallback;}
 let selectedEvent=null;
 const defaultSystemSettings={
   run:{time:"19:00",place:"落合公園",mapUrl:"https://www.google.com/maps?q=35.2705363,136.9915385"},
-  gym:{time:"19:00",place:"サンフロッグ春日井",minParticipants:3,calendarUrl:"https://www.spofure-kasugai.or.jp/sports/pool/calendar/"},
+  gym:{time:"19:00",place:"サンフロッグ春日井",minParticipants:3,mapUrl:"https://maps.app.goo.gl/1eCRggPsgc3Z2HMKA",calendarUrl:"https://www.spofure-kasugai.or.jp/sports/pool/calendar/"},
   features:{seasonActivityVisibility:"admin"}
 };
 let systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
@@ -174,6 +174,7 @@ onSnapshot(doc(db,"settings","system"),snap=>{
       time:data.gym?.time||defaultSystemSettings.gym.time,
       place:data.gym?.place||defaultSystemSettings.gym.place,
       minParticipants:Number(data.gym?.minParticipants)||defaultSystemSettings.gym.minParticipants,
+      mapUrl:data.gym?.mapUrl||defaultSystemSettings.gym.mapUrl,
       calendarUrl:data.gym?.calendarUrl||defaultSystemSettings.gym.calendarUrl
     },
     features:{
@@ -762,7 +763,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`📍 ${safePlace}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -1115,10 +1116,13 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
     detailTime.classList.add("hidden");
     const safePlace=escapeHtml(systemSettings.gym.place);
     const safeTime=escapeHtml(`${systemSettings.gym.time}〜`);
+    const mapUrl=String(systemSettings.gym.mapUrl||"").trim();
+    const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";
+    const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;
     const url=String(systemSettings.gym.calendarUrl||"").trim();
     const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";
     const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";
-    detailPlace.innerHTML=`📍 ${safePlace}${calendarLink}<span class="gym-detail-time">🕖 ${safeTime}</span>`;
+    detailPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-detail-time">🕖 ${safeTime}</span>`;
   }else{
     detailTime.classList.remove("hidden");
     detailTime.textContent=ev?.time ? `${ev.time}〜` : `${systemSettings.run.time}〜`;
@@ -1393,6 +1397,7 @@ const settingsRunMapUrl=document.getElementById("settingsRunMapUrl");
 const settingsGymTime=document.getElementById("settingsGymTime");
 const settingsGymPlace=document.getElementById("settingsGymPlace");
 const settingsGymMinParticipants=document.getElementById("settingsGymMinParticipants");
+const settingsGymMapUrl=document.getElementById("settingsGymMapUrl");
 const settingsGymCalendarUrl=document.getElementById("settingsGymCalendarUrl");
 const settingsSeasonActivityVisibility=document.getElementById("settingsSeasonActivityVisibility");
 const seasonActivityCard=document.getElementById("seasonActivityCard");
@@ -1804,6 +1809,7 @@ function applySystemSettingsToInputs(){
   settingsGymTime.value=systemSettings.gym.time;
   settingsGymPlace.value=systemSettings.gym.place;
   settingsGymMinParticipants.value=String(systemSettings.gym.minParticipants);
+  settingsGymMapUrl.value=systemSettings.gym.mapUrl||"";
   settingsGymCalendarUrl.value=systemSettings.gym.calendarUrl||"";
   if(settingsSeasonActivityVisibility){
     settingsSeasonActivityVisibility.value=systemSettings.features?.seasonActivityVisibility||"admin";
@@ -1817,10 +1823,11 @@ async function saveSystemSettings(){
   const gymTime=settingsGymTime.value||"19:00";
   const gymPlace=settingsGymPlace.value.trim();
   const minParticipants=Number(settingsGymMinParticipants.value);
+  const gymMapUrl=settingsGymMapUrl.value.trim();
   const calendarUrl=settingsGymCalendarUrl.value.trim();
   const seasonActivityVisibility=settingsSeasonActivityVisibility?.value==="public"?"public":"admin";
 
-  if(!runPlace||!gymPlace||!Number.isInteger(minParticipants)||minParticipants<1||(runMapUrl&&!/^https?:\/\//i.test(runMapUrl))||(calendarUrl&&!/^https?:\/\//i.test(calendarUrl))){
+  if(!runPlace||!gymPlace||!Number.isInteger(minParticipants)||minParticipants<1||(runMapUrl&&!/^https?:\/\//i.test(runMapUrl))||(gymMapUrl&&!/^https?:\/\//i.test(gymMapUrl))||(calendarUrl&&!/^https?:\/\//i.test(calendarUrl))){
     systemSettingsError.classList.remove("hidden");
     return;
   }
@@ -1829,7 +1836,7 @@ async function saveSystemSettings(){
   try{
     await setDoc(doc(db,"settings","system"),{
       run:{time:runTime,place:runPlace,mapUrl:runMapUrl},
-      gym:{time:gymTime,place:gymPlace,minParticipants,calendarUrl},
+      gym:{time:gymTime,place:gymPlace,minParticipants,mapUrl:gymMapUrl,calendarUrl},
       features:{seasonActivityVisibility},
       updatedAt:serverTimestamp()
     },{merge:true});
