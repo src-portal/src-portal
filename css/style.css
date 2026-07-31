@@ -2286,3 +2286,10 @@ body{
 /* Ver.1.8.0a4: gym top summary link and time */
 .gym-summary-time{display:inline-block;margin-left:10px;white-space:nowrap}
 @media (max-width:430px){.gym-summary-time{margin-left:6px}}
+
+
+/* Ver.1.8.0a5: run top location link and time */
+.run-location-link{color:inherit;text-decoration:none;font-weight:900;white-space:nowrap}
+.run-location-link:focus,.run-location-link:hover{color:var(--blue);text-decoration:underline}
+.run-summary-time{display:inline-block;margin-left:10px;white-space:nowrap}
+@media (max-width:430px){.run-summary-time{margin-left:6px}}
