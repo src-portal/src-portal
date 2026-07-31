@@ -761,7 +761,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="好きな日を選んで参加表明";eventPlace.textContent=systemSettings.gym.place;eventTime.textContent=`${systemSettings.gym.time}〜`;ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${safePlace}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";eventPlace.textContent=systemSettings.run.place;eventTime.textContent=`${systemSettings.run.time}〜`;if(eventTimeRow)eventTimeRow.style.display="";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -2745,7 +2745,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noAnnouncements:"現在のお知らせはありません。", nextPlan:"あなたの次回参加予定", noNextPlan:"参加予定はまだありません。",
       nextEvent:"次回イベント", noNextEvent:"今後のイベントは登録されていません。", openEvent:"このイベントを開く",
       runWalk:"ラン＆ウォーク", gym:"ジム", calendarBack:"カレンダーへ戻る",
-      runSummary:"イベント管理で登録された開催日を表示します。", gymSummary:"好きな日を選んで参加表明",
+      runSummary:"イベント管理で登録された開催日を表示します。", gymSummary:"😊 一緒に行ける方募集中！",
       runRuleTitle:"開催状態", runRuleValue:"管理者がイベントごとに設定", gymRuleTitle:"補助条件",
       participants:"参加者", notJoined:"まだ参加していません。", join:"参加する", cancelJoin:"参加取消",
       chooseUser:"ユーザー変更", chooseName:"自分の名前を選んでください。", confirmUserChange:"現在のユーザーを変更しますか？",
@@ -2768,7 +2768,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noAnnouncements:"There are no announcements.", nextPlan:"Your next plan", noNextPlan:"You have no upcoming plans.",
       nextEvent:"Next event", noNextEvent:"There are no upcoming events.", openEvent:"Open this event",
       runWalk:"Run & Walk", gym:"Gym", calendarBack:"Back to calendar",
-      runSummary:"Shows dates registered in Event Management.", gymSummary:"Choose any date to join.",
+      runSummary:"Shows dates registered in Event Management.", gymSummary:"😊 Looking for gym partners!",
       runRuleTitle:"Event status", runRuleValue:"Set for each event by the administrator", gymRuleTitle:"Subsidy conditions",
       participants:"Participants", notJoined:"You are not joining yet.", join:"Join", cancelJoin:"Cancel participation",
       chooseUser:"Select user", chooseName:"Select your name.", confirmUserChange:"Change the current user?",
@@ -2791,7 +2791,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noAnnouncements:"현재 공지사항이 없습니다.", nextPlan:"다음 참가 예정", noNextPlan:"참가 예정이 없습니다.",
       nextEvent:"다음 이벤트", noNextEvent:"예정된 이벤트가 없습니다.", openEvent:"이 이벤트 열기",
       runWalk:"러닝 & 워킹", gym:"체육관", calendarBack:"달력으로 돌아가기",
-      runSummary:"이벤트 관리에 등록된 개최일을 표시합니다.", gymSummary:"원하는 날짜를 선택해 참가 의사를 표시합니다.",
+      runSummary:"이벤트 관리에 등록된 개최일을 표시합니다.", gymSummary:"😊 함께 체육관에 갈 분을 모집 중!",
       runRuleTitle:"개최 상태", runRuleValue:"관리자가 이벤트별로 설정", gymRuleTitle:"지원 조건",
       participants:"참가자", notJoined:"아직 참가하지 않았습니다.", join:"참가하기", cancelJoin:"참가 취소",
       chooseUser:"사용자 선택", chooseName:"본인의 이름을 선택하세요.", confirmUserChange:"현재 사용자를 변경하시겠습니까?",
@@ -2814,7 +2814,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       noAnnouncements:"目前没有通知。", nextPlan:"您的下次参加计划", noNextPlan:"目前没有参加计划。",
       nextEvent:"下次活动", noNextEvent:"目前没有即将举行的活动。", openEvent:"打开此活动",
       runWalk:"跑步与健走", gym:"健身房", calendarBack:"返回日历",
-      runSummary:"显示在活动管理中登记的举办日期。", gymSummary:"选择任意日期报名参加。",
+      runSummary:"显示在活动管理中登记的举办日期。", gymSummary:"😊 正在招募一起去健身房的伙伴！",
       runRuleTitle:"活动状态", runRuleValue:"由管理员按活动设置", gymRuleTitle:"补助条件",
       participants:"参加者", notJoined:"您尚未参加。", join:"参加", cancelJoin:"取消参加",
       chooseUser:"选择用户", chooseName:"请选择您的姓名。", confirmUserChange:"要更改当前用户吗？",
@@ -2955,7 +2955,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       else if(text === "ジムトレーニング") el.textContent=m.gym;
     } else if (el.id === "eventSummary") {
       if(text === "イベント管理で登録された開催日を表示します。") el.textContent=m.runSummary;
-      else if(text === "好きな日を選んで参加表明") el.textContent=m.gymSummary;
+      else if(text === "好きな日を選んで参加表明" || text === "😊 一緒に行ける方募集中！") el.textContent=m.gymSummary;
     } else if (el.id === "ruleTitle") {
       if(text === "開催状態") el.textContent=m.runRuleTitle;
       else if(text === "開催条件") el.textContent=m.gymRuleTitle;
