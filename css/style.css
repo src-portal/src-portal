@@ -2255,9 +2255,9 @@ body{
 }
 
 
-/* Ver.1.8.0b: compact season summary and detail modal */
+/* Ver.1.8.0b1: compact season summary and detail modal */
 .season-activity-card{
-  width:100%;margin:14px 0 0;padding:15px 16px;border-radius:18px;border:1px solid #cfe1f5;
+  width:100%;margin:0 0 14px;padding:15px 16px;border-radius:18px;border:1px solid #cfe1f5;
   background:linear-gradient(135deg,#fff 0%,#f5f9ff 100%);box-shadow:0 10px 24px rgba(28,54,84,.08);
   color:inherit;text-align:left;cursor:pointer;font:inherit;
 }
@@ -2325,7 +2325,7 @@ body{
 @media (max-width:430px){.run-summary-time{margin-left:6px}}
 
 
-/* Ver.1.8.0b: unify all top location link colors before/after visit */
+/* Ver.1.8.0b1: unify all top location link colors before/after visit */
 .run-location-link:link,
 .run-location-link:visited,
 .run-location-link:hover,
@@ -2344,4 +2344,43 @@ body{
   color:var(--blue);
   text-decoration:underline;
   font-weight:900;
+}
+
+
+/* Ver.1.8.0b1: unify season card spacing and modal close buttons */
+.modal-header-close-button{
+  width:32px;
+  height:32px;
+  min-width:32px;
+  flex:0 0 32px;
+  background:var(--charcoal);
+  color:#fff;
+  font-size:20px;
+  font-weight:800;
+  line-height:1;
+}
+.modal-header-close-button:hover,
+.modal-header-close-button:focus-visible{
+  background:var(--charcoal);
+  color:#fff;
+}
+.modal-header-close-button:active{
+  background:#111318;
+  color:#fff;
+}
+.season-activity-modal-card .modal-header{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 32px;
+  align-items:start;
+  gap:12px;
+}
+.season-activity-modal-card .modal-header h2{
+  min-width:0;
+  margin:0;
+  padding-top:2px;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
+.season-activity-modal-card .modal-header .modal-header-close-button{
+  justify-self:end;
 }
