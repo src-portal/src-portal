@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.8.0f">
+<link rel="stylesheet" href="css/style.css?v=1.8.0g">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -92,10 +92,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.8.0f</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.8.0g</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/01 1.8.0f JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/01 1.8.0g JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -104,7 +104,7 @@
   <div class="modal-card season-activity-modal-card">
     <div class="modal-header">
       <h2>📈 シーズン活動記録</h2>
-      <button class="modal-header-close-button" id="closeSeasonActivityModalButton" type="button" aria-label="閉じる">×</button>
+      <button class="modal-header-close-button" id="closeSeasonActivityModalButton" type="button" aria-label="閉じる"></button>
     </div>
     <div class="season-detail-period" id="seasonDetailPeriod">--</div>
     <div class="season-detail-user">👤 <strong id="seasonDetailUserName">--</strong></div>
@@ -150,7 +150,7 @@
   <div class="modal-card user-change-fixed-modal-card">
     <div class="dialog-header">
       <h2 id="setupModalTitle" class="setup-admin-unlock-target">👤 ユーザー変更</h2>
-      <button class="modal-header-close-button" id="closeSetupModalButton" type="button" aria-label="閉じる">×</button>
+      <button class="modal-header-close-button" id="closeSetupModalButton" type="button" aria-label="閉じる"></button>
     </div>
     <p class="setup-text" id="setupModalText">自分の名前を選んでください。</p>
     <div class="name-button-grid" id="nameButtonGrid"></div>
@@ -160,7 +160,7 @@
   <div class="modal-card message-board-modal-card">
     <div class="dialog-header">
       <h2>💬 みんなの伝言板</h2>
-      <button class="modal-header-close-button" id="closeMessageBoardButton" type="button" aria-label="閉じる">×</button>
+      <button class="modal-header-close-button" id="closeMessageBoardButton" type="button" aria-label="閉じる"></button>
     </div>
     <div class="message-board-post-box">
       <label class="admin-form-label" for="messageBoardTextInput">伝言</label>
@@ -183,7 +183,7 @@
 <div class="modal-overlay hidden" id="helpModal"><div class="modal-card">
     <div class="dialog-header">
       <h2>📘 ヘルプ</h2>
-      <button class="modal-header-close-button" id="closeHelpButton" type="button" aria-label="閉じる">×</button>
+      <button class="modal-header-close-button" id="closeHelpButton" type="button" aria-label="閉じる"></button>
     </div>
 
     <div class="help-content">
@@ -350,7 +350,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.8.0f<br>Official Release<br>2026.08.01</strong></p>
+        <p><strong>SRC Portal<br>Version 1.8.0g<br>Official Release<br>2026.08.01</strong></p>
       </section>
     </div>
 </div></div>
@@ -360,7 +360,7 @@
   <div class="modal-card member-overview-modal-card">
     <div class="dialog-header">
       <h2>👥 SRC Members</h2>
-      <button class="modal-header-close-button" id="closeMemberOverviewButton" type="button">×</button>
+      <button class="modal-header-close-button" id="closeMemberOverviewButton" type="button"></button>
     </div>
     <div class="member-overview-controls">
       <label for="memberOverviewMonthSelect">参加回数</label>
@@ -391,7 +391,7 @@
 
 <div class="modal-overlay hidden" id="memberProfileModal">
   <div class="modal-card member-profile-modal-card">
-    <div class="dialog-header"><h2>👤 自己紹介</h2><button class="modal-header-close-button" id="closeMemberProfileButton" type="button" aria-label="閉じる">×</button></div>
+    <div class="dialog-header"><h2>👤 自己紹介</h2><button class="modal-header-close-button" id="closeMemberProfileButton" type="button" aria-label="閉じる"></button></div>
     <div id="memberProfileContent"></div>
     <button class="primary-button hidden" id="editOwnProfileButton" type="button">自分の自己紹介を編集</button>
   </div>
@@ -399,7 +399,7 @@
 
 <div class="modal-overlay hidden" id="memberProfileEditModal">
   <div class="modal-card member-profile-edit-modal-card">
-    <div class="dialog-header"><h2>✏️ 自分の自己紹介を編集</h2><button class="modal-header-close-button" id="closeMemberProfileEditButton" type="button" aria-label="閉じる">×</button></div>
+    <div class="dialog-header"><h2>✏️ 自分の自己紹介を編集</h2><button class="modal-header-close-button" id="closeMemberProfileEditButton" type="button" aria-label="閉じる"></button></div>
     <p class="profile-edit-note">必須項目は2つだけです。ランニングをしていない方は、ランニング関連の項目を空欄のまま保存できます。</p>
     <label class="admin-form-label" for="profileNicknameInput">ニックネーム（必須）</label>
     <input id="profileNicknameInput" class="admin-input" type="text" maxlength="30" placeholder="例：ヒロ">
@@ -435,7 +435,7 @@
   <div class="modal-card same-day-status-card">
     <div class="dialog-header">
       <h2>当日の状況</h2>
-      <button class="modal-header-close-button" id="closeSameDayStatusButton" type="button" aria-label="閉じる">×</button>
+      <button class="modal-header-close-button" id="closeSameDayStatusButton" type="button" aria-label="閉じる"></button>
     </div>
     <p class="same-day-status-user" id="sameDayStatusUser"></p>
     <div class="same-day-status-options">
@@ -452,7 +452,7 @@
   <div class="modal-card month-jump-card">
     <div class="dialog-header">
       <h2>表示する年月</h2>
-      <button class="modal-header-close-button" id="closeMonthJumpButton" type="button" aria-label="閉じる">×</button>
+      <button class="modal-header-close-button" id="closeMonthJumpButton" type="button" aria-label="閉じる"></button>
     </div>
 
     <div class="month-jump-fields">
@@ -487,7 +487,7 @@
   <div class="modal-card compact-confirm-card">
     <div class="dialog-header">
       <h2>管理者確認</h2>
-      <button class="modal-header-close-button" id="closeSetupAdminUnlockButton" type="button" aria-label="閉じる">×</button>
+      <button class="modal-header-close-button" id="closeSetupAdminUnlockButton" type="button" aria-label="閉じる"></button>
     </div>
     <label class="admin-pin-label" for="setupAdminUnlockPin">管理者PIN</label>
     <input id="setupAdminUnlockPin" type="password" inputmode="numeric" autocomplete="off">
@@ -499,7 +499,7 @@
 
 <div class="modal-overlay hidden" id="mainMenuModal">
   <div class="modal-card menu-modal-card">
-    <div class="dialog-header"><h2>☰ メニュー</h2><button class="modal-header-close-button" id="closeMainMenuButton" type="button" aria-label="閉じる">×</button></div>
+    <div class="dialog-header"><h2>☰ メニュー</h2><button class="modal-header-close-button" id="closeMainMenuButton" type="button" aria-label="閉じる"></button></div>
     <div class="main-menu-list">
       <button id="openRecommendationsButton" type="button">⭐ みんなのおすすめ</button>
       <button id="openMessageBoardFromMenuButton" type="button">💬 みんなの伝言板</button>
@@ -512,7 +512,7 @@
   <div class="modal-card recommendations-modal-card">
     <div class="dialog-header">
       <h2>⭐ みんなのおすすめ</h2>
-      <button class="modal-header-close-button" id="closeRecommendationsButton" type="button" aria-label="閉じる">×</button>
+      <button class="modal-header-close-button" id="closeRecommendationsButton" type="button" aria-label="閉じる"></button>
     </div>
     <p class="recommendations-intro">SRCメンバーのおすすめを共有するページです。</p>
     <div class="recommendations-toolbar">
@@ -566,7 +566,7 @@
 
 <div class="modal-overlay hidden" id="kyroPageModal">
   <div class="modal-card kyro-page-card">
-    <div class="dialog-header"><h2>🗺 SRC-KYRO-Club</h2><button class="modal-header-close-button" id="closeKyroPageButton" type="button" aria-label="閉じる">×</button></div>
+    <div class="dialog-header"><h2>🗺 SRC-KYRO-Club</h2><button class="modal-header-close-button" id="closeKyroPageButton" type="button" aria-label="閉じる"></button></div>
     <p class="kyro-updated" id="kyroUpdatedAt"></p>
     <div class="kyro-stats-grid">
       <div><span>👥 メンバー</span><strong id="kyroMemberCount">--</strong></div>
@@ -582,7 +582,7 @@
 
 <div class="modal-overlay hidden" id="adminKyroModal">
   <div class="modal-card admin-fixed-modal-card">
-    <div class="dialog-header"><h2>🗺 SRC-KYRO情報管理</h2><button class="modal-header-close-button" id="closeAdminKyroButton" type="button" aria-label="閉じる">×</button></div>
+    <div class="dialog-header"><h2>🗺 SRC-KYRO情報管理</h2><button class="modal-header-close-button" id="closeAdminKyroButton" type="button" aria-label="閉じる"></button></div>
     <label class="admin-form-label" for="kyroAreaInput">領土</label><input id="kyroAreaInput" class="admin-input" type="text" maxlength="30" placeholder="例：146.3㎢">
     <label class="admin-form-label" for="kyroJapanRankInput">全国順位</label><input id="kyroJapanRankInput" class="admin-input" type="text" maxlength="20" placeholder="例：8位">
     <label class="admin-form-label" for="kyroAichiRankInput">愛知県順位</label><input id="kyroAichiRankInput" class="admin-input" type="text" maxlength="20" placeholder="例：2位">
@@ -598,7 +598,7 @@
     <div class="dialog-header">
       <h2>👑 管理者PIN</h2>
       
-    <button class="modal-header-close-button" id="closeAdminPinButton" type="button" aria-label="閉じる">×</button></div>
+    <button class="modal-header-close-button" id="closeAdminPinButton" type="button" aria-label="閉じる"></button></div>
     <p class="setup-text">管理者PINを入力してください。</p>
     <input id="adminPinInput" class="admin-input" type="password" inputmode="numeric" placeholder="PIN">
     <button class="primary-button" id="adminPinSubmitButton" type="button">管理者モードへ</button>
@@ -611,7 +611,7 @@
     <div class="dialog-header">
       <h2>👑 管理者メニュー</h2>
       
-    <button class="modal-header-close-button" id="closeAdminMenuButton" type="button" aria-label="閉じる">×</button></div>
+    <button class="modal-header-close-button" id="closeAdminMenuButton" type="button" aria-label="閉じる"></button></div>
     <div class="admin-menu-list">
       <button class="admin-menu-button" id="adminChangeUserButton" type="button">👤 ユーザー変更</button>
       <button class="admin-menu-button" id="adminMemberListButton" type="button">👥 メンバー管理</button>
@@ -631,7 +631,7 @@
     <div class="dialog-header">
       <h2>👥 メンバー管理</h2>
       
-    <button class="modal-header-close-button" id="closeAdminMemberButton" type="button" aria-label="閉じる">×</button></div>
+    <button class="modal-header-close-button" id="closeAdminMemberButton" type="button" aria-label="閉じる"></button></div>
     <div class="member-add-box">
       <div class="member-add-title">＋ メンバー追加</div>
       <input id="newMemberNameInput" class="admin-input" type="text" placeholder="メンバー名">
@@ -662,7 +662,7 @@
   <div class="modal-card">
     <div class="dialog-header">
       <h2>📅 イベント詳細</h2>
-      <button class="modal-header-close-button" id="closeEventDetailButton" type="button">×</button>
+      <button class="modal-header-close-button" id="closeEventDetailButton" type="button"></button>
     </div>
     <div id="eventDetailContent" class="event-detail-content"></div>
     <button class="primary-button" id="eventDetailJoinButton" type="button">このイベントを開く</button>
@@ -676,7 +676,7 @@
     <div class="dialog-header">
       <h2>📢 お知らせ管理</h2>
       
-    <button class="modal-header-close-button" id="closeAnnouncementManageButton" type="button" aria-label="閉じる">×</button></div>
+    <button class="modal-header-close-button" id="closeAnnouncementManageButton" type="button" aria-label="閉じる"></button></div>
     <div class="announcement-admin-box">
       <div class="member-add-title">＋ 新しいお知らせ</div>
       <label class="admin-form-label">タイトル</label>
@@ -697,7 +697,7 @@
     <div class="dialog-header">
       <h2>📅 イベント管理</h2>
       
-    <button class="modal-header-close-button" id="closeEventManageButton" type="button" aria-label="閉じる">×</button></div>
+    <button class="modal-header-close-button" id="closeEventManageButton" type="button" aria-label="閉じる"></button></div>
 
     <div class="event-admin-box">
       <div class="member-add-title">＋ イベント追加</div>
@@ -750,7 +750,7 @@
     <div class="dialog-header">
       <h2>⚙️ システム設定</h2>
       
-    <button class="modal-header-close-button" id="closeSystemSettingsButton" type="button" aria-label="閉じる">×</button></div>
+    <button class="modal-header-close-button" id="closeSystemSettingsButton" type="button" aria-label="閉じる"></button></div>
     <div class="settings-section">
       <h3>🏃 ラン＆ウォーク</h3>
       <label class="admin-form-label">開始時刻</label>
@@ -793,7 +793,7 @@
   <div class="modal-card invite-auth-modal-card">
     <div class="dialog-header">
       <h2>🔐 招待コード確認</h2>
-      <button class="modal-header-close-button" id="closeInviteAuthButton" type="button" aria-label="閉じる">×</button>
+      <button class="modal-header-close-button" id="closeInviteAuthButton" type="button" aria-label="閉じる"></button>
     </div>
     <p class="setup-text"><strong id="inviteAuthMemberName"></strong> さんの招待コードを入力してください。</p>
     <label class="admin-form-label" for="inviteAuthCodeInput">招待コード</label>
@@ -810,7 +810,7 @@
     <div class="dialog-header">
       <h2>📨 招待コード準備</h2>
       
-    <button class="modal-header-close-button" id="closeInvitePreviewButton" type="button" aria-label="閉じる">×</button></div>
+    <button class="modal-header-close-button" id="closeInvitePreviewButton" type="button" aria-label="閉じる"></button></div>
     <p class="setup-text">メンバー管理で新メンバーを追加すると、招待コードを自動生成できます。</p>
     <div class="invite-preview-box">
       ① 名前を入力<br>
@@ -821,6 +821,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.8.0f"></script>
+<script type="module" src="js/app.js?v=1.8.0g"></script>
 </body>
 </html>
