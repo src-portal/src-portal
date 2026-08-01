@@ -2490,3 +2490,27 @@ body{
 .modal-header h2{
   min-width:0;
 }
+
+
+/* Ver.1.8.0g: prevent legacy close-button layers from overlapping */
+.modal-header-close-button{
+  background:#f1f1f1 !important;
+  color:transparent !important;
+  font-size:0 !important;
+  text-indent:-9999px;
+  overflow:hidden;
+  box-shadow:none !important;
+}
+.modal-header-close-button:hover,
+.modal-header-close-button:focus-visible{
+  background:#ededed !important;
+  color:transparent !important;
+}
+.modal-header-close-button:active{
+  background:#e4e4e4 !important;
+  color:transparent !important;
+}
+.modal-header-close-button::before,
+.modal-header-close-button::after{
+  z-index:1;
+}
