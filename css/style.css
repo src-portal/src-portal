@@ -1713,7 +1713,7 @@ body{
 .main-menu-list{display:grid;gap:10px;margin-top:16px}
 .main-menu-list button{width:100%;border:1px solid var(--border);border-radius:16px;background:#fff;padding:15px 16px;text-align:left;font-weight:900;color:var(--text)}
 .kyro-page-card{background:#f8fafc}
-.kyro-page-card .dialog-header{margin-bottom:14px}
+.kyro-page-card .dialog-header{margin-bottom:4px}
 .kyro-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .kyro-stats-grid>div{padding:13px;border:1px solid #e0e6ed;border-radius:15px;background:#fff}
 .kyro-stats-grid span{display:block;color:var(--muted);font-size:12px;font-weight:800}
@@ -1725,7 +1725,7 @@ body{
 .kyro-member-list>span{display:inline-flex;align-items:center;padding:7px 9px;border-radius:10px;background:#f1f4f8;font-size:13px;font-weight:850}
 .kyro-member-list .kyro-badge{margin-left:5px}
 .kyro-empty{color:var(--muted);background:transparent!important;padding:0!important}
-.kyro-updated{margin:12px 2px 0;text-align:right;color:var(--muted);font-size:11px}
+.kyro-updated{margin:0 2px 12px;text-align:left;color:var(--muted);font-size:11px;font-weight:750}
 @media(max-width:360px){.header-action-buttons{gap:5px}.header-menu-button{width:34px;height:34px;font-size:19px}.kyro-mini-status{font-size:12px}.kyro-stats-grid{grid-template-columns:1fr}}
 
 /* Ver.1.6.0a: member profile / KYRO modal header overlap fix */
@@ -2428,3 +2428,65 @@ body{
 .training-result-row{padding:9px 11px;border-radius:12px;background:#fff;font-weight:800;line-height:1.5;overflow-wrap:anywhere}
 .training-results-admin{margin-top:12px;padding:14px;border-radius:16px;background:#fff8e6;border:1px solid rgba(240,180,41,.45)}
 .training-results-note{margin:7px 0 0;color:var(--muted);font-size:12px;line-height:1.55}
+
+
+/* Ver.1.8.0f: iPhone-style close button shared by every modal */
+.modal-header-close-button{
+  position:relative;
+  display:inline-grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  min-width:34px;
+  flex:0 0 34px;
+  margin-left:auto;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:#f1f1f1;
+  color:transparent;
+  font-size:0;
+  line-height:1;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  appearance:none;
+}
+.modal-header-close-button::before,
+.modal-header-close-button::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:19px;
+  height:4px;
+  border-radius:999px;
+  background:#050505;
+  transform-origin:center;
+}
+.modal-header-close-button::before{
+  transform:translate(-50%,-50%) rotate(45deg);
+}
+.modal-header-close-button::after{
+  transform:translate(-50%,-50%) rotate(-45deg);
+}
+.modal-header-close-button:hover,
+.modal-header-close-button:focus-visible{
+  background:#ededed;
+  color:transparent;
+  outline:none;
+}
+.modal-header-close-button:focus-visible{
+  box-shadow:0 0 0 3px rgba(15,95,200,.22);
+}
+.modal-header-close-button:active{
+  background:#e4e4e4;
+  color:transparent;
+  transform:scale(.96);
+}
+.dialog-header{
+  gap:12px;
+}
+.dialog-header h2,
+.modal-header h2{
+  min-width:0;
+}
