@@ -231,6 +231,8 @@ onSnapshot(collection(db,"members"),snap=>{
         kyroDistanceKm:Number.isFinite(Number(data.kyroDistanceKm))?Number(data.kyroDistanceKm):null,
         kyroDistanceRank:Number.isFinite(Number(data.kyroDistanceRank))?Number(data.kyroDistanceRank):null,
         kyroDataDate:data.kyroDataDate||"",
+        kyroPreviousDistanceKm:Number.isFinite(Number(data.kyroPreviousDistanceKm))?Number(data.kyroPreviousDistanceKm):null,
+        kyroPreviousDataDate:data.kyroPreviousDataDate||"",
         active:data.active!==false,
         order:data.order??999,
         inviteCode:data.inviteCode||"",
@@ -639,7 +641,13 @@ function memberKyroSummaryHtml(member){
   const memberCount=kyroDataMemberCount();
   const rankText=Number.isFinite(rank)&&rank>0?`${rank}位${memberCount>0?` / ${memberCount}人`:""}`:"未集計";
   const dateText=kyroDataDateLabel(member.kyroDataDate)||"未登録";
-  return `<section class="member-profile-kyro"><div class="member-profile-kyro-title">🗺️ KYRO <span>（SRC-KYRO-Club）</span></div><div class="member-profile-kyro-grid"><div><span>累積走行距離</span><strong>${distance.toFixed(2)} km</strong></div><div><span>距離順位</span><strong>${escapeHtml(rankText)}</strong></div></div><div class="member-profile-kyro-date">🕒 最終更新：${escapeHtml(dateText)}</div></section>`;
+  const previousDistance=Number(member?.kyroPreviousDistanceKm);
+  const previousDateText=kyroDataDateLabel(member?.kyroPreviousDataDate);
+  const hasPrevious=Number.isFinite(previousDistance)&&!!previousDateText;
+  const difference=hasPrevious?distance-previousDistance:null;
+  const differenceText=hasPrevious?`${difference>=0?"+":""}${difference.toFixed(2)} km`:"初回データ";
+  const previousDateLabel=hasPrevious?previousDateText:"―";
+  return `<section class="member-profile-kyro"><div class="member-profile-kyro-title">🗺️ KYRO <span>（SRC-KYRO-Club）</span></div><div class="member-profile-kyro-grid"><div><span>累積走行距離</span><strong>${distance.toFixed(2)} km</strong></div><div><span>前回更新比</span><strong>${escapeHtml(differenceText)}</strong></div><div><span>前回更新日</span><strong>${escapeHtml(previousDateLabel)}</strong></div><div><span>距離順位</span><strong>${escapeHtml(rankText)}</strong></div></div><div class="member-profile-kyro-date">🕒 最終更新：${escapeHtml(dateText)}</div></section>`;
 }
 function openMemberProfile(member){
   selectedProfileMember=member;
@@ -806,7 +814,7 @@ async function applyKyroImport(){
   if(!kyroImportPrepared?.records?.length)return;
   const {snapshotDate,records}=kyroImportPrepared;if(!confirm(`${snapshotDate} のKYRO個人データ ${records.length}件をFirestoreへ反映しますか？`))return;
   applyKyroImportButton.disabled=true;
-  try{const batch=writeBatch(db),snapshotMembers=[];records.forEach(row=>{batch.set(doc(db,"members",row.member.id),{kyroUserName:row.kyroName,kyroDistanceKm:row.distanceKm,kyroDistanceRank:row.rank,kyroDataDate:snapshotDate,kyroDataUpdatedAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});snapshotMembers.push({memberId:row.member.id,memberName:row.member.name,kyroUserName:row.kyroName,distanceKm:row.distanceKm,distanceRank:row.rank});});batch.set(doc(db,"kyroSnapshots",snapshotDate),{snapshotDate,metric:"cumulativeDistanceKm",memberCount:snapshotMembers.length,members:snapshotMembers,importedBy:currentUser||"",updatedAt:serverTimestamp()},{merge:true});await batch.commit();alert(`KYRO個人データ ${records.length}件を反映しました。`);kyroImportPrepared=null;applyKyroImportButton.disabled=true;closeAdminChildModal(adminKyroImportModal);}catch(e){console.error(e);applyKyroImportButton.disabled=false;alert("KYRO個人データの反映に失敗しました。Firestoreルールを確認してください。");}
+  try{const batch=writeBatch(db),snapshotMembers=[];records.forEach(row=>{const sameSnapshotDate=String(row.member.kyroDataDate||"")===snapshotDate;const updateData={kyroUserName:row.kyroName,kyroDistanceKm:row.distanceKm,kyroDistanceRank:row.rank,kyroDataDate:snapshotDate,kyroDataUpdatedAt:serverTimestamp(),updatedAt:serverTimestamp()};if(!sameSnapshotDate&&Number.isFinite(Number(row.member.kyroDistanceKm))&&row.member.kyroDataDate){updateData.kyroPreviousDistanceKm=Number(row.member.kyroDistanceKm);updateData.kyroPreviousDataDate=row.member.kyroDataDate;}batch.set(doc(db,"members",row.member.id),updateData,{merge:true});snapshotMembers.push({memberId:row.member.id,memberName:row.member.name,kyroUserName:row.kyroName,distanceKm:row.distanceKm,distanceRank:row.rank,previousDistanceKm:!sameSnapshotDate&&Number.isFinite(Number(row.member.kyroDistanceKm))?Number(row.member.kyroDistanceKm):(Number.isFinite(Number(row.member.kyroPreviousDistanceKm))?Number(row.member.kyroPreviousDistanceKm):null),previousDataDate:!sameSnapshotDate&&row.member.kyroDataDate?row.member.kyroDataDate:(row.member.kyroPreviousDataDate||"")});});batch.set(doc(db,"kyroSnapshots",snapshotDate),{snapshotDate,metric:"cumulativeDistanceKm",memberCount:snapshotMembers.length,members:snapshotMembers,importedBy:currentUser||"",updatedAt:serverTimestamp()},{merge:true});await batch.commit();alert(`KYRO個人データ ${records.length}件を反映しました。`);kyroImportPrepared=null;applyKyroImportButton.disabled=true;closeAdminChildModal(adminKyroImportModal);}catch(e){console.error(e);applyKyroImportButton.disabled=false;alert("KYRO個人データの反映に失敗しました。Firestoreルールを確認してください。");}
 }
 
 const dashboardAnimationState=new Map();
@@ -1990,7 +1998,13 @@ function renderSeasonActivityDetail(){
   if(hasKyroData){
     const rank=Number(member.kyroDistanceRank);
     const memberCount=kyroDataMemberCount();
+    const previousDistance=Number(member.kyroPreviousDistanceKm);
+    const previousDateText=kyroDataDateLabel(member.kyroPreviousDataDate);
+    const hasPrevious=Number.isFinite(previousDistance)&&!!previousDateText;
+    const difference=hasPrevious?kyroDistance-previousDistance:null;
     seasonDetailKyroDistance.textContent=`${kyroDistance.toFixed(2)} km`;
+    seasonDetailKyroDifference.textContent=hasPrevious?`${difference>=0?"+":""}${difference.toFixed(2)} km`:"初回データ";
+    seasonDetailKyroPreviousDate.textContent=hasPrevious?previousDateText:"―";
     seasonDetailKyroRank.textContent=Number.isFinite(rank)&&rank>0?`${rank}位${memberCount>0?` / ${memberCount}人`:""}`:"未集計";
     seasonDetailKyroUpdated.textContent=kyroDataDateLabel(member.kyroDataDate)||"未登録";
   }
