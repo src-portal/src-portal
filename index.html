@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.8.0i">
+<link rel="stylesheet" href="css/style.css?v=1.9.0">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -92,10 +92,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.8.0i</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/02 1.8.0i JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/02 1.9.0 JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -350,7 +350,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.8.0i<br>Official Release<br>2026.08.02</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0<br>Official Release<br>2026.08.02</strong></p>
       </section>
     </div>
 </div></div>
@@ -595,15 +595,17 @@
 
 <div class="modal-overlay hidden" id="adminKyroImportModal">
   <div class="modal-card admin-fixed-modal-card kyro-import-card">
-    <div class="dialog-header"><h2>📋 KYRO個人データ取込</h2><button class="modal-header-close-button" id="closeAdminKyroImportButton" type="button" aria-label="閉じる"></button></div>
-    <p class="settings-note">ChatGPTで作成したデータを貼り付け、内容を確認してからFirestoreへ反映します。先頭の表示番号は使わず、距離の大きい順に順位を自動計算します。</p>
+    <div class="dialog-header"><h2>🤖 AI連携</h2><button class="modal-header-close-button" id="closeAdminKyroImportButton" type="button" aria-label="閉じる"></button></div>
+    <p class="settings-note">KYRO画像をこのAIで読み取り、返されたデータを貼り付けて確認後にFirestoreへ反映します。</p>
+    <button class="secondary-button ai-prompt-copy-button" id="copyKyroAiPromptButton" type="button">📋 AI依頼文をコピー</button>
+    <p class="settings-note">コピーした依頼文をこのAIへ貼り付け、KYROのスクリーンショットを添付してください。</p>
     <label class="admin-form-label" for="kyroImportDateInput">取得日</label>
     <input id="kyroImportDateInput" class="admin-input" type="date">
     <label class="admin-form-label" for="kyroImportTextInput">取込データ</label>
     <textarea id="kyroImportTextInput" class="admin-input admin-textarea kyro-import-textarea" spellcheck="false" placeholder="例：
-堀部,hhoribe,267.88
-日高,Gear,100.86"></textarea>
-    <p class="settings-note">1行につき「SRC名, KYRO名, 累積走行距離km」。カンマまたはタブ区切りに対応します。</p>
+hhoribe,267.88
+Gear,100.86"></textarea>
+    <p class="settings-note">1行につき「KYROネーム, 累積走行距離km」。カンマまたはタブ区切りに対応します。</p>
     <div class="kyro-import-actions">
       <button class="secondary-button" id="previewKyroImportButton" type="button">内容を確認</button>
       <button class="primary-button" id="applyKyroImportButton" type="button" disabled>Firestoreへ反映</button>
@@ -641,7 +643,7 @@
       <button class="admin-menu-button" id="adminEventManageButton" type="button">📅 イベント管理</button>
       <button class="admin-menu-button" id="adminSystemSettingsButton" type="button">⚙️ システム設定</button>
       <button class="admin-menu-button" id="adminKyroManageButton" type="button">🗺 SRC-KYRO情報管理</button>
-      <button class="admin-menu-button" id="adminKyroImportButton" type="button">📋 KYRO個人データ取込</button>
+      <button class="admin-menu-button" id="adminKyroImportButton" type="button">🤖 AI連携</button>
     </div>
     <p class="setup-text">管理者入口：画面下の Version 表示を2秒長押し。</p>
   </div>
@@ -665,6 +667,10 @@
         <input id="newMemberKyroCheck" type="checkbox">
         SRC-KYRO-Clubメンバー
       </label>
+      <div id="newMemberKyroNameRow" class="kyro-name-row hidden">
+        <label class="admin-form-label" for="newMemberKyroNameInput">KYROネーム</label>
+        <input id="newMemberKyroNameInput" class="admin-input" type="text" maxlength="60" placeholder="例：hhoribe">
+      </div>
       <div class="invite-code-create-row">
         <input id="newMemberInviteCodeInput" class="admin-input invite-code-input" type="text" readonly placeholder="招待コード">
         <button class="member-small-button" id="generateInviteCodeButton" type="button">自動生成</button>
@@ -843,6 +849,6 @@
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.8.0i"></script>
+<script type="module" src="js/app.js?v=1.9.0"></script>
 </body>
 </html>
