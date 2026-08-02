@@ -2659,3 +2659,54 @@ body{
     font-size:12px;
   }
 }
+
+
+/* Ver.1.9.0h: KYRO badge parity and cumulative-distance list */
+.season-detail-kyro-badge{
+  padding:5px 10px!important;
+  border-radius:6px!important;
+  font-size:14px!important;
+  line-height:1!important;
+  background:#ffe600!important;
+  color:#000!important;
+  -webkit-text-fill-color:#000!important;
+  font-weight:950!important;
+}
+.season-detail-kyro-rank-card{
+  appearance:none;
+  width:100%;
+  min-height:118px;
+  border:1px solid #bdd6ef!important;
+  border-radius:14px;
+  background:rgba(255,255,255,.76);
+  color:inherit;
+  padding:14px 9px;
+  text-align:center;
+  cursor:pointer;
+  font:inherit;
+}
+.season-detail-kyro-rank-card span{display:flex;align-items:center;justify-content:center;gap:4px;color:#55718d;font-size:12px;font-weight:850;margin-bottom:7px}
+.season-detail-kyro-rank-card strong{display:block;color:#173f68;font-size:22px;white-space:nowrap}
+.season-detail-kyro-rank-card small{display:block;margin-top:7px;color:#1767b7;font-size:11px;font-weight:900}
+.season-detail-kyro-rank-card:active{transform:scale(.985)}
+.season-detail-kyro-rank-card:focus-visible{outline:3px solid rgba(23,115,230,.28);outline-offset:2px}
+.kyro-distance-list-modal-card{width:min(94vw,620px);max-height:calc(100dvh - 34px);overflow:auto}
+.kyro-distance-list-note{margin:0 0 12px;color:#65758a;font-size:13px;line-height:1.55;font-weight:750}
+.kyro-distance-list{display:grid;gap:8px}
+.kyro-distance-row{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 13px;border:1px solid #dbe5ef;border-radius:14px;background:#fff}
+.kyro-distance-row.is-current{border-color:#2d83dc;background:#eaf4ff;box-shadow:0 0 0 2px rgba(45,131,220,.10)}
+.kyro-distance-row.is-pending{background:#f6f7f9;color:#7d8793}
+.kyro-distance-rank{color:#60748b;font-size:14px;font-weight:950;text-align:center}
+.kyro-distance-member{display:flex;min-width:0;flex-direction:column;gap:2px}
+.kyro-distance-member strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1f2f43;font-size:16px}
+.kyro-distance-member small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#758397;font-size:11px;font-weight:750}
+.kyro-distance-value{color:#163f6a;font-size:16px;font-weight:950;white-space:nowrap}
+.kyro-distance-you{position:absolute;right:10px;top:-8px;padding:2px 7px;border-radius:999px;background:#176dcc;color:#fff;font-size:10px;font-weight:900}
+.kyro-distance-empty{padding:24px;text-align:center;color:#6f7c8c;font-weight:800}
+@media(max-width:390px){
+  .season-detail-kyro-badge{padding:5px 10px!important;font-size:14px!important}
+  .season-detail-kyro-rank-card{min-height:104px;padding:12px 7px}
+  .season-detail-kyro-rank-card strong{font-size:19px}
+  .kyro-distance-row{grid-template-columns:40px minmax(0,1fr) auto;padding:11px 10px;gap:8px}
+  .kyro-distance-value{font-size:14px}
+}
