@@ -623,6 +623,24 @@ function profileDisplayRow(icon,label,value){
   if(!clean)return "";
   return `<div class="member-profile-field"><div class="member-profile-field-label">${icon} ${escapeHtml(label)}</div><div class="member-profile-field-value">${escapeHtml(clean).replace(/\n/g,"<br>")}</div></div>`;
 }
+function kyroDataDateLabel(value){
+  const raw=String(value||"").trim();
+  if(!raw)return "";
+  const match=raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match?`${match[1]}/${match[2]}/${match[3]}`:raw.replaceAll("-","/");
+}
+function kyroDataMemberCount(){
+  return memberRecords.filter(member=>member.active!==false&&member.kyroMember&&Number.isFinite(Number(member.kyroDistanceKm))).length;
+}
+function memberKyroSummaryHtml(member){
+  const distance=Number(member?.kyroDistanceKm);
+  const rank=Number(member?.kyroDistanceRank);
+  if(!member?.kyroMember||!Number.isFinite(distance))return "";
+  const memberCount=kyroDataMemberCount();
+  const rankText=Number.isFinite(rank)&&rank>0?`${rank}位${memberCount>0?` / ${memberCount}人`:""}`:"未集計";
+  const dateText=kyroDataDateLabel(member.kyroDataDate)||"未登録";
+  return `<section class="member-profile-kyro"><div class="member-profile-kyro-title">🗺️ KYRO <span>（SRC-KYRO-Club）</span></div><div class="member-profile-kyro-grid"><div><span>累積走行距離</span><strong>${distance.toFixed(2)} km</strong></div><div><span>距離順位</span><strong>${escapeHtml(rankText)}</strong></div></div><div class="member-profile-kyro-date">🕒 最終更新：${escapeHtml(dateText)}</div></section>`;
+}
 function openMemberProfile(member){
   selectedProfileMember=member;
   const profile=member.profile||{};
@@ -639,7 +657,8 @@ function openMemberProfile(member){
     ${profileDisplayRow("🏃",uiT("runningHistory","ランニング歴"),profile.runningHistory)}
     ${profileDisplayRow("🏅",uiT("bestTime","ベストタイム"),profile.bestTime)}
     ${profileDisplayRow("🌱",uiT("goal","現在の目標"),profile.goal)}
-    <div class="member-profile-attendance"><span>🏃 ${uiT("runWalk","ラン＆ウォーク")} ${runCount}${uiT("times","回")}</span><span>🏋️ ${uiT("gym","ジム")} ${gymCount}${uiT("times","回")}</span></div>`;
+    <div class="member-profile-attendance"><span>🏃 ${uiT("runWalk","ラン＆ウォーク")} ${runCount}${uiT("times","回")}</span><span>🏋️ ${uiT("gym","ジム")} ${gymCount}${uiT("times","回")}</span></div>
+    ${memberKyroSummaryHtml(member)}`;
   editOwnProfileButton.classList.toggle("hidden",member.name!==currentUser);
   hide(memberOverviewModal);
   show(memberProfileModal);
@@ -1502,6 +1521,10 @@ const seasonDetailGymDifference=document.getElementById("seasonDetailGymDifferen
 const seasonDetailGymMessage=document.getElementById("seasonDetailGymMessage");
 const seasonDetailTeamMembers=document.getElementById("seasonDetailTeamMembers");
 const seasonDetailTeamAverage=document.getElementById("seasonDetailTeamAverage");
+const seasonDetailKyroSection=document.getElementById("seasonDetailKyroSection");
+const seasonDetailKyroDistance=document.getElementById("seasonDetailKyroDistance");
+const seasonDetailKyroRank=document.getElementById("seasonDetailKyroRank");
+const seasonDetailKyroUpdated=document.getElementById("seasonDetailKyroUpdated");
 const seasonDetailPreviousButton=document.getElementById("seasonDetailPreviousButton");
 const seasonDetailNextButton=document.getElementById("seasonDetailNextButton");
 const seasonDetailNavigationLabel=document.getElementById("seasonDetailNavigationLabel");
@@ -1960,6 +1983,17 @@ function renderSeasonActivityDetail(){
   applySeasonComparison(seasonDetailGymDifference,seasonDetailGymMessage,currentStats.gymCount,previousStats.gymCount);
   seasonDetailTeamMembers.textContent=`${currentStats.teamMembers}人`;
   seasonDetailTeamAverage.textContent=`${currentStats.teamAverage.toFixed(1)}回`;
+  const member=currentMemberRecord();
+  const kyroDistance=Number(member?.kyroDistanceKm);
+  const hasKyroData=!!(member?.kyroMember&&Number.isFinite(kyroDistance));
+  seasonDetailKyroSection?.classList.toggle("hidden",!hasKyroData);
+  if(hasKyroData){
+    const rank=Number(member.kyroDistanceRank);
+    const memberCount=kyroDataMemberCount();
+    seasonDetailKyroDistance.textContent=`${kyroDistance.toFixed(2)} km`;
+    seasonDetailKyroRank.textContent=Number.isFinite(rank)&&rank>0?`${rank}位${memberCount>0?` / ${memberCount}人`:""}`:"未集計";
+    seasonDetailKyroUpdated.textContent=kyroDataDateLabel(member.kyroDataDate)||"未登録";
+  }
   seasonDetailNextButton.disabled=seasonDetailOffset>=0;
 }
 
