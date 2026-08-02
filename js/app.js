@@ -79,6 +79,7 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "recommendationsModal",
     "kyroPageModal",
     "adminKyroModal",
+    "adminKyroImportModal",
     "seasonActivityModal"
   ].includes(e.id)){
     positionMemberModalBelowHeader(e);
@@ -226,6 +227,10 @@ onSnapshot(collection(db,"members"),snap=>{
         name:data.name,
         admin:data.admin===true,
         kyroMember:data.kyroMember===true,
+        kyroUserName:data.kyroUserName||"",
+        kyroDistanceKm:Number.isFinite(Number(data.kyroDistanceKm))?Number(data.kyroDistanceKm):null,
+        kyroDistanceRank:Number.isFinite(Number(data.kyroDistanceRank))?Number(data.kyroDistanceRank):null,
+        kyroDataDate:data.kyroDataDate||"",
         active:data.active!==false,
         order:data.order??999,
         inviteCode:data.inviteCode||"",
@@ -710,6 +715,142 @@ async function saveKyroInfo(){
     },{merge:true});
     alert("SRC-KYRO情報を保存しました。");closeAdminChildModal(adminKyroModal);
   }catch(e){console.error(e);alert("SRC-KYRO情報の保存に失敗しました。Firestoreルールを確認してください。");}
+}
+
+function openKyroImport(){
+  kyroImportPrepared=null;
+  kyroImportDateInput.value=todayKeyJST();
+  kyroImportTextInput.value="";
+  kyroImportError.textContent="";
+  kyroImportError.classList.add("hidden");
+  kyroImportSummary.classList.add("hidden");
+  kyroImportSummary.textContent="";
+  kyroImportPreview.innerHTML="";
+  applyKyroImportButton.disabled=true;
+  openAdminChildModal(adminKyroImportModal);
+}
+
+function splitKyroImportLine(line){
+  if(line.includes("\t"))return line.split("\t").map(v=>v.trim());
+  return line.split(/[,，]/).map(v=>v.trim());
+}
+
+function parseKyroImportText(text){
+  const rows=[];
+  const errors=[];
+  const seenSrc=new Set();
+  const lines=String(text||"").split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
+  lines.forEach((line,index)=>{
+    if(/^#/.test(line))return;
+    const cols=splitKyroImportLine(line);
+    if(cols.length<3){errors.push(`${index+1}行目：3項目必要です。`);return;}
+    const [srcName,kyroName,distanceText]=cols;
+    if(/^(SRC名|memberName|名前)$/i.test(srcName))return;
+    if(!srcName||!kyroName){errors.push(`${index+1}行目：名前が空欄です。`);return;}
+    const normalizedDistance=String(distanceText).replace(/km/ig,"").replace(/,/g,"").trim();
+    const distanceKm=Number(normalizedDistance);
+    if(!Number.isFinite(distanceKm)||distanceKm<0){errors.push(`${index+1}行目：距離が正しくありません。`);return;}
+    if(seenSrc.has(srcName)){errors.push(`${index+1}行目：SRC名「${srcName}」が重複しています。`);return;}
+    seenSrc.add(srcName);
+    const member=memberRecords.find(m=>m.name===srcName);
+    rows.push({srcName,kyroName,distanceKm,member,sourceLine:index+1});
+  });
+  const matched=rows.filter(row=>row.member&&row.member.id);
+  const unmatched=rows.filter(row=>!row.member||!row.member.id);
+  const sorted=[...matched].sort((a,b)=>b.distanceKm-a.distanceKm||a.srcName.localeCompare(b.srcName,"ja"));
+  let lastDistance=null,lastRank=0;
+  sorted.forEach((row,index)=>{
+    if(lastDistance===null||row.distanceKm!==lastDistance)lastRank=index+1;
+    row.rank=lastRank;
+    lastDistance=row.distanceKm;
+  });
+  return {rows,matched:sorted,unmatched,errors};
+}
+
+function renderKyroImportPreview(){
+  kyroImportPrepared=null;
+  applyKyroImportButton.disabled=true;
+  kyroImportPreview.innerHTML="";
+  kyroImportError.classList.add("hidden");
+  const snapshotDate=kyroImportDateInput.value;
+  if(!snapshotDate){
+    kyroImportError.textContent="取得日を選択してください。";
+    kyroImportError.classList.remove("hidden");
+    return;
+  }
+  const result=parseKyroImportText(kyroImportTextInput.value);
+  if(result.errors.length){
+    kyroImportError.textContent=result.errors.join("\n");
+    kyroImportError.classList.remove("hidden");
+  }
+  kyroImportSummary.textContent=`読込 ${result.rows.length}件／反映可能 ${result.matched.length}件／未対応 ${result.unmatched.length}件／形式エラー ${result.errors.length}件`;
+  kyroImportSummary.classList.remove("hidden");
+  result.matched.forEach(row=>{
+    const div=document.createElement("div");
+    div.className=`kyro-import-row${row.member.kyroMember?"":" kyro-import-warning"}`;
+    div.innerHTML=`<strong class="kyro-import-name">${escapeHtml(row.srcName)}</strong><span class="kyro-import-user">${escapeHtml(row.kyroName)}</span><span class="kyro-import-distance">${row.distanceKm.toFixed(2)} km</span><span class="kyro-import-rank">${row.rank}位</span>`;
+    kyroImportPreview.appendChild(div);
+  });
+  result.unmatched.forEach(row=>{
+    const div=document.createElement("div");
+    div.className="kyro-import-row kyro-import-error-row";
+    div.textContent=`未対応：${row.srcName}（${row.kyroName}／${row.distanceKm.toFixed(2)}km）`;
+    kyroImportPreview.appendChild(div);
+  });
+  if(!result.rows.length&&!result.errors.length){
+    kyroImportError.textContent="取込データを貼り付けてください。";
+    kyroImportError.classList.remove("hidden");
+    return;
+  }
+  if(result.matched.length&&result.unmatched.length===0&&result.errors.length===0){
+    kyroImportPrepared={snapshotDate,records:result.matched};
+    applyKyroImportButton.disabled=false;
+  }
+}
+
+async function applyKyroImport(){
+  if(!kyroImportPrepared||!kyroImportPrepared.records.length)return;
+  const {snapshotDate,records}=kyroImportPrepared;
+  if(!confirm(`${snapshotDate} のKYRO個人データ ${records.length}件をFirestoreへ反映しますか？`))return;
+  applyKyroImportButton.disabled=true;
+  try{
+    const batch=writeBatch(db);
+    const snapshotMembers=[];
+    records.forEach(row=>{
+      batch.set(doc(db,"members",row.member.id),{
+        kyroUserName:row.kyroName,
+        kyroDistanceKm:row.distanceKm,
+        kyroDistanceRank:row.rank,
+        kyroDataDate:snapshotDate,
+        kyroDataUpdatedAt:serverTimestamp(),
+        updatedAt:serverTimestamp()
+      },{merge:true});
+      snapshotMembers.push({
+        memberId:row.member.id,
+        memberName:row.srcName,
+        kyroUserName:row.kyroName,
+        distanceKm:row.distanceKm,
+        distanceRank:row.rank
+      });
+    });
+    batch.set(doc(db,"kyroSnapshots",snapshotDate),{
+      snapshotDate,
+      metric:"cumulativeDistanceKm",
+      memberCount:snapshotMembers.length,
+      members:snapshotMembers,
+      importedBy:currentUser||"",
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    await batch.commit();
+    alert(`KYRO個人データ ${records.length}件を反映しました。`);
+    kyroImportPrepared=null;
+    applyKyroImportButton.disabled=true;
+    closeAdminChildModal(adminKyroImportModal);
+  }catch(e){
+    console.error(e);
+    applyKyroImportButton.disabled=false;
+    alert("KYRO個人データの反映に失敗しました。Firestoreルールを確認してください。");
+  }
 }
 
 const dashboardAnimationState=new Map();
@@ -1472,6 +1613,17 @@ const kyroAichiRankInput=document.getElementById("kyroAichiRankInput");
 const kyroNewsInput=document.getElementById("kyroNewsInput");
 const kyroGoalInput=document.getElementById("kyroGoalInput");
 const saveKyroInfoButton=document.getElementById("saveKyroInfoButton");
+const adminKyroImportButton=document.getElementById("adminKyroImportButton");
+const adminKyroImportModal=document.getElementById("adminKyroImportModal");
+const closeAdminKyroImportButton=document.getElementById("closeAdminKyroImportButton");
+const kyroImportDateInput=document.getElementById("kyroImportDateInput");
+const kyroImportTextInput=document.getElementById("kyroImportTextInput");
+const previewKyroImportButton=document.getElementById("previewKyroImportButton");
+const applyKyroImportButton=document.getElementById("applyKyroImportButton");
+const kyroImportError=document.getElementById("kyroImportError");
+const kyroImportSummary=document.getElementById("kyroImportSummary");
+const kyroImportPreview=document.getElementById("kyroImportPreview");
+let kyroImportPrepared=null;
 
 const recommendationsModal=document.getElementById("recommendationsModal");
 const openRecommendationsButton=document.getElementById("openRecommendationsButton");
@@ -1651,6 +1803,10 @@ if(closeKyroPageButton)closeKyroPageButton.onclick=()=>hide(kyroPageModal);
 if(adminKyroManageButton)adminKyroManageButton.onclick=openAdminKyro;
 if(closeAdminKyroButton)closeAdminKyroButton.onclick=()=>closeAdminChildModal(adminKyroModal);
 if(saveKyroInfoButton)saveKyroInfoButton.onclick=saveKyroInfo;
+if(adminKyroImportButton)adminKyroImportButton.onclick=openKyroImport;
+if(closeAdminKyroImportButton)closeAdminKyroImportButton.onclick=()=>closeAdminChildModal(adminKyroImportModal);
+if(previewKyroImportButton)previewKyroImportButton.onclick=renderKyroImportPreview;
+if(applyKyroImportButton)applyKyroImportButton.onclick=applyKyroImport;
 const dashboardMemberCount=document.getElementById("dashboardMemberCount");
 const dashboardRunCount=document.getElementById("dashboardRunCount");
 const dashboardGymCount=document.getElementById("dashboardGymCount");
