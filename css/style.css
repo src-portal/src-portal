@@ -2540,3 +2540,15 @@ body{
 .ai-prompt-copy-button{width:100%;margin:4px 0 8px}
 .kyro-name-row{margin-top:8px}
 .member-kyro-name-input{margin-top:8px;min-width:180px}
+
+/* Ver.1.9.0b: KYRO personal activity display */
+.member-profile-kyro{margin:14px 0;padding:14px;border:1px solid #efd28a;border-radius:15px;background:linear-gradient(135deg,#fffdf5,#fff8e7);color:#26384a}
+.member-profile-kyro-title{font-size:15px;font-weight:950;color:#1f3347;margin-bottom:11px}.member-profile-kyro-title span{font-size:11px;color:#68798c;font-weight:800}
+.member-profile-kyro-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.member-profile-kyro-grid>div{padding:10px;border-radius:12px;background:rgba(255,255,255,.78);border:1px solid #f1e1b8}
+.member-profile-kyro-grid span{display:block;font-size:11px;color:#6b7888;font-weight:850;margin-bottom:4px}.member-profile-kyro-grid strong{display:block;font-size:20px;color:#1f2d3d}
+.member-profile-kyro-date{margin-top:9px;font-size:11px;color:#6c7988;font-weight:800;text-align:right}
+.season-detail-kyro{margin-top:13px;padding:13px;border-radius:16px;background:linear-gradient(135deg,#fffdf7,#fff8e8);border:1px solid #efd28a;color:#405369}
+.season-detail-kyro-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:9px;border-bottom:1px solid #ead9ad}.season-detail-kyro-heading strong{font-size:15px;color:#23384c}.season-detail-kyro-heading span{font-size:10px;color:#7b7461;font-weight:800}
+.season-detail-kyro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:10px}.season-detail-kyro-grid>div{padding:4px 9px;text-align:center;border-right:1px solid #ead9ad}.season-detail-kyro-grid>div:last-child{border-right:0}
+.season-detail-kyro-grid span{display:block;font-size:10px;color:#6e7b89;font-weight:850;margin-bottom:5px}.season-detail-kyro-grid strong{display:block;font-size:16px;color:#203349;white-space:nowrap}
+@media(max-width:390px){.season-detail-kyro-grid{grid-template-columns:1fr 1fr}.season-detail-kyro-grid>div:nth-child(2){border-right:0}.season-detail-kyro-grid>div:last-child{grid-column:1/-1;border-right:0;border-top:1px solid #ead9ad;margin-top:8px;padding-top:10px}.season-detail-kyro-heading{align-items:flex-start;flex-direction:column;gap:3px}}
