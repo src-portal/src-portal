@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0b">
+<link rel="stylesheet" href="css/style.css?v=1.9.0c">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -92,10 +92,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0b</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0c</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/02 1.9.0b JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/02 1.9.0c JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -128,22 +128,25 @@
         <p class="season-detail-message" id="seasonDetailGymMessage"></p>
       </section>
     </div>
-    <section class="season-detail-kyro hidden" id="seasonDetailKyroSection">
-      <div class="season-detail-kyro-heading"><strong>🗺️ KYRO（参考）</strong><span>※ シーズン制ではありません</span></div>
-      <div class="season-detail-kyro-grid">
-        <div><span>累積走行距離</span><strong id="seasonDetailKyroDistance">-- km</strong></div>
-        <div><span>現在順位</span><strong id="seasonDetailKyroRank">--位</strong></div>
-        <div><span>最終更新</span><strong id="seasonDetailKyroUpdated">----</strong></div>
-      </div>
-    </section>
     <div class="season-detail-team">
       <span>👥 参加したメンバー <strong id="seasonDetailTeamMembers">--人</strong></span>
       <span>平均参加回数 <strong id="seasonDetailTeamAverage">--回</strong></span>
     </div>
+    <section class="season-detail-kyro hidden" id="seasonDetailKyroSection">
+      <div class="season-detail-kyro-heading"><strong>🗺️ KYRO（参考）</strong><span>※ シーズン制ではありません</span></div>
+      <div class="season-detail-kyro-grid">
+        <div><span>累積走行距離</span><strong id="seasonDetailKyroDistance">-- km</strong></div>
+        <div><span>前回更新比</span><strong id="seasonDetailKyroDifference">-- km</strong></div>
+        <div><span>前回更新日</span><strong id="seasonDetailKyroPreviousDate">----</strong></div>
+        <div><span>現在順位</span><strong id="seasonDetailKyroRank">--位</strong></div>
+        <div><span>最終更新</span><strong id="seasonDetailKyroUpdated">----</strong></div>
+      </div>
+    </section>
     <div class="season-detail-rules">
       <strong>💡 集計ルール</strong>
       <p>ラン：ラン＆ウォーク・大会・駅伝の参加実績</p>
       <p>ジム：実際に参加した日の実績</p>
+      <p>KYRO：累積走行距離・前回更新比・現在順位を表示（シーズン制ではありません）</p>
       <p>シーズン：上期（4～9月）／下期（10～3月）</p>
     </div>
     <div class="season-detail-navigation">
@@ -358,7 +361,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0b<br>Official Release<br>2026.08.02</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0c<br>Official Release<br>2026.08.02</strong></p>
       </section>
     </div>
 </div></div>
@@ -857,6 +860,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0b"></script>
+<script type="module" src="js/app.js?v=1.9.0c"></script>
 </body>
 </html>
