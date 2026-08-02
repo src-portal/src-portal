@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0g">
+<link rel="stylesheet" href="css/style.css?v=1.9.0h">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -92,10 +92,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0g</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0h</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/02 1.9.0g JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/02 1.9.0h JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -138,7 +138,7 @@
         <div><span>🏃 累積走行距離</span><strong id="seasonDetailKyroDistance">-- km</strong></div>
         <div><span>📈 前回更新比</span><strong id="seasonDetailKyroDifference">-- km</strong></div>
         <div><span>📅 前回更新日</span><strong id="seasonDetailKyroPreviousDate">----</strong></div>
-        <div><span>🏆 現在順位</span><strong id="seasonDetailKyroRank">--位</strong></div>
+        <button class="season-detail-kyro-rank-card" id="seasonDetailKyroRankCard" type="button" aria-label="KYRO累積走行距離一覧を表示"><span>🏆 現在順位</span><strong id="seasonDetailKyroRank">--位</strong><small>全員の距離を見る ›</small></button>
         <div><span>🕒 最終更新</span><strong id="seasonDetailKyroUpdated">----</strong></div>
       </div>
     </section>
@@ -154,6 +154,18 @@
       <strong id="seasonDetailNavigationLabel">--</strong>
       <button id="seasonDetailNextButton" type="button">次のシーズン ›</button>
     </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay hidden" id="kyroDistanceListModal">
+  <div class="modal-card kyro-distance-list-modal-card">
+    <div class="dialog-header">
+      <h2>🏃 KYRO累積走行距離</h2>
+      <button class="modal-header-close-button" id="closeKyroDistanceListButton" type="button" aria-label="閉じる"></button>
+    </div>
+    <p class="kyro-distance-list-note">累積走行距離の多い順です。KYRO参加者の最新取込データを表示します。</p>
+    <div class="kyro-distance-list" id="kyroDistanceList"></div>
   </div>
 </div>
 
@@ -361,7 +373,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0g<br>Official Release<br>2026.08.02</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0h<br>Official Release<br>2026.08.02</strong></p>
       </section>
     </div>
 </div></div>
@@ -860,6 +872,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0g"></script>
+<script type="module" src="js/app.js?v=1.9.0h"></script>
 </body>
 </html>
