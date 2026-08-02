@@ -2560,3 +2560,10 @@ body{
 .season-detail-kyro-grid span{color:#55718d}.season-detail-kyro-grid strong{color:#173f68;font-size:15px}
 .member-profile-kyro{background:linear-gradient(135deg,#eaf4ff,#dcecff);border-color:#78aee8;box-shadow:0 8px 18px rgba(55,112,177,.1)}
 .member-profile-kyro-title{color:#1d4f83}.member-profile-kyro-grid>div{background:rgba(255,255,255,.74);border-color:#bdd6ef}.member-profile-kyro-grid span{color:#55718d}.member-profile-kyro-grid strong{color:#173f68;font-size:18px}
+
+
+/* Ver.1.9.0d: KYRO brand badge in season activity detail */
+.season-detail-kyro-heading strong{display:flex;align-items:center;gap:7px;min-width:0}
+.season-detail-kyro-badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:8px;background:#ffe100;color:#111;font-weight:950;letter-spacing:.02em;line-height:1;box-shadow:inset 0 -1px 0 rgba(0,0,0,.12)}
+.season-detail-kyro-reference{color:#1d4f83;font-weight:900;white-space:nowrap}
+@media(max-width:390px){.season-detail-kyro-heading strong{gap:5px}.season-detail-kyro-badge{padding:4px 8px}}
