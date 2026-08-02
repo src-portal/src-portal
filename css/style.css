@@ -2535,3 +2535,8 @@ body{
   .kyro-import-distance{grid-column:2;grid-row:1}
   .kyro-import-rank{grid-column:2;grid-row:2}
 }
+
+/* Ver.1.9.0: AI-assisted KYRO import */
+.ai-prompt-copy-button{width:100%;margin:4px 0 8px}
+.kyro-name-row{margin-top:8px}
+.member-kyro-name-input{margin-top:8px;min-width:180px}
