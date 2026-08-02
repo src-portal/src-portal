@@ -2581,3 +2581,67 @@ body{
 .season-detail-kyro-heading strong .season-detail-kyro-badge{color:#000!important;-webkit-text-fill-color:#000!important}
 .season-detail-kyro-grid>div>span{display:flex;align-items:center;justify-content:center;gap:4px}
 @media(max-width:390px){.season-detail-kyro-badge{padding:3px 7px;font-size:13px}}
+
+/* Ver.1.9.0f: Match KYRO reference panel visual weight to run/gym panels */
+.season-detail-kyro{
+  margin-top:16px;
+  padding:16px;
+  border-radius:19px;
+}
+.season-detail-kyro-heading{
+  padding:1px 2px 13px;
+  gap:10px;
+}
+.season-detail-kyro-heading strong{
+  gap:8px;
+  font-size:18px;
+}
+.season-detail-kyro-heading>span{
+  font-size:12px;
+}
+.season-detail-kyro-badge{
+  padding:5px 11px;
+  border-radius:9px;
+  font-size:17px;
+}
+.season-detail-kyro-reference{
+  font-size:16px;
+}
+.season-detail-kyro-grid{
+  gap:10px;
+  margin-top:13px;
+}
+.season-detail-kyro-grid>div{
+  min-height:112px;
+  padding:15px 11px;
+  border-radius:15px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+.season-detail-kyro-grid>div:last-child{
+  min-height:100px;
+}
+.season-detail-kyro-grid span{
+  font-size:12px;
+  gap:6px;
+  margin-bottom:9px;
+}
+.season-detail-kyro-grid strong{
+  font-size:22px;
+  line-height:1.15;
+}
+@media(max-width:390px){
+  .season-detail-kyro{padding:14px}
+  .season-detail-kyro-heading{gap:6px;padding-bottom:11px}
+  .season-detail-kyro-heading strong{gap:6px;font-size:16px}
+  .season-detail-kyro-heading>span{font-size:10px}
+  .season-detail-kyro-badge{padding:4px 9px;font-size:15px}
+  .season-detail-kyro-reference{font-size:14px}
+  .season-detail-kyro-grid{gap:8px;margin-top:11px}
+  .season-detail-kyro-grid>div{min-height:102px;padding:12px 8px}
+  .season-detail-kyro-grid>div:last-child{min-height:90px}
+  .season-detail-kyro-grid span{font-size:11px;margin-bottom:7px}
+  .season-detail-kyro-grid strong{font-size:19px}
+}
