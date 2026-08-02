@@ -2645,3 +2645,17 @@ body{
   .season-detail-kyro-grid span{font-size:11px;margin-bottom:7px}
   .season-detail-kyro-grid strong{font-size:19px}
 }
+
+/* Ver.1.9.0g: Match the KYRO reference badge size to the SRC-KYRO-Club badge */
+.season-detail-kyro-badge{
+  padding:4px 8px;
+  border-radius:6px;
+  font-size:12px;
+  line-height:1;
+}
+@media(max-width:390px){
+  .season-detail-kyro-badge{
+    padding:4px 8px;
+    font-size:12px;
+  }
+}
