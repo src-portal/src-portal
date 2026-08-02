@@ -2567,3 +2567,17 @@ body{
 .season-detail-kyro-badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:8px;background:#ffe100;color:#111;font-weight:950;letter-spacing:.02em;line-height:1;box-shadow:inset 0 -1px 0 rgba(0,0,0,.12)}
 .season-detail-kyro-reference{color:#1d4f83;font-weight:900;white-space:nowrap}
 @media(max-width:390px){.season-detail-kyro-heading strong{gap:5px}.season-detail-kyro-badge{padding:4px 8px}}
+
+
+/* Ver.1.9.0e: KYRO heading color lock and metric icons */
+.season-detail-kyro-badge{
+  padding:3px 8px;
+  color:#000!important;
+  -webkit-text-fill-color:#000!important;
+  text-shadow:none!important;
+  font-size:14px;
+}
+.season-detail-kyro-heading .season-detail-kyro-badge,
+.season-detail-kyro-heading strong .season-detail-kyro-badge{color:#000!important;-webkit-text-fill-color:#000!important}
+.season-detail-kyro-grid>div>span{display:flex;align-items:center;justify-content:center;gap:4px}
+@media(max-width:390px){.season-detail-kyro-badge{padding:3px 7px;font-size:13px}}
