@@ -227,7 +227,7 @@ onSnapshot(collection(db,"members"),snap=>{
         name:data.name,
         admin:data.admin===true,
         kyroMember:data.kyroMember===true,
-        kyroUserName:data.kyroUserName||"",
+        kyroUserName:data.kyroUserName||data.kyroName||"",
         kyroDistanceKm:Number.isFinite(Number(data.kyroDistanceKm))?Number(data.kyroDistanceKm):null,
         kyroDistanceRank:Number.isFinite(Number(data.kyroDistanceRank))?Number(data.kyroDistanceRank):null,
         kyroDataDate:data.kyroDataDate||"",
@@ -730,127 +730,64 @@ function openKyroImport(){
   openAdminChildModal(adminKyroImportModal);
 }
 
+function buildKyroAiPrompt(){
+  const names=memberRecords.filter(m=>m.active!==false&&m.kyroMember&&m.kyroUserName).map(m=>m.kyroUserName);
+  return `添付したKYROメンバー一覧のスクリーンショットから、KYROネームと累積走行距離を読み取ってください。\n\n【ルール】\n・画像左端の番号は使用しない\n・順位は計算しない\n・距離はkmの数値だけ出力する\n・説明、見出し、表、コードブロックは付けない\n・読み取れない値は推測せず「確認必要」とする\n\n出力形式（1人1行）\nKYROネーム,累積走行距離\n\n登録済みKYROネーム\n${names.join("\n")}`;
+}
+async function copyKyroAiPrompt(){
+  const ok=await copyText(buildKyroAiPrompt());
+  alert(ok?"AI依頼文をコピーしました。このAIへ貼り付け、KYRO画像を添付してください。":"依頼文をコピーできませんでした。");
+}
 function splitKyroImportLine(line){
   if(line.includes("\t"))return line.split("\t").map(v=>v.trim());
   return line.split(/[,，]/).map(v=>v.trim());
 }
-
 function parseKyroImportText(text){
-  const rows=[];
-  const errors=[];
-  const seenSrc=new Set();
-  const lines=String(text||"").split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
-  lines.forEach((line,index)=>{
+  const rows=[],errors=[],seen=new Set();
+  const targetMembers=memberRecords.filter(m=>m.active!==false&&m.kyroMember);
+  const byKyro=new Map(targetMembers.filter(m=>m.kyroUserName).map(m=>[m.kyroUserName.toLocaleLowerCase(),m]));
+  String(text||"").split(/\r?\n/).map(v=>v.trim()).filter(Boolean).forEach((line,index)=>{
     if(/^#/.test(line))return;
     const cols=splitKyroImportLine(line);
-    if(cols.length<3){errors.push(`${index+1}行目：3項目必要です。`);return;}
-    const [srcName,kyroName,distanceText]=cols;
-    if(/^(SRC名|memberName|名前)$/i.test(srcName))return;
-    if(!srcName||!kyroName){errors.push(`${index+1}行目：名前が空欄です。`);return;}
-    const normalizedDistance=String(distanceText).replace(/km/ig,"").replace(/,/g,"").trim();
-    const distanceKm=Number(normalizedDistance);
+    if(cols.length<2){errors.push(`${index+1}行目：2項目必要です。`);return;}
+    const [kyroName,distanceText]=cols;
+    if(/^(KYROネーム|kyroName)$/i.test(kyroName))return;
+    if(!kyroName){errors.push(`${index+1}行目：KYROネームが空欄です。`);return;}
+    if(seen.has(kyroName.toLocaleLowerCase())){errors.push(`${index+1}行目：KYROネーム「${kyroName}」が重複しています。`);return;}
+    seen.add(kyroName.toLocaleLowerCase());
+    const normalized=String(distanceText).replace(/km/ig,"").replace(/,/g,"").trim();
+    const distanceKm=Number(normalized);
     if(!Number.isFinite(distanceKm)||distanceKm<0){errors.push(`${index+1}行目：距離が正しくありません。`);return;}
-    if(seenSrc.has(srcName)){errors.push(`${index+1}行目：SRC名「${srcName}」が重複しています。`);return;}
-    seenSrc.add(srcName);
-    const member=memberRecords.find(m=>m.name===srcName);
-    rows.push({srcName,kyroName,distanceKm,member,sourceLine:index+1});
+    const member=byKyro.get(kyroName.toLocaleLowerCase());
+    rows.push({kyroName,distanceKm,member,sourceLine:index+1});
   });
-  const matched=rows.filter(row=>row.member&&row.member.id);
-  const unmatched=rows.filter(row=>!row.member||!row.member.id);
-  const sorted=[...matched].sort((a,b)=>b.distanceKm-a.distanceKm||a.srcName.localeCompare(b.srcName,"ja"));
+  const matched=rows.filter(r=>r.member&&r.member.id),unmatched=rows.filter(r=>!r.member||!r.member.id);
+  const included=new Set(matched.map(r=>r.member.id));
+  const missing=targetMembers.filter(m=>m.id&&!included.has(m.id));
+  const sorted=[...matched].sort((a,b)=>b.distanceKm-a.distanceKm||a.kyroName.localeCompare(b.kyroName));
   let lastDistance=null,lastRank=0;
-  sorted.forEach((row,index)=>{
-    if(lastDistance===null||row.distanceKm!==lastDistance)lastRank=index+1;
-    row.rank=lastRank;
-    lastDistance=row.distanceKm;
-  });
-  return {rows,matched:sorted,unmatched,errors};
+  sorted.forEach((row,index)=>{if(lastDistance===null||row.distanceKm!==lastDistance)lastRank=index+1;row.rank=lastRank;lastDistance=row.distanceKm;});
+  return {rows,matched:sorted,unmatched,missing,errors};
 }
-
 function renderKyroImportPreview(){
-  kyroImportPrepared=null;
-  applyKyroImportButton.disabled=true;
-  kyroImportPreview.innerHTML="";
-  kyroImportError.classList.add("hidden");
+  kyroImportPrepared=null;applyKyroImportButton.disabled=true;kyroImportPreview.innerHTML="";kyroImportError.classList.add("hidden");
   const snapshotDate=kyroImportDateInput.value;
-  if(!snapshotDate){
-    kyroImportError.textContent="取得日を選択してください。";
-    kyroImportError.classList.remove("hidden");
-    return;
-  }
+  if(!snapshotDate){kyroImportError.textContent="取得日を選択してください。";kyroImportError.classList.remove("hidden");return;}
   const result=parseKyroImportText(kyroImportTextInput.value);
-  if(result.errors.length){
-    kyroImportError.textContent=result.errors.join("\n");
-    kyroImportError.classList.remove("hidden");
-  }
-  kyroImportSummary.textContent=`読込 ${result.rows.length}件／反映可能 ${result.matched.length}件／未対応 ${result.unmatched.length}件／形式エラー ${result.errors.length}件`;
+  if(result.errors.length){kyroImportError.textContent=result.errors.join("\n");kyroImportError.classList.remove("hidden");}
+  kyroImportSummary.textContent=`読込 ${result.rows.length}件／反映可能 ${result.matched.length}件／未登録 ${result.unmatched.length}件／不足 ${result.missing.length}件／形式エラー ${result.errors.length}件`;
   kyroImportSummary.classList.remove("hidden");
-  result.matched.forEach(row=>{
-    const div=document.createElement("div");
-    div.className=`kyro-import-row${row.member.kyroMember?"":" kyro-import-warning"}`;
-    div.innerHTML=`<strong class="kyro-import-name">${escapeHtml(row.srcName)}</strong><span class="kyro-import-user">${escapeHtml(row.kyroName)}</span><span class="kyro-import-distance">${row.distanceKm.toFixed(2)} km</span><span class="kyro-import-rank">${row.rank}位</span>`;
-    kyroImportPreview.appendChild(div);
-  });
-  result.unmatched.forEach(row=>{
-    const div=document.createElement("div");
-    div.className="kyro-import-row kyro-import-error-row";
-    div.textContent=`未対応：${row.srcName}（${row.kyroName}／${row.distanceKm.toFixed(2)}km）`;
-    kyroImportPreview.appendChild(div);
-  });
-  if(!result.rows.length&&!result.errors.length){
-    kyroImportError.textContent="取込データを貼り付けてください。";
-    kyroImportError.classList.remove("hidden");
-    return;
-  }
-  if(result.matched.length&&result.unmatched.length===0&&result.errors.length===0){
-    kyroImportPrepared={snapshotDate,records:result.matched};
-    applyKyroImportButton.disabled=false;
-  }
+  result.matched.forEach(row=>{const d=document.createElement("div");d.className="kyro-import-row";d.innerHTML=`<strong class="kyro-import-name">${escapeHtml(row.member.name)}</strong><span class="kyro-import-user">${escapeHtml(row.kyroName)}</span><span class="kyro-import-distance">${row.distanceKm.toFixed(2)} km</span><span class="kyro-import-rank">${row.rank}位</span>`;kyroImportPreview.appendChild(d);});
+  result.unmatched.forEach(row=>{const d=document.createElement("div");d.className="kyro-import-row kyro-import-error-row";d.textContent=`未登録KYROネーム：${row.kyroName}`;kyroImportPreview.appendChild(d);});
+  result.missing.forEach(m=>{const d=document.createElement("div");d.className="kyro-import-row kyro-import-warning";d.textContent=`今回のデータにありません：${m.name}（${m.kyroUserName||"KYROネーム未登録"}）`;kyroImportPreview.appendChild(d);});
+  if(!result.rows.length&&!result.errors.length){kyroImportError.textContent="取込データを貼り付けてください。";kyroImportError.classList.remove("hidden");return;}
+  if(result.matched.length&&result.unmatched.length===0&&result.missing.length===0&&result.errors.length===0){kyroImportPrepared={snapshotDate,records:result.matched};applyKyroImportButton.disabled=false;}
 }
-
 async function applyKyroImport(){
-  if(!kyroImportPrepared||!kyroImportPrepared.records.length)return;
-  const {snapshotDate,records}=kyroImportPrepared;
-  if(!confirm(`${snapshotDate} のKYRO個人データ ${records.length}件をFirestoreへ反映しますか？`))return;
+  if(!kyroImportPrepared?.records?.length)return;
+  const {snapshotDate,records}=kyroImportPrepared;if(!confirm(`${snapshotDate} のKYRO個人データ ${records.length}件をFirestoreへ反映しますか？`))return;
   applyKyroImportButton.disabled=true;
-  try{
-    const batch=writeBatch(db);
-    const snapshotMembers=[];
-    records.forEach(row=>{
-      batch.set(doc(db,"members",row.member.id),{
-        kyroUserName:row.kyroName,
-        kyroDistanceKm:row.distanceKm,
-        kyroDistanceRank:row.rank,
-        kyroDataDate:snapshotDate,
-        kyroDataUpdatedAt:serverTimestamp(),
-        updatedAt:serverTimestamp()
-      },{merge:true});
-      snapshotMembers.push({
-        memberId:row.member.id,
-        memberName:row.srcName,
-        kyroUserName:row.kyroName,
-        distanceKm:row.distanceKm,
-        distanceRank:row.rank
-      });
-    });
-    batch.set(doc(db,"kyroSnapshots",snapshotDate),{
-      snapshotDate,
-      metric:"cumulativeDistanceKm",
-      memberCount:snapshotMembers.length,
-      members:snapshotMembers,
-      importedBy:currentUser||"",
-      updatedAt:serverTimestamp()
-    },{merge:true});
-    await batch.commit();
-    alert(`KYRO個人データ ${records.length}件を反映しました。`);
-    kyroImportPrepared=null;
-    applyKyroImportButton.disabled=true;
-    closeAdminChildModal(adminKyroImportModal);
-  }catch(e){
-    console.error(e);
-    applyKyroImportButton.disabled=false;
-    alert("KYRO個人データの反映に失敗しました。Firestoreルールを確認してください。");
-  }
+  try{const batch=writeBatch(db),snapshotMembers=[];records.forEach(row=>{batch.set(doc(db,"members",row.member.id),{kyroUserName:row.kyroName,kyroDistanceKm:row.distanceKm,kyroDistanceRank:row.rank,kyroDataDate:snapshotDate,kyroDataUpdatedAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});snapshotMembers.push({memberId:row.member.id,memberName:row.member.name,kyroUserName:row.kyroName,distanceKm:row.distanceKm,distanceRank:row.rank});});batch.set(doc(db,"kyroSnapshots",snapshotDate),{snapshotDate,metric:"cumulativeDistanceKm",memberCount:snapshotMembers.length,members:snapshotMembers,importedBy:currentUser||"",updatedAt:serverTimestamp()},{merge:true});await batch.commit();alert(`KYRO個人データ ${records.length}件を反映しました。`);kyroImportPrepared=null;applyKyroImportButton.disabled=true;closeAdminChildModal(adminKyroImportModal);}catch(e){console.error(e);applyKyroImportButton.disabled=false;alert("KYRO個人データの反映に失敗しました。Firestoreルールを確認してください。");}
 }
 
 const dashboardAnimationState=new Map();
@@ -1527,6 +1464,8 @@ const memberAdminList=document.getElementById("memberAdminList");
 const newMemberNameInput=document.getElementById("newMemberNameInput");
 const newMemberAdminCheck=document.getElementById("newMemberAdminCheck");
 const newMemberKyroCheck=document.getElementById("newMemberKyroCheck");
+const newMemberKyroNameRow=document.getElementById("newMemberKyroNameRow");
+const newMemberKyroNameInput=document.getElementById("newMemberKyroNameInput");
 const newMemberInviteCodeInput=document.getElementById("newMemberInviteCodeInput");
 const generateInviteCodeButton=document.getElementById("generateInviteCodeButton");
 const addMemberButton=document.getElementById("addMemberButton");
@@ -1618,6 +1557,7 @@ const adminKyroImportModal=document.getElementById("adminKyroImportModal");
 const closeAdminKyroImportButton=document.getElementById("closeAdminKyroImportButton");
 const kyroImportDateInput=document.getElementById("kyroImportDateInput");
 const kyroImportTextInput=document.getElementById("kyroImportTextInput");
+const copyKyroAiPromptButton=document.getElementById("copyKyroAiPromptButton");
 const previewKyroImportButton=document.getElementById("previewKyroImportButton");
 const applyKyroImportButton=document.getElementById("applyKyroImportButton");
 const kyroImportError=document.getElementById("kyroImportError");
@@ -1805,6 +1745,7 @@ if(closeAdminKyroButton)closeAdminKyroButton.onclick=()=>closeAdminChildModal(ad
 if(saveKyroInfoButton)saveKyroInfoButton.onclick=saveKyroInfo;
 if(adminKyroImportButton)adminKyroImportButton.onclick=openKyroImport;
 if(closeAdminKyroImportButton)closeAdminKyroImportButton.onclick=()=>closeAdminChildModal(adminKyroImportModal);
+if(copyKyroAiPromptButton)copyKyroAiPromptButton.onclick=copyKyroAiPrompt;
 if(previewKyroImportButton)previewKyroImportButton.onclick=renderKyroImportPreview;
 if(applyKyroImportButton)applyKyroImportButton.onclick=applyKyroImport;
 const dashboardMemberCount=document.getElementById("dashboardMemberCount");
@@ -2630,6 +2571,7 @@ function renderAdminMembers(){
     meta.innerHTML=`
       <div><span>区分</span><strong>${m.admin?"管理者":"一般"}</strong></div>
       <div><span>KYRO</span><strong>${m.kyroMember?"メンバー":"未参加"}</strong></div>
+      <div><span>KYROネーム</span><strong>${m.kyroUserName?escapeHtml(m.kyroUserName):"未登録"}</strong></div>
       <div><span>状態</span><strong>${m.active===false?"停止":"有効"}</strong></div>
       <div><span>表示順</span><strong>${m.order ?? "-"}</strong></div>
       <div><span>招待コード</span><strong class="member-code-value">${m.inviteCode?escapeHtml(m.inviteCode):"コードなし"}</strong></div>`;
@@ -2694,11 +2636,19 @@ function renderAdminMembers(){
     checks.appendChild(activeLabel);
     checks.appendChild(kyroLabel);
 
+    const kyroNameInput=document.createElement("input");
+    kyroNameInput.type="text";
+    kyroNameInput.className="admin-input member-kyro-name-input";
+    kyroNameInput.placeholder="KYROネーム";
+    kyroNameInput.value=m.kyroUserName||"";
+    kyroNameInput.classList.toggle("hidden",!kyroCheck.checked);
+    kyroCheck.onchange=()=>kyroNameInput.classList.toggle("hidden",!kyroCheck.checked);
+
     const saveBtn=document.createElement("button");
     saveBtn.type="button";
     saveBtn.className="member-small-button primary";
     saveBtn.textContent="保存";
-    saveBtn.onclick=()=>saveMemberEdit(m.id,nameInput.value,adminCheck.checked,activeCheck.checked,kyroCheck.checked);
+    saveBtn.onclick=()=>saveMemberEdit(m.id,nameInput.value,adminCheck.checked,activeCheck.checked,kyroCheck.checked,kyroNameInput.value);
 
     const cancelBtn=document.createElement("button");
     cancelBtn.type="button";
@@ -2708,6 +2658,7 @@ function renderAdminMembers(){
 
     editRow.appendChild(nameInput);
     editRow.appendChild(checks);
+    editRow.appendChild(kyroNameInput);
     editRow.appendChild(saveBtn);
     editRow.appendChild(cancelBtn);
     editBox.appendChild(editRow);
@@ -2791,8 +2742,10 @@ async function toggleMemberFlag(memberId,field,value){
   }
 }
 
-async function saveMemberEdit(memberId,name,admin,active,kyroMember){
+async function saveMemberEdit(memberId,name,admin,active,kyroMember,kyroUserName=""){
   const cleanName=name.trim();
+  const cleanKyroName=String(kyroUserName||"").trim();
+  if(kyroMember&&!cleanKyroName){alert("KYROメンバーはKYROネームを入力してください。");return;}
   if(!memberId){
     alert("このメンバーはFirestoreのIDがないため変更できません。");
     return;
@@ -2856,6 +2809,8 @@ async function getNextMemberOrder(){
   }
 }
 
+
+if(newMemberKyroCheck)newMemberKyroCheck.onchange=()=>{newMemberKyroNameRow?.classList.toggle("hidden",!newMemberKyroCheck.checked);if(!newMemberKyroCheck.checked&&newMemberKyroNameInput)newMemberKyroNameInput.value="";};
 async function addMember(){
   const name=newMemberNameInput.value.trim();
   let inviteCode=normalizeInviteCode(newMemberInviteCodeInput.value);
@@ -2883,6 +2838,7 @@ async function addMember(){
       name,
       admin:newMemberAdminCheck.checked,
       kyroMember:newMemberKyroCheck.checked,
+      kyroUserName:newMemberKyroCheck.checked?newMemberKyroNameInput.value.trim():"",
       active:true,
       order,
       inviteCode,
@@ -2896,6 +2852,8 @@ async function addMember(){
     newMemberNameInput.value="";
     newMemberAdminCheck.checked=false;
     newMemberKyroCheck.checked=false;
+    newMemberKyroNameInput.value="";
+    newMemberKyroNameRow.classList.add("hidden");
     newMemberInviteCodeInput.value="";
     const copied=await copyText(buildInviteMessage(addedMember));
     alert(copied?`メンバーを追加し、招待情報をコピーしました。\n招待コード：${inviteCode}`:`メンバーを追加しました。\n招待コード：${inviteCode}`);
