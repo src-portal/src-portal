@@ -1,12 +1,3 @@
-# Ver.1.9.0n
-
-## Ver.1.9.0n - 2026-08-03
-
-- Ver.1.9.0kを基準にFirebase匿名認証を追加。
-- 既存のDOMContentLoaded初期化処理をasync化し、匿名認証完了後にFirestoreを初期化。
-- 認証失敗時は処理を停止し、Firebaseのエラーコードと詳細を表示。
-- 参加管理、KYRO、管理者機能、UI、Firestoreデータ構造は変更なし。
-
 # Ver.1.9.0k
 
 ## Ver.1.9.0k - 2026-08-02
