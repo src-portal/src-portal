@@ -2514,3 +2514,24 @@ body{
 .modal-header-close-button::after{
   z-index:1;
 }
+
+/* Ver.1.8.0i: KYRO personal data paste import */
+.kyro-import-card{max-width:760px}
+.kyro-import-textarea{min-height:210px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.5;white-space:pre}
+.kyro-import-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.kyro-import-summary{margin:12px 0;padding:12px 14px;border:1px solid #cfe0f5;border-radius:14px;background:#f3f7fc;font-weight:700;color:#34435a}
+.kyro-import-preview{display:grid;gap:8px;margin-top:10px}
+.kyro-import-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(90px,1fr) auto auto;gap:8px;align-items:center;padding:10px 12px;border:1px solid #dde5ee;border-radius:12px;background:#fff}
+.kyro-import-row strong{color:#172235}
+.kyro-import-distance{font-variant-numeric:tabular-nums;text-align:right;font-weight:800;color:#1168c5}
+.kyro-import-rank{min-width:3em;text-align:right;font-weight:800;color:#e17616}
+.kyro-import-warning{border-color:#f0cf78;background:#fff9e8}
+.kyro-import-error-row{border-color:#f3b1b1;background:#fff4f4;color:#a92323}
+@media(max-width:520px){
+  .kyro-import-actions{grid-template-columns:1fr}
+  .kyro-import-row{grid-template-columns:1fr auto}
+  .kyro-import-row .kyro-import-name{grid-column:1}
+  .kyro-import-row .kyro-import-user{grid-column:1;color:#637083;font-size:.88rem}
+  .kyro-import-distance{grid-column:2;grid-row:1}
+  .kyro-import-rank{grid-column:2;grid-row:2}
+}
