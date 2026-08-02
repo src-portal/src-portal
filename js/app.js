@@ -80,7 +80,8 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "kyroPageModal",
     "adminKyroModal",
     "adminKyroImportModal",
-    "seasonActivityModal"
+    "seasonActivityModal",
+    "kyroDistanceListModal"
   ].includes(e.id)){
     positionMemberModalBelowHeader(e);
   }
@@ -649,6 +650,35 @@ function memberKyroSummaryHtml(member){
   const previousDateLabel=hasPrevious?previousDateText:"―";
   return `<section class="member-profile-kyro"><div class="member-profile-kyro-title">🗺️ KYRO <span>（SRC-KYRO-Club）</span></div><div class="member-profile-kyro-grid"><div><span>累積走行距離</span><strong>${distance.toFixed(2)} km</strong></div><div><span>前回更新比</span><strong>${escapeHtml(differenceText)}</strong></div><div><span>前回更新日</span><strong>${escapeHtml(previousDateLabel)}</strong></div><div><span>距離順位</span><strong>${escapeHtml(rankText)}</strong></div></div><div class="member-profile-kyro-date">🕒 最終更新：${escapeHtml(dateText)}</div></section>`;
 }
+function renderKyroDistanceList(){
+  if(!kyroDistanceList)return;
+  const activeKyro=memberRecords.filter(member=>member.active!==false&&member.kyroMember);
+  const withData=activeKyro
+    .filter(member=>Number.isFinite(Number(member.kyroDistanceKm)))
+    .sort((a,b)=>Number(b.kyroDistanceKm)-Number(a.kyroDistanceKm)||a.name.localeCompare(b.name,"ja"));
+  const withoutData=activeKyro.filter(member=>!Number.isFinite(Number(member.kyroDistanceKm))).sort((a,b)=>a.name.localeCompare(b.name,"ja"));
+  let previousDistance=null;
+  let rank=0;
+  const rows=withData.map((member,index)=>{
+    const distance=Number(member.kyroDistanceKm);
+    if(previousDistance===null||distance!==previousDistance)rank=index+1;
+    previousDistance=distance;
+    const isCurrent=member.name===currentUser;
+    return `<div class="kyro-distance-row${isCurrent?" is-current":""}"><span class="kyro-distance-rank">${rank}位</span><span class="kyro-distance-member"><strong>${escapeHtml(member.name)}</strong>${member.kyroUserName?`<small>${escapeHtml(member.kyroUserName)}</small>`:""}</span><span class="kyro-distance-value">${distance.toFixed(2)} km</span>${isCurrent?'<span class="kyro-distance-you">あなた</span>':""}</div>`;
+  });
+  const pending=withoutData.map(member=>`<div class="kyro-distance-row is-pending"><span class="kyro-distance-rank">―</span><span class="kyro-distance-member"><strong>${escapeHtml(member.name)}</strong>${member.kyroUserName?`<small>${escapeHtml(member.kyroUserName)}</small>`:""}</span><span class="kyro-distance-value">未更新</span></div>`);
+  kyroDistanceList.innerHTML=[...rows,...pending].join("")||'<div class="kyro-distance-empty">表示できるKYROデータがありません。</div>';
+}
+function openKyroDistanceList(){
+  renderKyroDistanceList();
+  hide(seasonActivityModal);
+  show(kyroDistanceListModal);
+}
+function closeKyroDistanceList(){
+  hide(kyroDistanceListModal);
+  show(seasonActivityModal);
+}
+
 function openMemberProfile(member){
   selectedProfileMember=member;
   const profile=member.profile||{};
@@ -1532,6 +1562,10 @@ const seasonDetailTeamAverage=document.getElementById("seasonDetailTeamAverage")
 const seasonDetailKyroSection=document.getElementById("seasonDetailKyroSection");
 const seasonDetailKyroDistance=document.getElementById("seasonDetailKyroDistance");
 const seasonDetailKyroRank=document.getElementById("seasonDetailKyroRank");
+const seasonDetailKyroRankCard=document.getElementById("seasonDetailKyroRankCard");
+const kyroDistanceListModal=document.getElementById("kyroDistanceListModal");
+const closeKyroDistanceListButton=document.getElementById("closeKyroDistanceListButton");
+const kyroDistanceList=document.getElementById("kyroDistanceList");
 const seasonDetailKyroUpdated=document.getElementById("seasonDetailKyroUpdated");
 const seasonDetailPreviousButton=document.getElementById("seasonDetailPreviousButton");
 const seasonDetailNextButton=document.getElementById("seasonDetailNextButton");
@@ -2976,6 +3010,9 @@ function scrollToBelowHeader(element,extraGap=8){
 }
 
 seasonActivityCard?.addEventListener("click",openSeasonActivityDetail);
+seasonDetailKyroRankCard?.addEventListener("click",openKyroDistanceList);
+closeKyroDistanceListButton?.addEventListener("click",closeKyroDistanceList);
+kyroDistanceListModal?.addEventListener("click",event=>{if(event.target===kyroDistanceListModal)closeKyroDistanceList();});
 closeSeasonActivityModalButton?.addEventListener("click",()=>hide(seasonActivityModal));
 seasonActivityModal?.addEventListener("click",event=>{if(event.target===seasonActivityModal)hide(seasonActivityModal);});
 seasonDetailPreviousButton?.addEventListener("click",()=>{seasonDetailOffset-=1;renderSeasonActivityDetail();});
