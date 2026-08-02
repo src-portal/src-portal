@@ -2760,6 +2760,7 @@ async function saveMemberEdit(memberId,name,admin,active,kyroMember,kyroUserName
       admin,
       active,
       kyroMember,
+      kyroUserName:kyroMember?cleanKyroName:"",
       updatedAt:serverTimestamp()
     });
     alert("メンバー情報を保存しました。");
