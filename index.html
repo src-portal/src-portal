@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0h">
+<link rel="stylesheet" href="css/style.css?v=1.9.0i">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -92,10 +92,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0h</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0i</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/02 1.9.0h JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/02 1.9.0i JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -227,8 +227,9 @@
         <p>翌日に予定がある場合は、「あなたの次回参加予定」の下にリマインダーが表示されます。参加予定のイベントは名称・日時・場所を表示し、未回答のイベントや、ほかのメンバーが参加登録している翌日のジムがある場合は参加登録を案内します。</p>
         <h3>📈 シーズン活動記録</h3>
         <p>上期（4～9月）・下期（10～3月）ごとに、自分のラン＆ウォークとジムの参加回数を確認できます。トップ画面には今期の回数を表示し、カードをタップすると前期との比較やチームの参考値を確認できます。</p>
-        <p>増加した場合は少し強調し、同じ場合は穏やかに表示します。減少した場合は評価せず、回数の事実だけを表示します。個人順位は表示しません。</p>
+        <p>増加した場合は少し強調し、同じ場合は穏やかに表示します。減少した場合は評価せず、回数の事実だけを表示します。ラン＆ウォークとジムの個人順位は表示しません。</p>
         <p>ラン＆ウォークには通常活動・大会・駅伝を含みます。中止イベントと「行けなくなりました」は集計から除外します。ジムは実際に参加登録が残っている日を実績として集計します。</p>
+        <p>KYRO参加者には「KYRO（参考）」として、累積走行距離、前回更新比、前回更新日、現在順位、最終更新日を表示します。KYROはシーズン制ではなく、AI連携で取り込んだ時点の累積データです。「現在順位」をタップすると、KYRO参加者全員の累積走行距離を確認できます。</p>
         <h3>🏋️ ジムの参加・料金</h3>
         <p>ジムは1人から利用できます。参加できる日が決まったら、カレンダーから参加登録してください。3人以上集まった場合は、ジム利用料300円／人をクラブ費から補助します。</p>
         <ul>
@@ -249,6 +250,13 @@
         <p>「👍 いいね」は1人1回押すことができ、もう一度押すと取り消せます。誰が押したかは表示せず、合計数だけを表示します。</p>
         <h3>🗺 SRC-KYRO</h3>
         <p>トップのSRC-KYROカードから、クラブの領土・ランキング・最新ニュース・目標・参加メンバーを確認できます。登録メンバー一覧では、KYROメンバーの名前の横に黄色の「KYRO」バッジが表示されます。</p>
+        <p>メンバー詳細では、KYRO参加者の累積走行距離、前回更新比、前回更新日、距離順位、最終更新日を確認できます。KYRO個人データが未取込の場合は表示されません。</p>
+        <h3>🤖 AI連携（管理者）</h3>
+        <p>管理者メニューの「AI連携」から、KYROメンバー一覧のスクリーンショットをこのAIで読み取るための依頼文をコピーできます。AIが返した「KYROネーム,累積走行距離」のデータを貼り付け、内容を確認してからFirestoreへ反映します。</p>
+        <p>取込前に、メンバー管理でKYRO参加をONにし、KYROネームを登録してください。取込時は未登録名、重複、数値不正、今回のデータに含まれないKYROメンバーを確認できます。順位は累積走行距離の多い順にSRC Portalが自動計算し、同じ距離は同順位になります。</p>
+        <p>更新頻度は自由です。新しい日付で取り込むと、前回の距離と更新日を保存し、前回更新比を自動計算します。同じ取得日で再取込した場合は、前回データとして扱いません。</p>
+        <h3>🔐 招待コードとユーザー設定</h3>
+        <p>初回登録やユーザーの再設定では、管理者から案内された招待コードを入力してください。登録後は同じ端末で通常利用する限り、毎回の入力は不要です。招待コードは本人以外へ共有しないでください。</p>
         <h3>👤 自己紹介</h3>
         <p>登録メンバー一覧で名前をタップすると、そのメンバーの自己紹介を確認できます。自分の自己紹介を開いた場合だけ「自分の自己紹介を編集」ボタンが表示されます。</p>
         <p><strong>必須項目：</strong>ニックネーム、ひとこと<br><strong>任意項目：</strong>所属、趣味・好きなこと、ランニング歴、ベストタイム、現在の目標</p>
@@ -373,7 +381,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0h<br>Official Release<br>2026.08.02</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0i<br>Official Release<br>2026.08.02</strong></p>
       </section>
     </div>
 </div></div>
@@ -872,6 +880,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0h"></script>
+<script type="module" src="js/app.js?v=1.9.0i"></script>
 </body>
 </html>
