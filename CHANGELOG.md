@@ -1,13 +1,3 @@
-# Ver.1.9.0o
-
-## Ver.1.9.0o - 2026-08-03
-
-- Firebase Webアプリ設定のAPIキーをコンソール表示値へ修正
-- Firebase Authentication 10.12.5 の匿名認証を追加
-- 既存のDOMContentLoaded起動処理内で、認証完了後にFirestoreを初期化
-- 認証失敗時にエラーコードと詳細を表示
-- Firestoreデータ構造、既存機能、UIは変更なし
-
 # Ver.1.9.0k
 
 ## Ver.1.9.0k - 2026-08-02
