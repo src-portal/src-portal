@@ -1,10 +1,3 @@
-# Ver.1.9.0p - 2026-08-03
-
-- Firebase Web APIキーをFirebaseコンソールのConfig表示値と一致させました。
-- Firebase Authentication（匿名認証）を追加しました。
-- 既存のDOMContentLoaded処理内で認証完了後にFirestoreを初期化する構成とし、既存機能の起動順を維持しました。
-- 認証失敗時にFirebaseエラーコードを表示するようにしました。
-
 # Ver.1.9.0k
 
 ## Ver.1.9.0k - 2026-08-02
