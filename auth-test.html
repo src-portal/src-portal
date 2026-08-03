@@ -1,75 +1,165 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SRC Portal Auth Test</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-body{
-    font-family: Arial, sans-serif;
-    background:#f5f5f5;
-    text-align:center;
-    margin:40px;
-}
+  <title>SRC Portal 匿名認証テスト</title>
 
-.box{
-    max-width:700px;
-    margin:auto;
-    background:#fff;
-    border-radius:10px;
-    padding:30px;
-    box-shadow:0 0 10px rgba(0,0,0,.15);
-}
+  <style>
+    body {
+      margin: 0;
+      padding: 30px 16px;
+      background: #f5f5f5;
+      color: #111;
+      font-family: Arial, "Yu Gothic", sans-serif;
+    }
 
-button{
-    padding:12px 24px;
-    font-size:16px;
-    cursor:pointer;
-}
+    .box {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 28px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.14);
+    }
 
-pre{
-    text-align:left;
-    background:#eee;
-    padding:15px;
-    border-radius:8px;
-    margin-top:20px;
-    white-space:pre-wrap;
-}
-</style>
+    h1 {
+      margin-top: 0;
+      font-size: 24px;
+      text-align: center;
+    }
 
+    .description {
+      line-height: 1.7;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      max-width: 320px;
+      margin: 24px auto;
+      padding: 14px;
+      border: 0;
+      border-radius: 9px;
+      background: #1267d6;
+      color: #fff;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #999;
+      cursor: default;
+    }
+
+    pre {
+      min-height: 100px;
+      padding: 16px;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      background: #eeeeee;
+      border-radius: 9px;
+      line-height: 1.6;
+    }
+  </style>
 </head>
 
 <body>
+  <main class="box">
+    <h1>SRC Portal 匿名認証テスト</h1>
 
-<div class="box">
+    <p class="description">
+      Firebase Authenticationの匿名認証だけを確認します。<br>
+      FirestoreやSRC Portal本体には接続しません。
+    </p>
 
-<h2>SRC Portal</h2>
+    <button id="testButton" type="button">
+      匿名認証をテスト
+    </button>
 
-<h3>匿名認証テスト（表示確認）</h3>
+    <pre id="result">待機中...</pre>
+  </main>
 
-<p>このページが表示されればGitHub Pagesは正常です。</p>
+  <script>
+    "use strict";
 
-<button onclick="test()">テスト実行</button>
+    const apiKey =
+      "AIzaSyAsqNE9tSB2eIDtHBR8dRSVkzgFD0sKn-c";
 
-<pre id="result">
-待機中...
-</pre>
+    const endpoint =
+      "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key="
+      + encodeURIComponent(apiKey);
 
-</div>
+    const button = document.getElementById("testButton");
+    const result = document.getElementById("result");
 
-<script>
+    async function testAnonymousAuthentication() {
+      button.disabled = true;
+      result.textContent = "Googleの匿名認証APIへ接続中...";
 
-function test(){
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-document.getElementById("result").textContent =
-"表示確認OK\n\n" +
-"このHTMLは正常にGitHub Pagesから実行されています。\n\n" +
-"次の段階でFirebase匿名認証コードを追加します。";
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            returnSecureToken: true
+          }),
+          signal: controller.signal
+        });
 
-}
+        const responseText = await response.text();
 
-</script>
+        let responseData;
 
+        try {
+          responseData = JSON.parse(responseText);
+        } catch {
+          responseData = responseText;
+        }
+
+        if (response.ok) {
+          result.textContent =
+            "成功しました。\n\n"
+            + "HTTPステータス: " + response.status + "\n"
+            + "匿名ユーザーID: "
+            + (responseData.localId || "取得できませんでした");
+
+          return;
+        }
+
+        result.textContent =
+          "失敗しました。\n\n"
+          + "HTTPステータス: " + response.status + "\n\n"
+          + "Googleからの応答:\n"
+          + JSON.stringify(responseData, null, 2);
+
+      } catch (error) {
+        if (error.name === "AbortError") {
+          result.textContent =
+            "失敗しました。\n\n"
+            + "15秒以内に応答がありませんでした。";
+        } else {
+          result.textContent =
+            "通信処理でエラーが発生しました。\n\n"
+            + String(error);
+        }
+      } finally {
+        clearTimeout(timeoutId);
+        button.disabled = false;
+      }
+    }
+
+    button.addEventListener(
+      "click",
+      testAnonymousAuthentication
+    );
+  </script>
 </body>
 </html>
