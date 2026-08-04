@@ -2758,3 +2758,46 @@ body{
   #seasonDetailKyroMemberName{font-size:15px}
   #seasonDetailKyroUserName{font-size:11px}
 }
+
+
+/* Ver.1.9.0zg: KYRO個人見出しを2行化し利用者名を強調 */
+.kyro-page-card .season-detail-kyro-heading{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:center;
+  gap:10px;
+}
+.kyro-page-card .season-detail-kyro-user{
+  width:100%;
+  justify-content:center;
+  gap:10px;
+  white-space:nowrap;
+}
+.kyro-page-card .season-detail-kyro-person{font-size:20px}
+.kyro-page-card #seasonDetailKyroMemberName,
+.kyro-page-card #seasonDetailKyroUserName{
+  font-size:18px;
+  line-height:1.1;
+  font-weight:950;
+  color:#1d4f83;
+  overflow:visible;
+  text-overflow:clip;
+}
+.kyro-page-card .season-detail-kyro-period{
+  display:block;
+  width:100%;
+  text-align:center;
+  font-size:13px;
+  line-height:1.3;
+  font-weight:900;
+  color:#4e7196;
+}
+@media(max-width:390px){
+  .kyro-page-card .season-detail-kyro-heading{gap:8px}
+  .kyro-page-card .season-detail-kyro-user{gap:8px}
+  .kyro-page-card .season-detail-kyro-person{font-size:18px}
+  .kyro-page-card #seasonDetailKyroMemberName,
+  .kyro-page-card #seasonDetailKyroUserName{font-size:17px}
+  .kyro-page-card .season-detail-kyro-period{font-size:12px}
+}
