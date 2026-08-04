@@ -1058,7 +1058,12 @@ function openNextEventInCalendar(){
 function renderNextPlan(){
   nextPlanTarget=null;
   const nextPlanCard=document.getElementById("nextPlanCard");
+  const nextPlanLabel=nextPlanCard?.querySelector(".section-label");
+  const resetNextPlanLabel=()=>{
+    if(nextPlanLabel)nextPlanLabel.textContent="✨ あなたの次回参加予定";
+  };
   if(!currentUser){
+    resetNextPlanLabel();
     nextPlanContent.className="next-plan-empty";
     nextPlanContent.textContent="名前を選択すると表示されます。";
     nextPlanCard?.classList.add("is-empty");
@@ -1098,6 +1103,7 @@ function renderNextPlan(){
   plans.sort((a,b)=>a.key.localeCompare(b.key)||(a.time||"").localeCompare(b.time||""));
 
   if(plans.length===0){
+    resetNextPlanLabel();
     nextPlanContent.className="next-plan-empty";
     nextPlanContent.textContent="参加予定はまだありません。";
     nextPlanCard?.classList.add("is-empty");
@@ -1107,20 +1113,21 @@ function renderNextPlan(){
 
   const p=plans[0];
   nextPlanTarget=p;
+  const isToday=p.key===todayKeyJST();
+  const isTomorrow=p.key===tomorrowKeyJST();
+  if(nextPlanLabel){
+    nextPlanLabel.textContent=isToday
+      ? "📢 今日は参加予定です！"
+      : isTomorrow
+        ? "🔔 明日は参加予定です！"
+        : "✨ あなたの次回参加予定";
+  }
   const label=p.type==="gym"?"🏋️ ジム":`🏃 ${escapeHtml(p.title||"ラン＆ウォーク")}`;
-  const tomorrowReminder=p.key===tomorrowKeyJST()
-    ? (p.type==="gym"
-      ? uiT("reminderGymJoined","明日はジムです")
-      : uiT("reminderJoined",`明日は「${p.title||p.place||"イベント"}」です`).replace("{event}",p.title||p.place||"イベント"))
-    : "";
-  const reminderHtml=tomorrowReminder
-    ? `<span class="next-plan-reminder">🔔 ${escapeHtml(tomorrowReminder)}</span>`
-    : "";
   nextPlanContent.className="next-plan-item next-plan-compact";
-  nextPlanContent.innerHTML=`${reminderHtml}<span class="next-plan-name">${label}</span><span class="next-plan-meta">📅 ${fmt(p.key)}　🕖${escapeHtml(p.time)}　📍${escapeHtml(p.place)}</span>`;
+  nextPlanContent.innerHTML=`<span class="next-plan-name">${label}</span><span class="next-plan-meta">📅 ${fmt(p.key)}　🕖${escapeHtml(p.time)}　📍${escapeHtml(p.place)}</span>`;
   nextPlanCard?.classList.remove("is-empty","is-today","is-tomorrow");
-  if(p.key===todayKeyJST())nextPlanCard?.classList.add("is-today");
-  else if(p.key===tomorrowKeyJST())nextPlanCard?.classList.add("is-tomorrow");
+  if(isToday)nextPlanCard?.classList.add("is-today");
+  else if(isTomorrow)nextPlanCard?.classList.add("is-tomorrow");
 }
 
 function openNextPlanInCalendar(){
