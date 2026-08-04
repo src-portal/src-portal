@@ -1107,8 +1107,16 @@ function renderNextPlan(){
   const p=plans[0];
   nextPlanTarget=p;
   const label=p.type==="gym"?"🏋️ ジム":`🏃 ${escapeHtml(p.title||"ラン＆ウォーク")}`;
+  const tomorrowReminder=p.key===tomorrowKeyJST()
+    ? (p.type==="gym"
+      ? uiT("reminderGymJoined","明日はジムです")
+      : uiT("reminderJoined",`明日は「${p.title||p.place||"イベント"}」です`).replace("{event}",p.title||p.place||"イベント"))
+    : "";
+  const reminderHtml=tomorrowReminder
+    ? `<span class="next-plan-reminder">🔔 ${escapeHtml(tomorrowReminder)}</span>`
+    : "";
   nextPlanContent.className="next-plan-item next-plan-compact";
-  nextPlanContent.innerHTML=`<span class="next-plan-name">${label}</span><span class="next-plan-meta">📅 ${fmt(p.key)}　🕖${escapeHtml(p.time)}　📍${escapeHtml(p.place)}</span>`;
+  nextPlanContent.innerHTML=`${reminderHtml}<span class="next-plan-name">${label}</span><span class="next-plan-meta">📅 ${fmt(p.key)}　🕖${escapeHtml(p.time)}　📍${escapeHtml(p.place)}</span>`;
   nextPlanCard?.classList.remove("is-empty");
 }
 
@@ -1152,25 +1160,18 @@ function renderReminder(){
   const runParticipants=getNames("run",key);
   const gymParticipants=getNames("gym",key);
 
-  if(runEvent){
+  if(runEvent&&!runParticipants.includes(currentUser)){
     const eventName=runEvent.title||runEvent.place||uiT("eventGeneric","イベント");
     const time=runEvent.time||systemSettings.run.time;
     const place=runEvent.place||systemSettings.run.place;
-    const title=runParticipants.includes(currentUser)
-      ? uiT("reminderJoined",`明日は「${eventName}」です`).replace("{event}",eventName)
-      : uiT("reminderUnanswered",`明日の「${eventName}」への参加をまだ登録していません`).replace("{event}",eventName);
+    const title=uiT("reminderUnanswered",`明日の「${eventName}」への参加をまだ登録していません`).replace("{event}",eventName);
     items.push({
       time,
       html:`<div class="reminder-title">🔔 ${escapeHtml(title)}</div><div class="reminder-detail">📅 ${escapeHtml(reminderDateLabel(key))}　🕖 ${escapeHtml(time)}</div><div class="reminder-detail">📍 ${escapeHtml(place)}</div>`
     });
   }
 
-  if(gymParticipants.includes(currentUser)){
-    items.push({
-      time:systemSettings.gym.time,
-      html:`<div class="reminder-title">🔔 ${escapeHtml(uiT("reminderGymJoined","明日はジムです"))}</div><div class="reminder-detail">📅 ${escapeHtml(reminderDateLabel(key))}　🕖 ${escapeHtml(systemSettings.gym.time)}</div><div class="reminder-detail">📍 ${escapeHtml(systemSettings.gym.place)}</div>`
-    });
-  }else if(gymParticipants.length>0){
+  if(!gymParticipants.includes(currentUser)&&gymParticipants.length>0){
     const participantText=uiT("participantsPlanned",`{count}名参加予定`).replace("{count}",String(gymParticipants.length));
     items.push({
       time:systemSettings.gym.time,
