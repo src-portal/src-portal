@@ -2726,3 +2726,22 @@ body{
   border:1px solid rgba(224,120,35,.5);
 }
 .next-card.is-today .section-label{color:#b45309}
+
+/* Ver.1.9.0ze: KYRO情報集約・メンバーカード導線 */
+.kyro-stats-grid>.kyro-stat-card{
+  padding:13px;
+  border:1px solid #e0e6ed;
+  border-radius:15px;
+  background:#fff;
+}
+.kyro-stats-grid>.kyro-stat-card-button{
+  width:100%;
+  text-align:left;
+  font:inherit;
+  cursor:pointer;
+  appearance:none;
+  -webkit-appearance:none;
+}
+.kyro-stats-grid>.kyro-stat-card-button:active{transform:scale(.985)}
+.kyro-stats-grid>.kyro-stat-card-button:focus-visible{outline:3px solid rgba(23,115,230,.25);outline-offset:2px}
+.kyro-page-card .season-detail-kyro{margin-top:12px}
