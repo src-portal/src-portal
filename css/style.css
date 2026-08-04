@@ -2549,7 +2549,7 @@ body{
 .member-profile-kyro-title{font-size:15px;font-weight:950;color:#1f3347;margin-bottom:11px}.member-profile-kyro-title span{font-size:11px;color:#68798c;font-weight:800}
 .member-profile-kyro-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.member-profile-kyro-grid>div{padding:10px;border-radius:12px;background:rgba(255,255,255,.78);border:1px solid #f1e1b8}
 .member-profile-kyro-grid span{display:block;font-size:11px;color:#6b7888;font-weight:850;margin-bottom:4px}.member-profile-kyro-grid strong{display:block;font-size:20px;color:#1f2d3d}
-.member-profile-kyro-date{margin-top:9px;font-size:11px;color:#6c7988;font-weight:800;text-align:right}
+.member-profile-kyro-date{margin-top:9px;color:#6c7988;text-align:right}.member-profile-kyro-date span{display:block;font-size:11px;font-weight:800}.member-profile-kyro-date strong{display:block;margin-top:2px;font-size:12px;font-weight:850;color:#23364d}
 .season-detail-kyro{margin-top:13px;padding:13px;border-radius:16px;background:linear-gradient(135deg,#fffdf7,#fff8e8);border:1px solid #efd28a;color:#405369}
 .season-detail-kyro-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:9px;border-bottom:1px solid #ead9ad}.season-detail-kyro-heading strong{font-size:15px;color:#23384c}.season-detail-kyro-heading span{font-size:10px;color:#7b7461;font-weight:800}
 .season-detail-kyro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:10px}.season-detail-kyro-grid>div{padding:4px 9px;text-align:center;border-right:1px solid #ead9ad}.season-detail-kyro-grid>div:last-child{border-right:0}
@@ -2694,7 +2694,7 @@ body{
 .season-detail-kyro-rank-card:active{transform:scale(.985)}
 .season-detail-kyro-rank-card:focus-visible{outline:3px solid rgba(23,115,230,.28);outline-offset:2px}
 .kyro-distance-list-modal-card{width:min(94vw,620px);max-height:calc(100dvh - 34px);overflow:auto}
-.kyro-distance-list-note{margin:0 0 12px;color:#65758a;font-size:13px;line-height:1.55;font-weight:750}
+.kyro-distance-list-note{margin:0;color:#65758a;font-size:13px;line-height:1.55;font-weight:750}.kyro-distance-list-updated{margin:8px 0 14px;text-align:right;color:#6c7988}.kyro-distance-list-updated span{display:block;font-size:11px;font-weight:800}.kyro-distance-list-updated strong{display:block;margin-top:2px;font-size:13px;font-weight:850;color:#23364d}
 .kyro-distance-list{display:grid;gap:8px}
 .kyro-distance-row{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 13px;border:1px solid #dbe5ef;border-radius:14px;background:#fff}
 .kyro-distance-row.is-current{border-color:#2d83dc;background:#eaf4ff;box-shadow:0 0 0 2px rgba(45,131,220,.10)}
