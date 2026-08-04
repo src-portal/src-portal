@@ -2711,3 +2711,16 @@ body{
   .kyro-distance-row{grid-template-columns:40px minmax(0,1fr) auto;padding:11px 10px;gap:8px}
   .kyro-distance-value{font-size:14px}
 }
+
+
+/* Ver.1.9.0u: next-plan urgency colors */
+.next-card.is-tomorrow .next-plan-item{
+  background:#fff4d6;
+  border:1px solid rgba(240,180,41,.55);
+}
+.next-card.is-tomorrow .section-label{color:#9a6400}
+.next-card.is-today .next-plan-item{
+  background:#ffead8;
+  border:1px solid rgba(224,120,35,.5);
+}
+.next-card.is-today .section-label{color:#b45309}
