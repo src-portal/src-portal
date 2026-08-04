@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0zd">
+<link rel="stylesheet" href="css/style.css?v=1.9.0ze">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -123,10 +123,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zd</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0ze</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/04 1.9.0zd JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/05 1.9.0ze JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -168,21 +168,10 @@
       <span>👥 参加したメンバー <strong id="seasonDetailTeamMembers">--人</strong></span>
       <span>平均参加回数 <strong id="seasonDetailTeamAverage">--回</strong></span>
     </div>
-    <section class="season-detail-kyro hidden" id="seasonDetailKyroSection">
-      <div class="season-detail-kyro-heading"><strong><span class="season-detail-kyro-badge">KYRO</span><span class="season-detail-kyro-reference">（参考）</span></strong><span>※ シーズン制ではありません</span></div>
-      <div class="season-detail-kyro-grid">
-        <div><span>🏃 累積走行距離</span><strong id="seasonDetailKyroDistance">-- km</strong></div>
-        <div><span>📈 前回更新比</span><strong id="seasonDetailKyroDifference">-- km</strong></div>
-        <div><span>📅 前回更新日</span><strong id="seasonDetailKyroPreviousDate">----</strong></div>
-        <button class="season-detail-kyro-rank-card" id="seasonDetailKyroRankCard" type="button" aria-label="KYRO累積走行距離一覧を表示"><span>🏆 現在順位</span><strong id="seasonDetailKyroRank">--位</strong><small>全員の距離を見る ›</small></button>
-        <div><span>🕒 最終更新</span><strong id="seasonDetailKyroUpdated">----</strong></div>
-      </div>
-    </section>
     <div class="season-detail-rules">
       <strong>💡 集計ルール</strong>
       <p>ラン：ラン＆ウォーク・大会・駅伝の参加実績</p>
       <p>ジム：実際に参加した日の実績</p>
-      <p>KYRO：累積走行距離・前回更新比・現在順位を表示（シーズン制ではありません）</p>
       <p>シーズン：上期（4～9月）／下期（10～3月）</p>
     </div>
   </div>
@@ -281,7 +270,7 @@
         <p>投稿項目はカテゴリ、タイトル、おすすめコメント、場所（任意）、リンク（任意）です。投稿者名と投稿日は自動表示され、写真は使用しません。自分の投稿は編集・削除でき、管理者はすべての投稿を削除できます。</p>
         <p>「👍 いいね」は1人1回押すことができ、もう一度押すと取り消せます。誰が押したかは表示せず、合計数だけを表示します。</p>
         <h3>🗺 SRC-KYRO</h3>
-        <p>トップのSRC-KYROカードから、クラブの領土・ランキング・最新ニュース・目標・参加メンバーを確認できます。登録メンバー一覧では、KYROメンバーの名前の横に黄色の「KYRO」バッジが表示されます。</p>
+        <p>トップのSRC-KYROカードから、クラブの領土・ランキング・最新ニュース・目標・自分の累積走行距離を確認できます。登録メンバー一覧では、KYROメンバーの名前の横に黄色の「KYRO」バッジが表示されます。</p>
         <p>メンバー詳細では、KYRO参加者の累積走行距離、前回更新比、前回更新日、距離順位、最終更新日を確認できます。KYRO個人データが未取込の場合は表示されません。</p>
         <h3>🤖 AI連携（管理者）</h3>
         <p>管理者メニューの「AI連携」から、KYROメンバー一覧のスクリーンショットをこのAIで読み取るための依頼文をコピーできます。AIが返した「KYROネーム,累積走行距離」のデータを貼り付け、内容を確認してからFirestoreへ反映します。</p>
@@ -423,7 +412,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0zd<br>Official Release<br>2026.08.04</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0ze<br>Official Release<br>2026.08.05</strong></p>
       </section>
     </div>
 </div></div>
@@ -642,14 +631,23 @@
     <div class="dialog-header"><h2>🗺 SRC-KYRO-Club</h2><button class="modal-header-close-button" id="closeKyroPageButton" type="button" aria-label="閉じる"></button></div>
     <p class="kyro-updated" id="kyroUpdatedAt"></p>
     <div class="kyro-stats-grid">
-      <div><span>👥 メンバー</span><strong id="kyroMemberCount">--</strong></div>
-      <div><span>🗺 領土</span><strong id="kyroArea">--</strong></div>
-      <div><span>🏆 全国順位</span><strong id="kyroJapanRank">--</strong></div>
-      <div><span>🏅 愛知県順位</span><strong id="kyroAichiRank">--</strong></div>
+      <button class="kyro-stat-card kyro-stat-card-button" id="kyroMemberCountButton" type="button" aria-label="KYRO累積走行距離一覧を表示"><span>👥 メンバー</span><strong id="kyroMemberCount">--</strong></button>
+      <div class="kyro-stat-card"><span>🗺 領土</span><strong id="kyroArea">--</strong></div>
+      <div class="kyro-stat-card"><span>🏆 全国順位</span><strong id="kyroJapanRank">--</strong></div>
+      <div class="kyro-stat-card"><span>🏅 愛知県順位</span><strong id="kyroAichiRank">--</strong></div>
     </div>
     <section class="kyro-info-section"><h3>📢 最新ニュース</h3><p id="kyroNews">未登録です。</p></section>
     <section class="kyro-info-section"><h3>🎯 次の目標</h3><p id="kyroGoal">未登録です。</p></section>
-    <section class="kyro-info-section"><h3>👥 KYRO参加メンバー</h3><div id="kyroMemberList" class="kyro-member-list"></div></section>
+    <section class="season-detail-kyro hidden" id="seasonDetailKyroSection">
+      <div class="season-detail-kyro-heading"><strong><span class="season-detail-kyro-badge">KYRO</span><span class="season-detail-kyro-reference">（参考）</span></strong><span>2026/05/01からの累計</span></div>
+      <div class="season-detail-kyro-grid">
+        <div><span>🏃 累積走行距離</span><strong id="seasonDetailKyroDistance">-- km</strong></div>
+        <div><span>📈 前回更新比</span><strong id="seasonDetailKyroDifference">-- km</strong></div>
+        <div><span>📅 前回更新日</span><strong id="seasonDetailKyroPreviousDate">----</strong></div>
+        <button class="season-detail-kyro-rank-card" id="seasonDetailKyroRankCard" type="button" aria-label="KYRO累積走行距離一覧を表示"><span>🏆 現在順位</span><strong id="seasonDetailKyroRank">--位</strong><small>全員の距離を見る ›</small></button>
+        <div><span>🕒 最終更新</span><strong id="seasonDetailKyroUpdated">----</strong></div>
+      </div>
+    </section>
   </div>
 </div>
 
@@ -922,6 +920,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0zd"></script>
+<script type="module" src="js/app.js?v=1.9.0ze"></script>
 </body>
 </html>
