@@ -2694,7 +2694,7 @@ body{
 .season-detail-kyro-rank-card:active{transform:scale(.985)}
 .season-detail-kyro-rank-card:focus-visible{outline:3px solid rgba(23,115,230,.28);outline-offset:2px}
 .kyro-distance-list-modal-card{width:min(94vw,620px);max-height:calc(100dvh - 34px);overflow:auto}
-.kyro-distance-list-note{margin:0;color:#65758a;font-size:13px;line-height:1.55;font-weight:750}.kyro-distance-list-updated{margin:4px 0 14px;color:#6c7988;font-size:12px;line-height:1.55;font-weight:800}.kyro-distance-list-updated strong{font-size:12px;font-weight:850;color:#23364d}
+.kyro-distance-list-note{margin:0;color:#65758a;font-size:13px;line-height:1.55;font-weight:750}.kyro-distance-list-updated{margin:4px 0 14px;color:#6c7988;font-size:12px;line-height:1.55;font-weight:800;text-align:center}.kyro-distance-list-updated strong{font-size:12px;font-weight:850;color:#23364d}
 .kyro-distance-list{display:grid;gap:8px}
 .kyro-distance-row{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 13px;border:1px solid #dbe5ef;border-radius:14px;background:#fff}
 .kyro-distance-row.is-current{border-color:#2d83dc;background:#eaf4ff;box-shadow:0 0 0 2px rgba(45,131,220,.10)}
