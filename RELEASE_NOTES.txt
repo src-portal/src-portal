@@ -1,3 +1,8 @@
+[Ver.1.9.0zc]
+- KYRO累積走行距離画面を3行表示へ調整
+- 「🕒 最終更新：YYYY/MM/DD HH:mm」を説明文直下に1行表示
+- KYRO集計・順位・Firebase・Firestoreは変更なし
+
 [Ver.1.9.0zb]
 - KYRO累積走行距離一覧に最終更新日時を追加
 - KYRO最終更新を YYYY/MM/DD HH:mm 表示へ統一
