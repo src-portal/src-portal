@@ -259,6 +259,7 @@ onSnapshot(collection(db,"members"),snap=>{
         kyroDistanceKm:Number.isFinite(Number(data.kyroDistanceKm))?Number(data.kyroDistanceKm):null,
         kyroDistanceRank:Number.isFinite(Number(data.kyroDistanceRank))?Number(data.kyroDistanceRank):null,
         kyroDataDate:data.kyroDataDate||"",
+        kyroDataUpdatedAt:data.kyroDataUpdatedAt||null,
         kyroPreviousDistanceKm:Number.isFinite(Number(data.kyroPreviousDistanceKm))?Number(data.kyroPreviousDistanceKm):null,
         kyroPreviousDataDate:data.kyroPreviousDataDate||"",
         active:data.active!==false,
@@ -659,6 +660,23 @@ function kyroDataDateLabel(value){
   const match=raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   return match?`${match[1]}/${match[2]}/${match[3]}`:raw.replaceAll("-","/");
 }
+function kyroUpdatedDateTimeLabel(value,fallbackDate=""){
+  const date=value?.toDate?.()||null;
+  if(date instanceof Date&&!Number.isNaN(date.getTime())){
+    return `${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+  }
+  const fallback=kyroDataDateLabel(fallbackDate);
+  return fallback?`${fallback} --:--`:"未登録";
+}
+function latestKyroUpdatedDateTimeLabel(){
+  const latest=memberRecords
+    .map(member=>member.kyroDataUpdatedAt?.toDate?.()||null)
+    .filter(date=>date instanceof Date&&!Number.isNaN(date.getTime()))
+    .sort((a,b)=>b.getTime()-a.getTime())[0];
+  if(latest)return `${latest.getFullYear()}/${pad2(latest.getMonth()+1)}/${pad2(latest.getDate())} ${pad2(latest.getHours())}:${pad2(latest.getMinutes())}`;
+  const fallback=memberRecords.find(member=>member.kyroDataDate)?.kyroDataDate||"";
+  return fallback?`${kyroDataDateLabel(fallback)} --:--`:"未登録";
+}
 function kyroDataMemberCount(){
   return memberRecords.filter(member=>member.active!==false&&member.kyroMember&&Number.isFinite(Number(member.kyroDistanceKm))).length;
 }
@@ -668,17 +686,19 @@ function memberKyroSummaryHtml(member){
   if(!member?.kyroMember||!Number.isFinite(distance))return "";
   const memberCount=kyroDataMemberCount();
   const rankText=Number.isFinite(rank)&&rank>0?`${rank}位${memberCount>0?` / ${memberCount}人`:""}`:"未集計";
-  const dateText=kyroDataDateLabel(member.kyroDataDate)||"未登録";
+  const dateText=kyroUpdatedDateTimeLabel(member.kyroDataUpdatedAt,member.kyroDataDate);
   const previousDistance=Number(member?.kyroPreviousDistanceKm);
   const previousDateText=kyroDataDateLabel(member?.kyroPreviousDataDate);
   const hasPrevious=Number.isFinite(previousDistance)&&!!previousDateText;
   const difference=hasPrevious?distance-previousDistance:null;
   const differenceText=hasPrevious?`${difference>=0?"+":""}${difference.toFixed(2)} km`:"初回データ";
   const previousDateLabel=hasPrevious?previousDateText:"―";
-  return `<section class="member-profile-kyro"><div class="member-profile-kyro-title">🗺️ KYRO <span>（SRC-KYRO-Club）</span></div><div class="member-profile-kyro-grid"><div><span>累積走行距離</span><strong>${distance.toFixed(2)} km</strong></div><div><span>前回更新比</span><strong>${escapeHtml(differenceText)}</strong></div><div><span>前回更新日</span><strong>${escapeHtml(previousDateLabel)}</strong></div><div><span>距離順位</span><strong>${escapeHtml(rankText)}</strong></div></div><div class="member-profile-kyro-date">🕒 最終更新：${escapeHtml(dateText)}</div></section>`;
+  return `<section class="member-profile-kyro"><div class="member-profile-kyro-title">🗺️ KYRO <span>（SRC-KYRO-Club）</span></div><div class="member-profile-kyro-grid"><div><span>累積走行距離</span><strong>${distance.toFixed(2)} km</strong></div><div><span>前回更新比</span><strong>${escapeHtml(differenceText)}</strong></div><div><span>前回更新日</span><strong>${escapeHtml(previousDateLabel)}</strong></div><div><span>距離順位</span><strong>${escapeHtml(rankText)}</strong></div></div><div class="member-profile-kyro-date"><span>🕒 最終更新</span><strong>${escapeHtml(dateText)}</strong></div></section>`;
 }
 function renderKyroDistanceList(){
   if(!kyroDistanceList)return;
+  const kyroDistanceUpdated=document.getElementById("kyroDistanceUpdated");
+  if(kyroDistanceUpdated)kyroDistanceUpdated.textContent=latestKyroUpdatedDateTimeLabel();
   const activeKyro=memberRecords.filter(member=>member.active!==false&&member.kyroMember);
   const withData=activeKyro
     .filter(member=>Number.isFinite(Number(member.kyroDistanceKm)))
@@ -2084,7 +2104,7 @@ function renderSeasonActivityDetail(){
     seasonDetailKyroDifference.textContent=hasPrevious?`${difference>=0?"+":""}${difference.toFixed(2)} km`:"初回データ";
     seasonDetailKyroPreviousDate.textContent=hasPrevious?previousDateText:"―";
     seasonDetailKyroRank.textContent=Number.isFinite(rank)&&rank>0?`${rank}位${memberCount>0?` / ${memberCount}人`:""}`:"未集計";
-    seasonDetailKyroUpdated.textContent=kyroDataDateLabel(member.kyroDataDate)||"未登録";
+    seasonDetailKyroUpdated.textContent=kyroUpdatedDateTimeLabel(member.kyroDataUpdatedAt,member.kyroDataDate);
   }
   seasonDetailNextButton.disabled=seasonDetailOffset>=0;
 }
