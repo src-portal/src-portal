@@ -27,8 +27,8 @@ function finishStartupSplash(){
 window.setTimeout(()=>{
   if(!splashScreen){finishStartupSplash();return;}
   splashScreen.classList.add("is-hiding");
-  window.setTimeout(finishStartupSplash,220);
-},1600);
+  window.setTimeout(finishStartupSplash,420);
+},2400);
 
 const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),reminderCard=$("reminderCard"),reminderContent=$("reminderContent"),nextEventContent=$("nextEventContent"),nextEventCard=$("nextEventCard"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
 userChangeConfirmModal=$("userChangeConfirmModal"),
