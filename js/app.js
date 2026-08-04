@@ -4,7 +4,33 @@ import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, arrayUnion, a
 
 const firebaseConfig={apiKey:"AIzaSyAd4Uv89V4hZQyjYaR7MfalE8Oyp8ioAbc",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
-document.addEventListener("DOMContentLoaded",async()=>{const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),reminderCard=$("reminderCard"),reminderContent=$("reminderContent"),nextEventContent=$("nextEventContent"),nextEventCard=$("nextEventCard"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
+document.addEventListener("DOMContentLoaded",async()=>{
+const splashScreen=document.getElementById("startupSplash");
+let splashFinished=false;
+const pendingDashboardAnimations=new Map();
+
+function flushPendingDashboardAnimations(){
+  if(!pendingDashboardAnimations.size)return;
+  const pending=[...pendingDashboardAnimations.entries()];
+  pendingDashboardAnimations.clear();
+  pending.forEach(([element,{target,suffix}])=>animateDashboardNumber(element,target,suffix));
+}
+
+function finishStartupSplash(){
+  if(splashFinished)return;
+  splashFinished=true;
+  document.body.classList.remove("splash-active");
+  splashScreen?.remove();
+  flushPendingDashboardAnimations();
+}
+
+window.setTimeout(()=>{
+  if(!splashScreen){finishStartupSplash();return;}
+  splashScreen.classList.add("is-hiding");
+  window.setTimeout(finishStartupSplash,220);
+},800);
+
+const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),reminderCard=$("reminderCard"),reminderContent=$("reminderContent"),nextEventContent=$("nextEventContent"),nextEventCard=$("nextEventCard"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
 userChangeConfirmModal=$("userChangeConfirmModal"),
 cancelUserChangeButton=$("cancelUserChangeButton"),
 confirmUserChangeButton=$("confirmUserChangeButton"),
@@ -861,12 +887,18 @@ function animateDashboardNumber(element,target,suffix){
     return;
   }
 
+  if(!splashFinished){
+    pendingDashboardAnimations.set(element,{target:endValue,suffix});
+    element.textContent=`0${suffix}`;
+    return;
+  }
+
   if(dashboardAnimationState.get(element.id)===endValue){
     element.textContent=finalText;
     return;
   }
 
-  const duration=1000;
+  const duration=2000;
   const startTime=performance.now();
 
   function update(now){
