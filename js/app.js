@@ -1101,6 +1101,7 @@ function renderNextPlan(){
     nextPlanContent.className="next-plan-empty";
     nextPlanContent.textContent="参加予定はまだありません。";
     nextPlanCard?.classList.add("is-empty");
+    nextPlanCard?.classList.remove("is-today","is-tomorrow");
     return;
   }
 
@@ -1117,7 +1118,9 @@ function renderNextPlan(){
     : "";
   nextPlanContent.className="next-plan-item next-plan-compact";
   nextPlanContent.innerHTML=`${reminderHtml}<span class="next-plan-name">${label}</span><span class="next-plan-meta">📅 ${fmt(p.key)}　🕖${escapeHtml(p.time)}　📍${escapeHtml(p.place)}</span>`;
-  nextPlanCard?.classList.remove("is-empty");
+  nextPlanCard?.classList.remove("is-empty","is-today","is-tomorrow");
+  if(p.key===todayKeyJST())nextPlanCard?.classList.add("is-today");
+  else if(p.key===tomorrowKeyJST())nextPlanCard?.classList.add("is-tomorrow");
 }
 
 function openNextPlanInCalendar(){
