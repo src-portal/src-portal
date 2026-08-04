@@ -2745,3 +2745,16 @@ body{
 .kyro-stats-grid>.kyro-stat-card-button:active{transform:scale(.985)}
 .kyro-stats-grid>.kyro-stat-card-button:focus-visible{outline:3px solid rgba(23,115,230,.25);outline-offset:2px}
 .kyro-page-card .season-detail-kyro{margin-top:12px}
+
+
+/* Ver.1.9.0zf: SRC-KYRO個人記録の利用者表示 */
+.season-detail-kyro-user{display:flex;align-items:center;gap:7px;min-width:0;white-space:nowrap}
+.season-detail-kyro-person{font-size:18px;line-height:1}
+#seasonDetailKyroMemberName{font-weight:900;color:#1d4f83}
+#seasonDetailKyroUserName{font-size:13px;color:#4e7196;font-weight:800;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:390px){
+  .season-detail-kyro-user{gap:5px}
+  .season-detail-kyro-person{font-size:16px}
+  #seasonDetailKyroMemberName{font-size:15px}
+  #seasonDetailKyroUserName{font-size:11px}
+}
