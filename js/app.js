@@ -718,12 +718,12 @@ function renderKyroDistanceList(){
 }
 function openKyroDistanceList(){
   renderKyroDistanceList();
-  hide(seasonActivityModal);
+  hide(kyroPageModal);
   show(kyroDistanceListModal);
 }
 function closeKyroDistanceList(){
   hide(kyroDistanceListModal);
-  show(seasonActivityModal);
+  show(kyroPageModal);
 }
 
 function openMemberProfile(member){
@@ -783,6 +783,24 @@ function kyroUpdatedLabel(value){
   if(Number.isNaN(date.getTime()))return "";
   return `🕒 最終更新：${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
 }
+function renderCurrentUserKyroSummary(){
+  const member=currentMemberRecord();
+  const kyroDistance=Number(member?.kyroDistanceKm);
+  const hasKyroData=!!(member?.kyroMember&&Number.isFinite(kyroDistance));
+  seasonDetailKyroSection?.classList.toggle("hidden",!hasKyroData);
+  if(!hasKyroData)return;
+  const rank=Number(member.kyroDistanceRank);
+  const memberCount=kyroDataMemberCount();
+  const previousDistance=Number(member.kyroPreviousDistanceKm);
+  const previousDateText=kyroDataDateLabel(member.kyroPreviousDataDate);
+  const hasPrevious=Number.isFinite(previousDistance)&&!!previousDateText;
+  const difference=hasPrevious?kyroDistance-previousDistance:null;
+  seasonDetailKyroDistance.textContent=`${kyroDistance.toFixed(2)} km`;
+  seasonDetailKyroDifference.textContent=hasPrevious?`${difference>=0?"+":""}${difference.toFixed(2)} km`:"初回データ";
+  seasonDetailKyroPreviousDate.textContent=hasPrevious?previousDateText:"―";
+  seasonDetailKyroRank.textContent=Number.isFinite(rank)&&rank>0?`${rank}位${memberCount>0?` / ${memberCount}人`:""}`:"未集計";
+  seasonDetailKyroUpdated.textContent=kyroUpdatedDateTimeLabel(member.kyroDataUpdatedAt,member.kyroDataDate);
+}
 function renderKyroPublic(){
   const kyroMembers=memberRecords.filter(member=>member.active!==false&&member.kyroMember);
   if(kyroMemberCount)kyroMemberCount.textContent=`${kyroMembers.length}名`;
@@ -791,9 +809,7 @@ function renderKyroPublic(){
   if(kyroAichiRank)kyroAichiRank.textContent=kyroInfo.aichiRank||"未登録";
   if(kyroNews)kyroNews.textContent=kyroInfo.news||"未登録です。";
   if(kyroGoal)kyroGoal.textContent=kyroInfo.goal||"未登録です。";
-  if(kyroMemberList){
-    kyroMemberList.innerHTML=kyroMembers.length?kyroMembers.map(member=>`<span>${escapeHtml(member.name)} <span class="kyro-badge">KYRO</span></span>`).join(""):'<span class="kyro-empty">KYROメンバーは未登録です。</span>';
-  }
+  renderCurrentUserKyroSummary();
   if(kyroUpdatedAt)kyroUpdatedAt.textContent=kyroUpdatedLabel(kyroInfo.updatedAt);
   if(kyroMiniStatus){
     const parts=[];
@@ -1665,6 +1681,7 @@ const kyroMiniStatus=document.getElementById("kyroMiniStatus");
 const kyroPageModal=document.getElementById("kyroPageModal");
 const closeKyroPageButton=document.getElementById("closeKyroPageButton");
 const kyroMemberCount=document.getElementById("kyroMemberCount");
+const kyroMemberCountButton=document.getElementById("kyroMemberCountButton");
 const kyroArea=document.getElementById("kyroArea");
 const kyroJapanRank=document.getElementById("kyroJapanRank");
 const kyroAichiRank=document.getElementById("kyroAichiRank");
@@ -2089,23 +2106,6 @@ function renderSeasonActivityDetail(){
   applySeasonComparison(seasonDetailGymDifference,seasonDetailGymMessage,currentStats.gymCount,previousStats.gymCount);
   seasonDetailTeamMembers.textContent=`${currentStats.teamMembers}人`;
   seasonDetailTeamAverage.textContent=`${currentStats.teamAverage.toFixed(1)}回`;
-  const member=currentMemberRecord();
-  const kyroDistance=Number(member?.kyroDistanceKm);
-  const hasKyroData=!!(member?.kyroMember&&Number.isFinite(kyroDistance));
-  seasonDetailKyroSection?.classList.toggle("hidden",!hasKyroData);
-  if(hasKyroData){
-    const rank=Number(member.kyroDistanceRank);
-    const memberCount=kyroDataMemberCount();
-    const previousDistance=Number(member.kyroPreviousDistanceKm);
-    const previousDateText=kyroDataDateLabel(member.kyroPreviousDataDate);
-    const hasPrevious=Number.isFinite(previousDistance)&&!!previousDateText;
-    const difference=hasPrevious?kyroDistance-previousDistance:null;
-    seasonDetailKyroDistance.textContent=`${kyroDistance.toFixed(2)} km`;
-    seasonDetailKyroDifference.textContent=hasPrevious?`${difference>=0?"+":""}${difference.toFixed(2)} km`:"初回データ";
-    seasonDetailKyroPreviousDate.textContent=hasPrevious?previousDateText:"―";
-    seasonDetailKyroRank.textContent=Number.isFinite(rank)&&rank>0?`${rank}位${memberCount>0?` / ${memberCount}人`:""}`:"未集計";
-    seasonDetailKyroUpdated.textContent=kyroUpdatedDateTimeLabel(member.kyroDataUpdatedAt,member.kyroDataDate);
-  }
   seasonDetailNextButton.disabled=seasonDetailOffset>=0;
 }
 
@@ -3075,6 +3075,7 @@ function scrollToBelowHeader(element,extraGap=8){
 
 seasonActivityCard?.addEventListener("click",openSeasonActivityDetail);
 seasonDetailKyroRankCard?.addEventListener("click",openKyroDistanceList);
+kyroMemberCountButton?.addEventListener("click",openKyroDistanceList);
 closeKyroDistanceListButton?.addEventListener("click",closeKyroDistanceList);
 kyroDistanceListModal?.addEventListener("click",event=>{if(event.target===kyroDistanceListModal)closeKyroDistanceList();});
 closeSeasonActivityModalButton?.addEventListener("click",()=>hide(seasonActivityModal));
