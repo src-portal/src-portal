@@ -795,6 +795,8 @@ function renderCurrentUserKyroSummary(){
   const previousDateText=kyroDataDateLabel(member.kyroPreviousDataDate);
   const hasPrevious=Number.isFinite(previousDistance)&&!!previousDateText;
   const difference=hasPrevious?kyroDistance-previousDistance:null;
+  if(seasonDetailKyroMemberName)seasonDetailKyroMemberName.textContent=member.name||"--";
+  if(seasonDetailKyroUserName)seasonDetailKyroUserName.textContent=member.kyroUserName||"--";
   seasonDetailKyroDistance.textContent=`${kyroDistance.toFixed(2)} km`;
   seasonDetailKyroDifference.textContent=hasPrevious?`${difference>=0?"+":""}${difference.toFixed(2)} km`:"初回データ";
   seasonDetailKyroPreviousDate.textContent=hasPrevious?previousDateText:"―";
@@ -1640,6 +1642,8 @@ const seasonDetailGymMessage=document.getElementById("seasonDetailGymMessage");
 const seasonDetailTeamMembers=document.getElementById("seasonDetailTeamMembers");
 const seasonDetailTeamAverage=document.getElementById("seasonDetailTeamAverage");
 const seasonDetailKyroSection=document.getElementById("seasonDetailKyroSection");
+const seasonDetailKyroMemberName=document.getElementById("seasonDetailKyroMemberName");
+const seasonDetailKyroUserName=document.getElementById("seasonDetailKyroUserName");
 const seasonDetailKyroDistance=document.getElementById("seasonDetailKyroDistance");
 const seasonDetailKyroRank=document.getElementById("seasonDetailKyroRank");
 const seasonDetailKyroRankCard=document.getElementById("seasonDetailKyroRankCard");
