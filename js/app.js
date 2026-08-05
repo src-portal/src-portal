@@ -784,7 +784,7 @@ function kyroUpdatedLabel(value){
   if(!value)return "";
   const date=value.toDate?value.toDate():new Date(value);
   if(Number.isNaN(date.getTime()))return "";
-  return `🕒 最終更新：${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+  return `🕒 クラブ更新　${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
 }
 function kyroMiniUpdatedLabel(value){
   if(!value)return "🕒 未更新";
