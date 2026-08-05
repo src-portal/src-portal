@@ -2806,3 +2806,31 @@ body{
   .kyro-page-card #seasonDetailKyroUserName{font-size:17px}
   .kyro-page-card .season-detail-kyro-period{font-size:12px}
 }
+
+
+/* Ver.1.9.0zj: クラブ・個人の更新日時を統一し個人最終更新カードを廃止 */
+.kyro-page-card .kyro-updated,
+.kyro-page-card .kyro-update-line{
+  font-size:14px;
+  line-height:1.35;
+  font-weight:850;
+  color:#607187;
+}
+.kyro-page-card .kyro-updated{
+  margin:2px 2px 13px;
+  text-align:left;
+}
+.kyro-page-card .kyro-personal-update{
+  display:block;
+  width:100%;
+  text-align:center;
+}
+.kyro-page-card .kyro-personal-update #seasonDetailKyroUpdated{
+  font:inherit;
+  color:inherit;
+}
+.kyro-page-card .season-detail-kyro-heading{gap:7px}
+@media(max-width:390px){
+  .kyro-page-card .kyro-updated,
+  .kyro-page-card .kyro-update-line{font-size:13px}
+}
