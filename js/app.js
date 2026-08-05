@@ -61,7 +61,7 @@ let memberRecords=[];
 let eventRecords=[];
 let announcementRecords=[];
 let messageBoardRecords=[];
-let kyroInfo={area:"",japanRank:"",aichiRank:"",news:"",goal:"",updatedAt:null};
+let kyroInfo={area:"",japanRank:"",aichiRank:"",previousArea:"",previousJapanRank:"",previousAichiRank:"",news:"",goal:"",updatedAt:null};
 let recommendationRecords=[];
 let recommendationSort="newest";
 let recommendationCategory="all";
@@ -225,6 +225,9 @@ onSnapshot(doc(db,"settings","kyro"),snap=>{
     area:data.area||"",
     japanRank:data.japanRank||"",
     aichiRank:data.aichiRank||"",
+    previousArea:data.previousArea||"",
+    previousJapanRank:data.previousJapanRank||"",
+    previousAichiRank:data.previousAichiRank||"",
     news:data.news||"",
     goal:data.goal||"",
     updatedAt:data.updatedAt||null
@@ -783,6 +786,37 @@ function kyroUpdatedLabel(value){
   if(Number.isNaN(date.getTime()))return "";
   return `🕒 最終更新：${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
 }
+function kyroMiniUpdatedLabel(value){
+  if(!value)return "🕒 未更新";
+  const date=value.toDate?value.toDate():new Date(value);
+  if(Number.isNaN(date.getTime()))return "🕒 未更新";
+  return `🕒 ${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())}`;
+}
+function kyroNumber(value){
+  if(typeof value==="number")return Number.isFinite(value)?value:null;
+  const matched=String(value??"").replace(/,/g,"").match(/-?\d+(?:\.\d+)?/);
+  if(!matched)return null;
+  const number=Number(matched[0]);
+  return Number.isFinite(number)?number:null;
+}
+function kyroTrend(currentValue,previousValue,type){
+  const current=kyroNumber(currentValue);
+  const previous=kyroNumber(previousValue);
+  if(current===null||previous===null||current===previous)return "➡️";
+  if(type==="rank")return current<previous?"⤴️":"⤵️";
+  return current>previous?"⤴️":"⤵️";
+}
+function kyroRankText(value,previousValue,prefix=""){
+  const number=kyroNumber(value);
+  if(number===null)return "未登録";
+  return `${prefix}${Math.trunc(number)}位 ${kyroTrend(number,previousValue,"rank")}`;
+}
+function kyroAreaText(value,previousValue,prefix=""){
+  const number=kyroNumber(value);
+  if(number===null)return "未登録";
+  const decimals=Number.isInteger(number)?0:1;
+  return `${prefix}${number.toFixed(decimals)}km² ${kyroTrend(number,previousValue,"area")}`;
+}
 function renderCurrentUserKyroSummary(){
   const member=currentMemberRecord();
   const kyroDistance=Number(member?.kyroDistanceKm);
@@ -806,36 +840,54 @@ function renderCurrentUserKyroSummary(){
 function renderKyroPublic(){
   const kyroMembers=memberRecords.filter(member=>member.active!==false&&member.kyroMember);
   if(kyroMemberCount)kyroMemberCount.textContent=`${kyroMembers.length}名`;
-  if(kyroArea)kyroArea.textContent=kyroInfo.area||"未登録";
-  if(kyroJapanRank)kyroJapanRank.textContent=kyroInfo.japanRank||"未登録";
-  if(kyroAichiRank)kyroAichiRank.textContent=kyroInfo.aichiRank||"未登録";
+  if(kyroArea)kyroArea.textContent=kyroAreaText(kyroInfo.area,kyroInfo.previousArea);
+  if(kyroJapanRank)kyroJapanRank.textContent=kyroRankText(kyroInfo.japanRank,kyroInfo.previousJapanRank);
+  if(kyroAichiRank)kyroAichiRank.textContent=kyroRankText(kyroInfo.aichiRank,kyroInfo.previousAichiRank);
   if(kyroNews)kyroNews.textContent=kyroInfo.news||"未登録です。";
   if(kyroGoal)kyroGoal.textContent=kyroInfo.goal||"未登録です。";
   renderCurrentUserKyroSummary();
   if(kyroUpdatedAt)kyroUpdatedAt.textContent=kyroUpdatedLabel(kyroInfo.updatedAt);
-  if(kyroMiniStatus){
-    const parts=[];
-    if(kyroInfo.japanRank)parts.push(`全国${kyroInfo.japanRank}`);
-    if(kyroInfo.area)parts.push(`領土${kyroInfo.area}`);
-    kyroMiniStatus.textContent=parts.length?parts.join("・"):`KYROメンバー ${kyroMembers.length}名`;
-  }
+  if(kyroMiniUpdated)kyroMiniUpdated.textContent=kyroMiniUpdatedLabel(kyroInfo.updatedAt);
+  if(kyroMiniJapanRank)kyroMiniJapanRank.textContent=`🏆 ${kyroRankText(kyroInfo.japanRank,kyroInfo.previousJapanRank,"全国")}`;
+  if(kyroMiniArea)kyroMiniArea.textContent=`🗺 ${kyroAreaText(kyroInfo.area,kyroInfo.previousArea,"領土")}`;
 }
 function openKyroPage(){renderKyroPublic();hide(mainMenuModal);show(kyroPageModal);}
 function openAdminKyro(){
-  kyroAreaInput.value=kyroInfo.area||"";
-  kyroJapanRankInput.value=kyroInfo.japanRank||"";
-  kyroAichiRankInput.value=kyroInfo.aichiRank||"";
+  const area=kyroNumber(kyroInfo.area);
+  const japanRank=kyroNumber(kyroInfo.japanRank);
+  const aichiRank=kyroNumber(kyroInfo.aichiRank);
+  kyroAreaInput.value=area===null?"":String(area);
+  kyroJapanRankInput.value=japanRank===null?"":String(Math.trunc(japanRank));
+  kyroAichiRankInput.value=aichiRank===null?"":String(Math.trunc(aichiRank));
   kyroNewsInput.value=kyroInfo.news||"";
   kyroGoalInput.value=kyroInfo.goal||"";
   openAdminChildModal(adminKyroModal);
 }
 async function saveKyroInfo(){
+  const area=Number(kyroAreaInput.value);
+  const japanRank=Number(kyroJapanRankInput.value);
+  const aichiRank=Number(kyroAichiRankInput.value);
+  if(!Number.isFinite(area)||area<0||!Number.isInteger(japanRank)||japanRank<1||!Number.isInteger(aichiRank)||aichiRank<1){
+    alert("領土・全国順位・愛知県順位を数字で入力してください。");
+    return;
+  }
+  const currentArea=kyroNumber(kyroInfo.area);
+  const currentJapanRank=kyroNumber(kyroInfo.japanRank);
+  const currentAichiRank=kyroNumber(kyroInfo.aichiRank);
   try{
     await setDoc(doc(db,"settings","kyro"),{
-      area:kyroAreaInput.value.trim(),japanRank:kyroJapanRankInput.value.trim(),aichiRank:kyroAichiRankInput.value.trim(),
-      news:kyroNewsInput.value.trim(),goal:kyroGoalInput.value.trim(),updatedAt:serverTimestamp()
+      previousArea:currentArea===null?area:currentArea,
+      previousJapanRank:currentJapanRank===null?japanRank:currentJapanRank,
+      previousAichiRank:currentAichiRank===null?aichiRank:currentAichiRank,
+      area,
+      japanRank,
+      aichiRank,
+      news:kyroNewsInput.value.trim(),
+      goal:kyroGoalInput.value.trim(),
+      updatedAt:serverTimestamp()
     },{merge:true});
-    alert("SRC-KYRO情報を保存しました。");closeAdminChildModal(adminKyroModal);
+    alert("SRC-KYRO情報を保存しました。矢印は前回値との比較で自動表示されます。");
+    closeAdminChildModal(adminKyroModal);
   }catch(e){console.error(e);alert("SRC-KYRO情報の保存に失敗しました。Firestoreルールを確認してください。");}
 }
 
@@ -1682,6 +1734,9 @@ const closeMainMenuButton=document.getElementById("closeMainMenuButton");
 const openKyroPageButton=document.getElementById("openKyroPageButton");
 const kyroMiniCard=document.getElementById("kyroMiniCard");
 const kyroMiniStatus=document.getElementById("kyroMiniStatus");
+const kyroMiniUpdated=document.getElementById("kyroMiniUpdated");
+const kyroMiniJapanRank=document.getElementById("kyroMiniJapanRank");
+const kyroMiniArea=document.getElementById("kyroMiniArea");
 const kyroPageModal=document.getElementById("kyroPageModal");
 const closeKyroPageButton=document.getElementById("closeKyroPageButton");
 const kyroMemberCount=document.getElementById("kyroMemberCount");
