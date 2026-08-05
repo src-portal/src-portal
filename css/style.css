@@ -2808,7 +2808,7 @@ body{
 }
 
 
-/* Ver.1.9.0zj: クラブ・個人の更新日時を統一し個人最終更新カードを廃止 */
+/* Ver.1.9.0zk: クラブ・個人の更新日時を統一し個人最終更新カードを廃止 */
 .kyro-page-card .kyro-updated,
 .kyro-page-card .kyro-update-line{
   font-size:14px;
@@ -2833,4 +2833,13 @@ body{
 @media(max-width:390px){
   .kyro-page-card .kyro-updated,
   .kyro-page-card .kyro-update-line{font-size:13px}
+}
+
+/* Ver.1.9.0zk: お知らせ投稿日自動設定の案内 */
+.announcement-auto-date-note {
+  margin: 10px 2px 12px;
+  color: #5f6f82;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.45;
 }
