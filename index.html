@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0zg">
+<link rel="stylesheet" href="css/style.css?v=1.9.0zh">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -123,10 +123,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zg</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zh</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/05 1.9.0zg JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/05 1.9.0zh JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -245,12 +245,12 @@
           <li>「参加する」または「参加取消」を押します。</li>
         </ol>
         <p>参加人数や参加者はリアルタイムで更新されます。ダッシュボードの「次回イベント」をタップすると、該当月のカレンダーへ移動します。</p>
-        <p>翌日に予定がある場合は、「あなたの次回参加予定」の下にリマインダーが表示されます。参加予定のイベントは名称・日時・場所を表示し、未回答のイベントや、ほかのメンバーが参加登録している翌日のジムがある場合は参加登録を案内します。</p>
+        <p>今日または明日に参加予定がある場合は、「あなたの次回参加予定」のタイトルと背景色が変わり、予定を目立たせて表示します。参加予定のイベントは名称・日時・場所を表示します。未回答のイベントや、ほかのメンバーが参加登録している翌日のジムがある場合は、別途リマインダーで参加登録を案内します。</p>
         <h3>📈 シーズン活動記録</h3>
         <p>上期（4～9月）・下期（10～3月）ごとに、自分のラン＆ウォークとジムの参加回数を確認できます。トップ画面には今期の回数を表示し、カードをタップすると前期との比較やチームの参考値を確認できます。</p>
         <p>増加した場合は少し強調し、同じ場合は穏やかに表示します。減少した場合は評価せず、回数の事実だけを表示します。ラン＆ウォークとジムの個人順位は表示しません。</p>
         <p>ラン＆ウォークには通常活動・大会・駅伝を含みます。中止イベントと「行けなくなりました」は集計から除外します。ジムは実際に参加登録が残っている日を実績として集計します。</p>
-        <p>KYRO参加者には「KYRO（参考）」として、累積走行距離、前回更新比、前回更新日、現在順位、最終更新日を表示します。KYROはシーズン制ではなく、AI連携で取り込んだ時点の累積データです。「現在順位」をタップすると、KYRO参加者全員の累積走行距離を確認できます。</p>
+
         <h3>🏋️ ジムの参加・料金</h3>
         <p>ジムは1人から利用できます。参加できる日が決まったら、カレンダーから参加登録してください。3人以上集まった場合は、ジム利用料300円／人をクラブ費から補助します。</p>
         <ul>
@@ -270,8 +270,9 @@
         <p>投稿項目はカテゴリ、タイトル、おすすめコメント、場所（任意）、リンク（任意）です。投稿者名と投稿日は自動表示され、写真は使用しません。自分の投稿は編集・削除でき、管理者はすべての投稿を削除できます。</p>
         <p>「👍 いいね」は1人1回押すことができ、もう一度押すと取り消せます。誰が押したかは表示せず、合計数だけを表示します。</p>
         <h3>🗺 SRC-KYRO</h3>
-        <p>トップのSRC-KYROカードから、クラブの領土・ランキング・最新ニュース・目標・自分の累積走行距離を確認できます。登録メンバー一覧では、KYROメンバーの名前の横に黄色の「KYRO」バッジが表示されます。</p>
-        <p>メンバー詳細では、KYRO参加者の累積走行距離、前回更新比、前回更新日、距離順位、最終更新日を確認できます。KYRO個人データが未取込の場合は表示されません。</p>
+        <p>トップのSRC-KYRO-Clubカードから、クラブ全体の全国順位・愛知県順位・領土・最新ニュース・次の目標を確認できます。</p>
+        <p>その下には、現在のユーザーがKYRO参加者の場合、2026/05/01からの個人累計として、累積走行距離、前回更新比、前回更新日、現在順位、最終更新日時を表示します。KYRO個人データが未取込の場合は表示されません。</p>
+        <p>上部の「メンバー」または個人記録内の「全員の距離を見る」をタップすると、KYRO参加者全員の累積走行距離一覧と最終更新日時を確認できます。登録メンバー一覧では、KYROメンバーの名前の横に黄色の「KYRO」バッジが表示されます。</p>
         <h3>🤖 AI連携（管理者）</h3>
         <p>管理者メニューの「AI連携」から、KYROメンバー一覧のスクリーンショットをこのAIで読み取るための依頼文をコピーできます。AIが返した「KYROネーム,累積走行距離」のデータを貼り付け、内容を確認してからFirestoreへ反映します。</p>
         <p>取込前に、メンバー管理でKYRO参加をONにし、KYROネームを登録してください。取込時は未登録名、重複、数値不正、今回のデータに含まれないKYROメンバーを確認できます。順位は累積走行距離の多い順にSRC Portalが自動計算し、同じ距離は同順位になります。</p>
@@ -282,6 +283,7 @@
         <p>登録メンバー一覧で名前をタップすると、そのメンバーの自己紹介を確認できます。自分の自己紹介を開いた場合だけ「自分の自己紹介を編集」ボタンが表示されます。</p>
         <p><strong>必須項目：</strong>ニックネーム、ひとこと<br><strong>任意項目：</strong>所属、趣味・好きなこと、ランニング歴、ベストタイム、現在の目標</p>
         <p>ランニングをしていない方は、ランニング歴やベストタイムを空欄のまま登録できます。入力した自己紹介はほかの登録メンバーにも表示されます。</p>
+        <p>自己紹介画面には、本人の今月のラン＆ウォーク回数とジム回数を表示します。KYRO参加者は、個人KYRO情報も確認できます。</p>
       </section>
 
       <details class="help-details">
@@ -333,8 +335,9 @@
             <li>登録日時、最終利用日時などの運用情報</li>
           </ul>
           <p>これらの情報は、参加予定の共有、開催判断、メンバー管理およびアプリ改善のために利用し、法令に基づく場合を除いて目的外で第三者へ提供しません。</p>
+          <p>アプリ利用時には、Firebase Authenticationが匿名の識別番号（UID）を自動発行します。匿名認証のために、氏名やメールアドレスをFirebase Authenticationへ登録するものではありません。</p>
           <p>端末には、選択したユーザーや招待認証に必要な情報が保存される場合があります。共用端末では利用後の管理に注意してください。</p>
-          <p class="help-document-date">制定：2026年7月20日</p>
+          <p class="help-document-date">最終更新：2026年8月5日</p>
         </div>
       </details>
 
@@ -343,13 +346,17 @@
         <div class="help-document">
           <h4>Version 1.9.x</h4>
           <ul>
+            <li>Firebase匿名認証を追加し、認証完了後にFirestoreへ接続する方式へ変更</li>
+            <li>Firebase認証とデータアクセスの安全性を改善</li>
+            <li>自己紹介に今月のラン＆ウォーク回数・ジム回数を表示</li>
+            <li>今日・明日の参加予定を次回参加予定カードへ統合し、タイトルと背景色で強調表示</li>
+            <li>シーズン活動記録のシーズン切替UIを整理</li>
+            <li>起動時に黒背景とSRCロゴを表示し、トップ表示後のカウントアップを調整</li>
             <li>管理者向け「AI連携」を追加し、KYROスクリーンショットから個人データを取り込めるようにしました</li>
-            <li>メンバー管理にKYROネームを追加し、KYRO参加メンバーと累積走行距離を自動照合できるようにしました</li>
-            <li>KYROの累積走行距離・現在順位・前回更新比・前回更新日・最終更新日を表示</li>
-            <li>「現在順位」をタップすると、KYRO参加者全員の累積走行距離一覧を確認可能</li>
-            <li>メンバー詳細とシーズン活動記録にKYRO個人データを追加</li>
+            <li>KYRO個人データをSRC-KYRO-Club画面へ集約し、2026/05/01からの累計を表示</li>
+            <li>KYROの累積走行距離・現在順位・前回更新比・前回更新日・最終更新日時を表示</li>
+            <li>上部の「メンバー」または「全員の距離を見る」から、KYRO参加者全員の累積走行距離一覧を確認可能</li>
             <li>ランイベント詳細に、管理者が過去日を含めて入力できる「今日の練習」を追加</li>
-            <li>KYRO表示のバッジ・カード・アイコンをKYROの黄色／黒デザインへ統一</li>
           </ul>
           <h4>Version 1.8.x</h4>
           <ul>
@@ -406,13 +413,13 @@
             <li>Help、利用規約、プライバシーポリシー、リリースノートを整備</li>
             <li>招待コードによる初回登録に対応</li>
           </ul>
-          <p class="help-document-date">更新日：2026年8月2日</p>
+          <p class="help-document-date">更新日：2026年8月5日</p>
         </div>
       </details>
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0zg<br>Official Release<br>2026.08.05</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0zh<br>Official Release<br>2026.08.05</strong></p>
       </section>
     </div>
 </div></div>
@@ -920,6 +927,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0zg"></script>
+<script type="module" src="js/app.js?v=1.9.0zh"></script>
 </body>
 </html>
