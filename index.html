@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0zh">
+<link rel="stylesheet" href="css/style.css?v=1.9.0zi">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -87,8 +87,16 @@
     </button>
 
     <button class="kyro-mini-card" id="kyroMiniCard" type="button" aria-label="SRC-KYRO情報を開く">
-      <span class="kyro-mini-title">SRC-KYRO-Club</span>
-      <span class="kyro-mini-status" id="kyroMiniStatus">情報を確認中...</span>
+      <span class="kyro-mini-content">
+        <span class="kyro-mini-heading">
+          <span class="kyro-mini-title">SRC-KYRO-Club</span>
+          <span class="kyro-mini-updated" id="kyroMiniUpdated">🕒 ----/--/--</span>
+        </span>
+        <span class="kyro-mini-status" id="kyroMiniStatus">
+          <span id="kyroMiniJapanRank">🏆 全国順位を確認中...</span>
+          <span id="kyroMiniArea">🗺 領土を確認中...</span>
+        </span>
+      </span>
       <span class="kyro-mini-chevron">›</span>
     </button>
 
@@ -123,10 +131,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zh</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zi</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/05 1.9.0zh JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/05 1.9.0zi JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -419,7 +427,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0zh<br>Official Release<br>2026.08.05</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0zi<br>Official Release<br>2026.08.05</strong></p>
       </section>
     </div>
 </div></div>
@@ -661,13 +669,13 @@
 <div class="modal-overlay hidden" id="adminKyroModal">
   <div class="modal-card admin-fixed-modal-card">
     <div class="dialog-header"><h2>🗺 SRC-KYRO情報管理</h2><button class="modal-header-close-button" id="closeAdminKyroButton" type="button" aria-label="閉じる"></button></div>
-    <label class="admin-form-label" for="kyroAreaInput">領土</label><input id="kyroAreaInput" class="admin-input" type="text" maxlength="30" placeholder="例：146.3㎢">
-    <label class="admin-form-label" for="kyroJapanRankInput">全国順位</label><input id="kyroJapanRankInput" class="admin-input" type="text" maxlength="20" placeholder="例：8位">
-    <label class="admin-form-label" for="kyroAichiRankInput">愛知県順位</label><input id="kyroAichiRankInput" class="admin-input" type="text" maxlength="20" placeholder="例：2位">
+    <label class="admin-form-label" for="kyroAreaInput">領土（km²）</label><input id="kyroAreaInput" class="admin-input" type="number" min="0" step="0.1" inputmode="decimal" placeholder="例：385.8">
+    <label class="admin-form-label" for="kyroJapanRankInput">全国順位（数字のみ）</label><input id="kyroJapanRankInput" class="admin-input" type="number" min="1" step="1" inputmode="numeric" placeholder="例：6">
+    <label class="admin-form-label" for="kyroAichiRankInput">愛知県順位（数字のみ）</label><input id="kyroAichiRankInput" class="admin-input" type="number" min="1" step="1" inputmode="numeric" placeholder="例：1">
     <label class="admin-form-label" for="kyroNewsInput">最新ニュース</label><textarea id="kyroNewsInput" class="admin-input admin-textarea" maxlength="150" placeholder="例：全国トップ10に入りました！"></textarea>
     <label class="admin-form-label" for="kyroGoalInput">次の目標</label><textarea id="kyroGoalInput" class="admin-input admin-textarea" maxlength="150" placeholder="例：全国5位・領土200㎢"></textarea>
     <button class="primary-button" id="saveKyroInfoButton" type="button">保存する</button>
-    <p class="settings-note">メンバー数と参加メンバー一覧は、メンバー管理のKYRO設定から自動表示されます。</p>
+    <p class="settings-note">順位・領土の矢印は、保存前の値と比較して自動表示されます。メンバー数はメンバー管理のKYRO設定から自動表示されます。</p>
   </div>
 </div>
 
@@ -927,6 +935,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0zh"></script>
+<script type="module" src="js/app.js?v=1.9.0zi"></script>
 </body>
 </html>
