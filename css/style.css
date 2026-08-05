@@ -2843,3 +2843,10 @@ body{
   font-weight: 600;
   line-height: 1.45;
 }
+
+
+/* Ver.1.9.0zl: お知らせ管理一覧に投稿日を表示 */
+.announcement-admin-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.announcement-admin-title{min-width:0;flex:1}
+.announcement-admin-date{flex:0 0 auto;padding-top:2px;color:var(--muted);font-size:12px;font-weight:800;white-space:nowrap}
+@media (max-width:390px){.announcement-admin-date{font-size:11px}}
