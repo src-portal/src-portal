@@ -1684,7 +1684,9 @@ body{
 .member-profile-chevron{margin-left:8px;color:#9ba6b3;font-size:22px;vertical-align:-2px}
 .member-profile-modal-card,.member-profile-edit-modal-card{max-height:min(84vh,760px);overflow-y:auto}
 .member-profile-identity{display:flex;align-items:center;gap:12px;padding:4px 2px 14px;border-bottom:1px solid #e8edf2}
-.member-profile-avatar{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#f2f6fb;font-size:28px}
+.member-profile-avatar{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#f2f6fb;font-size:28px;flex:0 0 auto}
+.member-profile-identity-main{min-width:0}
+.member-profile-updated{margin-left:auto;align-self:flex-start;padding-top:4px;white-space:nowrap;font-size:11px;font-weight:850;color:#7a8796}
 .member-profile-name{font-size:13px;font-weight:850;color:#687687}
 .member-profile-nickname{margin-top:2px;font-size:21px;font-weight:950;color:#152942}
 .member-profile-field{padding:13px 2px;border-bottom:1px solid #edf1f5}
