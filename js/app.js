@@ -179,13 +179,10 @@ async function updateCurrentUserLastActive(){
   if(!record||!record.id||lastActiveUpdatedMemberId===record.id)return;
   lastActiveUpdatedMemberId=record.id;
   try{
-    await setDoc(doc(db,"members",record.id),{
-      inviteCode:record.inviteCode||"",
-      inviteStatus:record.inviteStatus||"registered",
-      registeredAt:record.registeredAt||serverTimestamp(),
+    await updateDoc(doc(db,"members",record.id),{
       lastActiveAt:serverTimestamp(),
       updatedAt:serverTimestamp()
-    },{merge:true});
+    });
   }catch(e){
     lastActiveUpdatedMemberId="";
     console.error("lastActiveAt update error",e);
