@@ -277,6 +277,7 @@ onSnapshot(collection(db,"members"),snap=>{
           bestTime:data.profile?.bestTime||"",
           goal:data.profile?.goal||""
         },
+        profileUpdatedAt:data.profileUpdatedAt||null,
         inviteCodeMissing:!("inviteCode" in data),
         inviteStatusMissing:!("inviteStatus" in data),
         registeredAtMissing:!("registeredAt" in data),
@@ -726,6 +727,15 @@ function closeKyroDistanceList(){
   show(kyroPageModal);
 }
 
+function formatProfileUpdatedDate(timestamp){
+  if(!timestamp)return "";
+  const date=timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  if(Number.isNaN(date.getTime()))return "";
+  const parts=new Intl.DateTimeFormat("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",timeZone:"Asia/Tokyo"}).formatToParts(date);
+  const values=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+  return `${values.year}/${values.month}/${values.day}`;
+}
+
 function openMemberProfile(member){
   selectedProfileMember=member;
   const profile=member.profile||{};
@@ -733,8 +743,9 @@ function openMemberProfile(member){
   const hasProfile=Object.values(profile).some(value=>profileValue(value));
   const runCount=memberMonthlyAttendance(member.name,"run",0);
   const gymCount=memberMonthlyAttendance(member.name,"gym",0);
+  const profileUpdatedDate=formatProfileUpdatedDate(member.profileUpdatedAt);
   memberProfileContent.innerHTML=`
-    <div class="member-profile-identity"><div class="member-profile-avatar">😊</div><div><div class="member-profile-name">${escapeHtml(member.name)}</div><div class="member-profile-nickname">${escapeHtml(nickname)}</div></div></div>
+    <div class="member-profile-identity"><div class="member-profile-avatar">😊</div><div class="member-profile-identity-main"><div class="member-profile-name">${escapeHtml(member.name)}</div><div class="member-profile-nickname">${escapeHtml(nickname)}</div></div>${profileUpdatedDate?`<div class="member-profile-updated">📝 ${escapeHtml(profileUpdatedDate)}</div>`:""}</div>
     ${hasProfile?"":`<div class="member-profile-empty">${escapeHtml(uiT("profileNotRegistered","自己紹介はまだ登録されていません。"))}</div>`}
     ${profileDisplayRow("💬",uiT("introduction","ひとこと"),profile.introduction)}
     ${profileDisplayRow("🏢",uiT("department","所属"),profile.department)}
@@ -773,7 +784,7 @@ async function saveOwnProfile(){
   profileEditError.classList.add("hidden");
   const profile={nickname,introduction,department:profileDepartmentInput.value.trim(),hobbies:profileHobbiesInput.value.trim(),runningHistory:profileRunningHistoryInput.value.trim(),bestTime:profileBestTimeInput.value.trim(),goal:profileGoalInput.value.trim()};
   try{
-    await setDoc(doc(db,"members",member.id),{profile,updatedAt:serverTimestamp()},{merge:true});
+    await setDoc(doc(db,"members",member.id),{profile,profileUpdatedAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
     hide(memberProfileEditModal);
   }catch(e){console.error(e);alert(uiT("profileSaveFailed","自己紹介の保存に失敗しました。Firestoreルールを確認してください。"));}
 }
