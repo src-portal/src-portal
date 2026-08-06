@@ -2143,8 +2143,13 @@ function renderSeasonActivity(){
   const stats=seasonActivityStats(season);
   seasonActivityAdminBadge.classList.toggle("hidden",visibility!=="admin");
   seasonActivityPeriod.textContent=`${season.label}（${season.start.replaceAll("-","/")}～${season.end.replaceAll("-","/")}）`;
-  seasonActivityRunCount.textContent=`${stats.runCount}回`;
-  seasonActivityGymCount.textContent=`${stats.gymCount}回`;
+  const seasonCountHtml=(count)=>{
+    const safeCount=Number.isFinite(Number(count))?Number(count):0;
+    const compactClass=Math.abs(safeCount)>=10?" season-count-number-compact":"";
+    return `<span class="season-count-number${compactClass}">${safeCount}</span><span class="season-count-unit">回</span>`;
+  };
+  seasonActivityRunCount.innerHTML=seasonCountHtml(stats.runCount);
+  seasonActivityGymCount.innerHTML=seasonCountHtml(stats.gymCount);
   if(seasonActivityModal&&!seasonActivityModal.classList.contains("hidden"))renderSeasonActivityDetail();
 }
 
