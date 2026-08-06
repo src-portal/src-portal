@@ -2857,8 +2857,8 @@ body{
   display:inline-flex;
   align-items:baseline;
   justify-content:flex-end;
-  gap:0;
-  letter-spacing:-0.02em;
+  gap:1px;
+  letter-spacing:normal;
 }
 .season-activity-count .season-count-number{
   font-size:1em;
@@ -2868,7 +2868,9 @@ body{
   font-size:.88em;
 }
 .season-activity-count .season-count-unit{
-  margin-left:-1px;
+  margin-left:0;
   font-size:.68em;
   line-height:1;
 }
+
+/* Ver.1.9.0zn: 数字と「回」の間隔だけを通常に戻す */
