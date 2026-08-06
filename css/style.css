@@ -2850,3 +2850,25 @@ body{
 .announcement-admin-title{min-width:0;flex:1}
 .announcement-admin-date{flex:0 0 auto;padding-top:2px;color:var(--muted);font-size:12px;font-weight:800;white-space:nowrap}
 @media (max-width:390px){.announcement-admin-date{font-size:11px}}
+
+
+/* Ver.1.9.0zm: シーズン活動記録の2桁回数表示を調整 */
+.season-activity-count strong{
+  display:inline-flex;
+  align-items:baseline;
+  justify-content:flex-end;
+  gap:0;
+  letter-spacing:-0.02em;
+}
+.season-activity-count .season-count-number{
+  font-size:1em;
+  line-height:1;
+}
+.season-activity-count .season-count-number-compact{
+  font-size:.88em;
+}
+.season-activity-count .season-count-unit{
+  margin-left:-1px;
+  font-size:.68em;
+  line-height:1;
+}
