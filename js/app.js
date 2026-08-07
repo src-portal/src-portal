@@ -767,8 +767,6 @@ function openMemberProfile(member){
   const profile=member.profile||{};
   const nickname=profileValue(profile.nickname)||member.name;
   const hasProfile=Object.values(profile).some(value=>profileValue(value));
-  const runCount=memberMonthlyAttendance(member.name,"run",0);
-  const gymCount=memberMonthlyAttendance(member.name,"gym",0);
   const profileUpdatedDate=formatProfileUpdatedDate(member.profileUpdatedAt);
   memberProfileContent.innerHTML=`
     <div class="member-profile-identity"><div class="member-profile-avatar">😊</div><div class="member-profile-identity-main"><div class="member-profile-name">${escapeHtml(member.name)}</div><div class="member-profile-nickname">${escapeHtml(nickname)}</div></div>${profileUpdatedDate?`<div class="member-profile-updated">📝 ${escapeHtml(profileUpdatedDate)}</div>`:""}</div>
@@ -779,8 +777,7 @@ function openMemberProfile(member){
     ${profileDisplayRow("🏃",uiT("runningHistory","ランニング歴"),profile.runningHistory)}
     ${profileDisplayRow("🏅",uiT("bestTime","ベストタイム"),profile.bestTime)}
     ${profileDisplayRow("🌱",uiT("goal","現在の目標"),profile.goal)}
-    <div class="member-profile-attendance"><span>🏃 ${uiT("runWalk","ラン＆ウォーク")} ${runCount}${uiT("times","回")}</span><span>🏋️ ${uiT("gym","ジム")} ${gymCount}${uiT("times","回")}</span><span>今月</span></div>
-    ${memberKyroSummaryHtml(member)}`;
+`;
   editOwnProfileButton.classList.toggle("hidden",member.name!==currentUser);
   hide(memberOverviewModal);
   show(memberProfileModal);
