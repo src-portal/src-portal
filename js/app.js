@@ -84,6 +84,7 @@ let pendingInviteMember=null;
 let setupAdminLongPressTimer=null;
 let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},selectedSameDayUser="";
 let memberInvitationMigrationStarted=false;
+let memberProfileDateMigrationStarted=false;
 let lastActiveUpdatedMemberId="";
 function setOnline(t){connectionCard.classList.remove("offline");connectionCard.classList.add("online");connectionStatus.textContent=t}function setOffline(t){connectionCard.classList.remove("online");connectionCard.classList.add("offline");connectionStatus.textContent=t}function pad2(n){return String(n).padStart(2,"0")}function toKey(y,m,d){return `${y}-${pad2(m+1)}-${pad2(d)}`}function fmt(key){const [y,m,d]=key.split("-").map(Number);const dt=new Date(y,m-1,d);return `${m}月${d}日（${["日","月","火","水","木","金","土"][dt.getDay()]}）`}function blank(y,m){return(new Date(y,m,1).getDay()+6)%7}function show(e){
   if(e&&[
@@ -170,6 +171,28 @@ async function migrateExistingMemberInvitationFields(records){
   }catch(e){
     memberInvitationMigrationStarted=false;
     console.error("member invitation migration error",e);
+  }
+}
+
+
+async function migrateExistingMemberProfileDates(records){
+  if(memberProfileDateMigrationStarted)return;
+  const targets=records.filter(record=>record.hasExistingProfile&&record.profileUpdatedAtMissing);
+  if(targets.length===0){
+    memberProfileDateMigrationStarted=true;
+    return;
+  }
+  memberProfileDateMigrationStarted=true;
+  try{
+    const batch=writeBatch(db);
+    const initialProfileDate=new Date("2026-07-25T12:00:00+09:00");
+    targets.forEach(record=>{
+      batch.set(doc(db,"members",record.id),{profileUpdatedAt:initialProfileDate},{merge:true});
+    });
+    await batch.commit();
+  }catch(e){
+    memberProfileDateMigrationStarted=false;
+    console.error("member profile date migration error",e);
   }
 }
 
@@ -278,6 +301,8 @@ onSnapshot(collection(db,"members"),snap=>{
           goal:data.profile?.goal||""
         },
         profileUpdatedAt:data.profileUpdatedAt||null,
+        hasExistingProfile:Object.values(data.profile||{}).some(value=>String(value||"").trim()),
+        profileUpdatedAtMissing:!("profileUpdatedAt" in data)||!data.profileUpdatedAt,
         inviteCodeMissing:!("inviteCode" in data),
         inviteStatusMissing:!("inviteStatus" in data),
         registeredAtMissing:!("registeredAt" in data),
@@ -288,6 +313,7 @@ onSnapshot(collection(db,"members"),snap=>{
   });
   memberRecords=loaded.sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"ja"));
   migrateExistingMemberInvitationFields(memberRecords);
+  migrateExistingMemberProfileDates(memberRecords);
   updateCurrentUserLastActive();
   const activeMembers=memberRecords.filter(m=>m.active!==false);
   if(activeMembers.length>0){
