@@ -2876,7 +2876,7 @@ body{
 }
 
 /* Ver.1.9.0zn: 数字と「回」の間隔だけを通常に戻す */
-\n\n/* Ver.1.9.0zs: ホーム画面版/PWAの下に引っ張って更新 */
+\n\n/* Ver.1.9.0zt: ホーム画面版/PWAの下に引っ張って更新 */
 .pull-refresh-indicator{
   position:fixed;
   z-index:99990;
