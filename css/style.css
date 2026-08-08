@@ -2703,10 +2703,11 @@ body{
 .kyro-distance-list-modal-card{width:min(94vw,620px);max-height:calc(100dvh - 34px);overflow:auto}
 .kyro-distance-list-note{margin:0;color:#65758a;font-size:13px;line-height:1.55;font-weight:750}.kyro-distance-list-updated{margin:4px 0 14px;color:#6c7988;font-size:12px;line-height:1.55;font-weight:800;text-align:center}.kyro-distance-list-updated strong{font-size:12px;font-weight:850;color:#23364d}
 .kyro-distance-list{display:grid;gap:8px}
-.kyro-distance-row{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 13px;border:1px solid #dbe5ef;border-radius:14px;background:#fff}
+.kyro-distance-row{position:relative;display:grid;grid-template-columns:86px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 13px;border:1px solid #dbe5ef;border-radius:14px;background:#fff}
 .kyro-distance-row.is-current{border-color:#2d83dc;background:#eaf4ff;box-shadow:0 0 0 2px rgba(45,131,220,.10)}
 .kyro-distance-row.is-pending{background:#f6f7f9;color:#7d8793}
-.kyro-distance-rank{color:#60748b;font-size:14px;font-weight:950;text-align:center}
+.kyro-distance-rank{display:flex;align-items:center;justify-content:center;gap:5px;color:#60748b;font-size:14px;font-weight:950;text-align:center;white-space:nowrap}
+.kyro-rank-change{font-size:12px;font-weight:950;line-height:1}.kyro-rank-change.is-up{color:#1677c8}.kyro-rank-change.is-down{color:#c45a5a}
 .kyro-distance-member{display:flex;min-width:0;flex-direction:column;gap:2px}
 .kyro-distance-member strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1f2f43;font-size:16px}
 .kyro-distance-member small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#758397;font-size:11px;font-weight:750}
@@ -2717,7 +2718,7 @@ body{
   .season-detail-kyro-badge{padding:5px 10px!important;font-size:14px!important}
   .season-detail-kyro-rank-card{min-height:104px;padding:12px 7px}
   .season-detail-kyro-rank-card strong{font-size:19px}
-  .kyro-distance-row{grid-template-columns:40px minmax(0,1fr) auto;padding:11px 10px;gap:8px}
+  .kyro-distance-row{grid-template-columns:78px minmax(0,1fr) auto;padding:11px 10px;gap:8px}
   .kyro-distance-value{font-size:14px}
 }
 
@@ -2876,3 +2877,5 @@ body{
 }
 
 /* Ver.1.9.0zn: 数字と「回」の間隔だけを通常に戻す */
+
+/* Ver.1.9.0zxb: KYRO個人順位の前回比表示。順位列を固定幅にして名前開始位置を統一 */
