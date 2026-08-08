@@ -25,102 +25,6 @@ function finishStartupSplash(){
 }
 
 
-// Ver.1.9.0zu: standalone PWA向け「下に引っ張って更新」（ページ再読込なし）
-function setupPullToRefresh(){
-  const indicator=document.getElementById("pullRefreshIndicator");
-  const indicatorText=document.getElementById("pullRefreshText");
-  if(!indicator||!indicatorText)return;
-
-  // Safari/Chromeの通常ブラウザには標準の再読み込み操作があるため、
-  // ホーム画面から起動したstandalone表示だけSRC Portal側で補完する。
-  const isStandalone=window.matchMedia?.("(display-mode: standalone)")?.matches||window.navigator.standalone===true;
-  if(!isStandalone)return;
-
-  const threshold=82;
-  const maxPull=130;
-  let startY=0;
-  let pullDistance=0;
-  let tracking=false;
-  let refreshing=false;
-
-  const homeIsActive=()=>homeView&&!homeView.classList.contains("hidden");
-  const modalIsOpen=()=>Boolean(document.querySelector(".modal-overlay:not(.hidden)"));
-  const atTop=()=>Math.max(window.scrollY||0,document.documentElement.scrollTop||0,document.body.scrollTop||0)<=1;
-
-  function resetIndicator(){
-    if(refreshing)return;
-    tracking=false;
-    pullDistance=0;
-    indicator.classList.remove("is-visible","is-ready");
-    indicator.setAttribute("aria-hidden","true");
-    indicatorText.textContent="下に引っ張って更新";
-  }
-
-  document.addEventListener("touchstart",event=>{
-    if(refreshing||splashFinished===false||event.touches.length!==1||!homeIsActive()||modalIsOpen()||!atTop())return;
-    startY=event.touches[0].clientY;
-    pullDistance=0;
-    tracking=true;
-  },{passive:true});
-
-  document.addEventListener("touchmove",event=>{
-    if(!tracking||refreshing||event.touches.length!==1)return;
-    if(!atTop()){
-      resetIndicator();
-      return;
-    }
-    const delta=event.touches[0].clientY-startY;
-    if(delta<=0){
-      resetIndicator();
-      return;
-    }
-    pullDistance=Math.min(delta,maxPull);
-    if(pullDistance<18)return;
-    indicator.classList.add("is-visible");
-    indicator.setAttribute("aria-hidden","false");
-    if(pullDistance>=threshold){
-      indicator.classList.add("is-ready");
-      indicatorText.textContent="離して更新";
-    }else{
-      indicator.classList.remove("is-ready");
-      indicatorText.textContent="下に引っ張って更新";
-    }
-  },{passive:true});
-
-  document.addEventListener("touchend",()=>{
-    if(!tracking||refreshing)return;
-    const shouldRefresh=pullDistance>=threshold&&homeIsActive()&&!modalIsOpen();
-    tracking=false;
-    if(!shouldRefresh){
-      resetIndicator();
-      return;
-    }
-    refreshing=true;
-    indicator.classList.remove("is-ready");
-    indicator.classList.add("is-visible","is-refreshing");
-    indicator.setAttribute("aria-hidden","false");
-    indicatorText.textContent="最新データを更新中...";
-    // Ver.1.9.0zt: ページ全体はreloadしない。現在ユーザーを維持したまま、
-    // Firestoreのサーバー最新値だけを取得して既存onSnapshotへ反映する。
-    refreshPortalDataFromServer().then(()=>{
-      indicatorText.textContent="更新しました";
-    }).catch(error=>{
-      console.error("pull refresh error",error);
-      indicatorText.textContent="更新できませんでした";
-    }).finally(()=>{
-      window.setTimeout(()=>{
-        refreshing=false;
-        indicator.classList.remove("is-visible","is-ready","is-refreshing");
-        indicator.setAttribute("aria-hidden","true");
-        indicatorText.textContent="下に引っ張って更新";
-        pullDistance=0;
-      },650);
-    });
-  },{passive:true});
-
-  document.addEventListener("touchcancel",resetIndicator,{passive:true});
-}
-
 window.setTimeout(()=>{
   if(!splashScreen){finishStartupSplash();return;}
   splashScreen.classList.add("is-hiding");
@@ -152,10 +56,9 @@ inviteAuthMemberName=$("inviteAuthMemberName"),
 inviteAuthCodeInput=$("inviteAuthCodeInput"),
 inviteAuthError=$("inviteAuthError"),
 confirmInviteAuthButton=$("confirmInviteAuthButton");
-setupPullToRefresh();
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);try{await auth.authStateReady();if(!auth.currentUser){await signInAnonymously(auth);}}catch(error){console.error("Firebase anonymous authentication failed",error);alert("Firebaseへの認証に失敗しました。\n"+(error?.code||"")+"\n"+(error?.message||String(error)));return;}const db=getFirestore(app);
 async function refreshPortalDataFromServer(){
-  // Ver.1.9.0zu: サーバーから取得した値を画面用データへ直接反映する。
+  // Ver.1.9.0zv: メニューの「最新情報に更新」から、サーバー最新値を画面用データへ直接反映する。
   // 保存・認証・現在ユーザー(localStorage)には触れない。
   const [systemSnap,kyroSnap,attendanceSnap,membersSnap,announcementsSnap,messageBoardSnap,recommendationsSnap,eventsSnap]=await Promise.all([
     getDocFromServer(doc(db,"settings","system")),
@@ -2058,6 +1961,7 @@ let kyroImportPrepared=null;
 const recommendationsModal=document.getElementById("recommendationsModal");
 const openRecommendationsButton=document.getElementById("openRecommendationsButton");
 const openMessageBoardFromMenuButton=document.getElementById("openMessageBoardFromMenuButton");
+const refreshPortalFromMenuButton=document.getElementById("refreshPortalFromMenuButton");
 const openAdminFromMainMenuButton=document.getElementById("openAdminFromMainMenuButton");
 const closeRecommendationsButton=document.getElementById("closeRecommendationsButton");
 const recommendationCategoryFilter=document.getElementById("recommendationCategoryFilter");
@@ -2210,6 +2114,24 @@ if(openRecommendationsButton)openRecommendationsButton.onclick=openRecommendatio
 const recommendationMiniCard=document.getElementById("recommendationMiniCard");
 if(recommendationMiniCard)recommendationMiniCard.onclick=openRecommendations;
 if(openMessageBoardFromMenuButton)openMessageBoardFromMenuButton.onclick=()=>{hide(mainMenuModal);renderMessageBoard();show(messageBoardModal);};
+if(refreshPortalFromMenuButton)refreshPortalFromMenuButton.onclick=async()=>{
+  if(refreshPortalFromMenuButton.disabled)return;
+  const defaultLabel=uiT("refreshLatest","最新情報に更新");
+  refreshPortalFromMenuButton.disabled=true;
+  refreshPortalFromMenuButton.textContent=`🔄 ${uiT("refreshing","最新情報を取得中...")}`;
+  try{
+    await refreshPortalDataFromServer();
+    refreshPortalFromMenuButton.textContent=`✅ ${uiT("refreshDone","最新情報に更新しました")}`;
+  }catch(error){
+    console.error("manual refresh error",error);
+    refreshPortalFromMenuButton.textContent=`⚠️ ${uiT("refreshFailed","更新できませんでした")}`;
+  }finally{
+    window.setTimeout(()=>{
+      refreshPortalFromMenuButton.disabled=false;
+      refreshPortalFromMenuButton.textContent=`🔄 ${defaultLabel}`;
+    },900);
+  }
+};
 if(openAdminFromMainMenuButton)openAdminFromMainMenuButton.onclick=()=>{hide(mainMenuModal);openAdminPin();};
 if(closeRecommendationsButton)closeRecommendationsButton.onclick=()=>{closeRecommendationForm();hide(recommendationsModal);};
 if(openRecommendationFormButton)openRecommendationFormButton.onclick=()=>openRecommendationForm();
@@ -3481,7 +3403,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
 
   const messages = {
     ja: {
-      help:"ヘルプ", currentUser:"現在のユーザー", unset:"未設定", change:"変更", menu:"メニュー", recommendations:"みんなのおすすめ", adminMenu:"管理者メニュー",
+      help:"ヘルプ", refreshLatest:"最新情報に更新", refreshing:"最新情報を取得中...", refreshDone:"最新情報に更新しました", refreshFailed:"更新できませんでした", currentUser:"現在のユーザー", unset:"未設定", change:"変更", menu:"メニュー", recommendations:"みんなのおすすめ", adminMenu:"管理者メニュー",
       members:"登録メンバー", monthlyRun:"今月ラン参加", monthlyGym:"今月ジム参加", announcements:"お知らせ",
       noAnnouncements:"現在のお知らせはありません。", nextPlan:"あなたの次回参加予定", noNextPlan:"参加予定はまだありません。",
       nextEvent:"次回イベント", noNextEvent:"今後のイベントは登録されていません。", openEvent:"このイベントを開く",
@@ -3504,7 +3426,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       weekdays:["月","火","水","木","金","土","日"]
     },
     en: {
-      help:"Help", currentUser:"Current user", unset:"Not selected", change:"Change", menu:"Menu", recommendations:"Recommendations", adminMenu:"Admin menu",
+      help:"Help", refreshLatest:"Refresh latest information", refreshing:"Getting latest information...", refreshDone:"Updated to latest information", refreshFailed:"Could not refresh", currentUser:"Current user", unset:"Not selected", change:"Change", menu:"Menu", recommendations:"Recommendations", adminMenu:"Admin menu",
       members:"Members", monthlyRun:"Run this month", monthlyGym:"Gym this month", announcements:"Announcements",
       noAnnouncements:"There are no announcements.", nextPlan:"Your next plan", noNextPlan:"You have no upcoming plans.",
       nextEvent:"Next event", noNextEvent:"There are no upcoming events.", openEvent:"Open this event",
@@ -3527,7 +3449,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       weekdays:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
     },
     ko: {
-      help:"도움말", currentUser:"현재 사용자", unset:"미설정", change:"변경", menu:"메뉴", recommendations:"모두의 추천", adminMenu:"관리자 메뉴",
+      help:"도움말", refreshLatest:"최신 정보로 업데이트", refreshing:"최신 정보를 가져오는 중...", refreshDone:"최신 정보로 업데이트했습니다", refreshFailed:"업데이트하지 못했습니다", currentUser:"현재 사용자", unset:"미설정", change:"변경", menu:"메뉴", recommendations:"모두의 추천", adminMenu:"관리자 메뉴",
       members:"등록 멤버", monthlyRun:"이번 달 러닝", monthlyGym:"이번 달 체육관", announcements:"공지사항",
       noAnnouncements:"현재 공지사항이 없습니다.", nextPlan:"다음 참가 예정", noNextPlan:"참가 예정이 없습니다.",
       nextEvent:"다음 이벤트", noNextEvent:"예정된 이벤트가 없습니다.", openEvent:"이 이벤트 열기",
@@ -3550,7 +3472,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       weekdays:["월","화","수","목","금","토","일"]
     },
     zh: {
-      help:"帮助", currentUser:"当前用户", unset:"未设置", change:"更改", menu:"菜单", recommendations:"大家的推荐", adminMenu:"管理员菜单",
+      help:"帮助", refreshLatest:"更新最新信息", refreshing:"正在获取最新信息...", refreshDone:"已更新为最新信息", refreshFailed:"更新失败", currentUser:"当前用户", unset:"未设置", change:"更改", menu:"菜单", recommendations:"大家的推荐", adminMenu:"管理员菜单",
       members:"注册成员", monthlyRun:"本月跑步", monthlyGym:"本月健身", announcements:"通知",
       noAnnouncements:"目前没有通知。", nextPlan:"您的下次参加计划", noNextPlan:"目前没有参加计划。",
       nextEvent:"下次活动", noNextEvent:"目前没有即将举行的活动。", openEvent:"打开此活动",
@@ -3594,6 +3516,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
     setText("#mainMenuModal h2", `☰ ${m.menu}`);
     setText("#openRecommendationsButton", `⭐ ${m.recommendations}`);
     setText("#openMessageBoardFromMenuButton", `💬 ${m.messageBoard}`);
+    setText("#refreshPortalFromMenuButton", `🔄 ${m.refreshLatest}`);
     setText("#openAdminFromMainMenuButton", `⚙️ ${m.adminMenu}`);
     setText("#changeUserButton", m.change);
     const dashboardLabels = document.querySelectorAll("#dashboardCard .dashboard-label");
