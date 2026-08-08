@@ -58,7 +58,7 @@ inviteAuthError=$("inviteAuthError"),
 confirmInviteAuthButton=$("confirmInviteAuthButton");
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);try{await auth.authStateReady();if(!auth.currentUser){await signInAnonymously(auth);}}catch(error){console.error("Firebase anonymous authentication failed",error);alert("Firebaseへの認証に失敗しました。\n"+(error?.code||"")+"\n"+(error?.message||String(error)));return;}const db=getFirestore(app);
 async function refreshPortalDataFromServer(){
-  // Ver.1.9.0zv: メニューの「最新情報に更新」から、サーバー最新値を画面用データへ直接反映する。
+  // Ver.1.9.0zw: メニューの「最新版に更新」から、サーバー最新値を画面用データへ直接反映する。
   // 保存・認証・現在ユーザー(localStorage)には触れない。
   const [systemSnap,kyroSnap,attendanceSnap,membersSnap,announcementsSnap,messageBoardSnap,recommendationsSnap,eventsSnap]=await Promise.all([
     getDocFromServer(doc(db,"settings","system")),
@@ -1697,7 +1697,7 @@ applyMonthJumpButton.onclick=()=>moveToMonth(Number(monthJumpYear.value),Number(
 monthJumpCurrentButton.onclick=()=>{
   const now=new Date();
   moveToMonth(now.getFullYear(),now.getMonth());
-};helpButton.onclick=()=>show(helpModal);closeHelpButton.onclick=()=>hide(helpModal);
+};helpButton.onclick=()=>{hide(mainMenuModal);show(helpModal);};closeHelpButton.onclick=()=>hide(helpModal);
 const nextPlanCard=document.getElementById("nextPlanCard");
 if(nextPlanCard){
   nextPlanCard.addEventListener("click",openNextPlanInCalendar);
@@ -2116,7 +2116,7 @@ if(recommendationMiniCard)recommendationMiniCard.onclick=openRecommendations;
 if(openMessageBoardFromMenuButton)openMessageBoardFromMenuButton.onclick=()=>{hide(mainMenuModal);renderMessageBoard();show(messageBoardModal);};
 if(refreshPortalFromMenuButton)refreshPortalFromMenuButton.onclick=async()=>{
   if(refreshPortalFromMenuButton.disabled)return;
-  const defaultLabel=uiT("refreshLatest","最新情報に更新");
+  const defaultLabel=uiT("refreshLatest","最新版に更新");
   refreshPortalFromMenuButton.disabled=true;
   refreshPortalFromMenuButton.textContent=`🔄 ${uiT("refreshing","最新情報を取得中...")}`;
   try{
@@ -3403,7 +3403,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
 
   const messages = {
     ja: {
-      help:"ヘルプ", refreshLatest:"最新情報に更新", refreshing:"最新情報を取得中...", refreshDone:"最新情報に更新しました", refreshFailed:"更新できませんでした", currentUser:"現在のユーザー", unset:"未設定", change:"変更", menu:"メニュー", recommendations:"みんなのおすすめ", adminMenu:"管理者メニュー",
+      help:"ヘルプ", refreshLatest:"最新版に更新", refreshing:"最新情報を取得中...", refreshDone:"最新情報に更新しました", refreshFailed:"更新できませんでした", currentUser:"現在のユーザー", unset:"未設定", change:"変更", menu:"メニュー", recommendations:"みんなのおすすめ", adminMenu:"管理者メニュー",
       members:"登録メンバー", monthlyRun:"今月ラン参加", monthlyGym:"今月ジム参加", announcements:"お知らせ",
       noAnnouncements:"現在のお知らせはありません。", nextPlan:"あなたの次回参加予定", noNextPlan:"参加予定はまだありません。",
       nextEvent:"次回イベント", noNextEvent:"今後のイベントは登録されていません。", openEvent:"このイベントを開く",
