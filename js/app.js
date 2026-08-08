@@ -128,6 +128,7 @@ async function refreshPortalDataFromServer(){
         kyroDataDate:data.kyroDataDate||"",
         kyroDataUpdatedAt:data.kyroDataUpdatedAt||null,
         kyroPreviousDistanceKm:Number.isFinite(Number(data.kyroPreviousDistanceKm))?Number(data.kyroPreviousDistanceKm):null,
+        kyroPreviousDistanceRank:Number.isFinite(Number(data.kyroPreviousDistanceRank))?Number(data.kyroPreviousDistanceRank):null,
         kyroPreviousDataDate:data.kyroPreviousDataDate||"",
         active:data.active!==false,
         order:data.order??999,
@@ -441,6 +442,7 @@ onSnapshot(collection(db,"members"),snap=>{
         kyroDataDate:data.kyroDataDate||"",
         kyroDataUpdatedAt:data.kyroDataUpdatedAt||null,
         kyroPreviousDistanceKm:Number.isFinite(Number(data.kyroPreviousDistanceKm))?Number(data.kyroPreviousDistanceKm):null,
+        kyroPreviousDistanceRank:Number.isFinite(Number(data.kyroPreviousDistanceRank))?Number(data.kyroPreviousDistanceRank):null,
         kyroPreviousDataDate:data.kyroPreviousDataDate||"",
         active:data.active!==false,
         order:data.order??999,
@@ -895,7 +897,10 @@ function renderKyroDistanceList(){
     if(previousDistance===null||distance!==previousDistance)rank=index+1;
     previousDistance=distance;
     const isCurrent=member.name===currentUser;
-    return `<div class="kyro-distance-row${isCurrent?" is-current":""}"><span class="kyro-distance-rank">${rank}位</span><span class="kyro-distance-member"><strong>${escapeHtml(member.name)}</strong>${member.kyroUserName?`<small>${escapeHtml(member.kyroUserName)}</small>`:""}</span><span class="kyro-distance-value">${distance.toFixed(2)} km</span>${isCurrent?'<span class="kyro-distance-you">あなた</span>':""}</div>`;
+    const previousRank=Number(member.kyroPreviousDistanceRank);
+    const rankDelta=Number.isFinite(previousRank)&&previousRank>0&&previousRank!==rank?previousRank-rank:0;
+    const rankChange=rankDelta>0?`<small class="kyro-rank-change is-up">↑${rankDelta}</small>`:rankDelta<0?`<small class="kyro-rank-change is-down">↓${Math.abs(rankDelta)}</small>`:"";
+    return `<div class="kyro-distance-row${isCurrent?" is-current":""}"><span class="kyro-distance-rank"><span>${rank}位</span>${rankChange}</span><span class="kyro-distance-member"><strong>${escapeHtml(member.name)}</strong>${member.kyroUserName?`<small>${escapeHtml(member.kyroUserName)}</small>`:""}</span><span class="kyro-distance-value">${distance.toFixed(2)} km</span>${isCurrent?'<span class="kyro-distance-you">あなた</span>':""}</div>`;
   });
   const pending=withoutData.map(member=>`<div class="kyro-distance-row is-pending"><span class="kyro-distance-rank">―</span><span class="kyro-distance-member"><strong>${escapeHtml(member.name)}</strong>${member.kyroUserName?`<small>${escapeHtml(member.kyroUserName)}</small>`:""}</span><span class="kyro-distance-value">未更新</span></div>`);
   kyroDistanceList.innerHTML=[...rows,...pending].join("")||'<div class="kyro-distance-empty">表示できるKYROデータがありません。</div>';
@@ -1149,7 +1154,7 @@ async function applyKyroImport(){
   if(!kyroImportPrepared?.records?.length)return;
   const {snapshotDate,records}=kyroImportPrepared;if(!confirm(`${snapshotDate} のKYRO個人データ ${records.length}件をFirestoreへ反映しますか？`))return;
   applyKyroImportButton.disabled=true;
-  try{const batch=writeBatch(db),snapshotMembers=[];records.forEach(row=>{const sameSnapshotDate=String(row.member.kyroDataDate||"")===snapshotDate;const updateData={kyroUserName:row.kyroName,kyroDistanceKm:row.distanceKm,kyroDistanceRank:row.rank,kyroDataDate:snapshotDate,kyroDataUpdatedAt:serverTimestamp(),updatedAt:serverTimestamp()};if(!sameSnapshotDate&&Number.isFinite(Number(row.member.kyroDistanceKm))&&row.member.kyroDataDate){updateData.kyroPreviousDistanceKm=Number(row.member.kyroDistanceKm);updateData.kyroPreviousDataDate=row.member.kyroDataDate;}batch.set(doc(db,"members",row.member.id),updateData,{merge:true});snapshotMembers.push({memberId:row.member.id,memberName:row.member.name,kyroUserName:row.kyroName,distanceKm:row.distanceKm,distanceRank:row.rank,previousDistanceKm:!sameSnapshotDate&&Number.isFinite(Number(row.member.kyroDistanceKm))?Number(row.member.kyroDistanceKm):(Number.isFinite(Number(row.member.kyroPreviousDistanceKm))?Number(row.member.kyroPreviousDistanceKm):null),previousDataDate:!sameSnapshotDate&&row.member.kyroDataDate?row.member.kyroDataDate:(row.member.kyroPreviousDataDate||"")});});batch.set(doc(db,"kyroSnapshots",snapshotDate),{snapshotDate,metric:"cumulativeDistanceKm",memberCount:snapshotMembers.length,members:snapshotMembers,importedBy:currentUser||"",updatedAt:serverTimestamp()},{merge:true});await batch.commit();alert(`KYRO個人データ ${records.length}件を反映しました。`);kyroImportPrepared=null;applyKyroImportButton.disabled=true;closeAdminChildModal(adminKyroImportModal);}catch(e){console.error(e);applyKyroImportButton.disabled=false;alert("KYRO個人データの反映に失敗しました。Firestoreルールを確認してください。");}
+  try{const batch=writeBatch(db),snapshotMembers=[];records.forEach(row=>{const sameSnapshotDate=String(row.member.kyroDataDate||"")===snapshotDate;const updateData={kyroUserName:row.kyroName,kyroDistanceKm:row.distanceKm,kyroDistanceRank:row.rank,kyroDataDate:snapshotDate,kyroDataUpdatedAt:serverTimestamp(),updatedAt:serverTimestamp()};if(!sameSnapshotDate&&row.member.kyroDataDate){if(Number.isFinite(Number(row.member.kyroDistanceKm)))updateData.kyroPreviousDistanceKm=Number(row.member.kyroDistanceKm);if(Number.isFinite(Number(row.member.kyroDistanceRank))&&Number(row.member.kyroDistanceRank)>0)updateData.kyroPreviousDistanceRank=Number(row.member.kyroDistanceRank);updateData.kyroPreviousDataDate=row.member.kyroDataDate;}batch.set(doc(db,"members",row.member.id),updateData,{merge:true});snapshotMembers.push({memberId:row.member.id,memberName:row.member.name,kyroUserName:row.kyroName,distanceKm:row.distanceKm,distanceRank:row.rank,previousDistanceKm:!sameSnapshotDate&&Number.isFinite(Number(row.member.kyroDistanceKm))?Number(row.member.kyroDistanceKm):(Number.isFinite(Number(row.member.kyroPreviousDistanceKm))?Number(row.member.kyroPreviousDistanceKm):null),previousDistanceRank:!sameSnapshotDate&&Number.isFinite(Number(row.member.kyroDistanceRank))?Number(row.member.kyroDistanceRank):(Number.isFinite(Number(row.member.kyroPreviousDistanceRank))?Number(row.member.kyroPreviousDistanceRank):null),previousDataDate:!sameSnapshotDate&&row.member.kyroDataDate?row.member.kyroDataDate:(row.member.kyroPreviousDataDate||"")});});batch.set(doc(db,"kyroSnapshots",snapshotDate),{snapshotDate,metric:"cumulativeDistanceKm",memberCount:snapshotMembers.length,members:snapshotMembers,importedBy:currentUser||"",updatedAt:serverTimestamp()},{merge:true});await batch.commit();alert(`KYRO個人データ ${records.length}件を反映しました。`);kyroImportPrepared=null;applyKyroImportButton.disabled=true;closeAdminChildModal(adminKyroImportModal);}catch(e){console.error(e);applyKyroImportButton.disabled=false;alert("KYRO個人データの反映に失敗しました。Firestoreルールを確認してください。");}
 }
 
 const dashboardAnimationState=new Map();
