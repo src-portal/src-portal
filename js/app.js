@@ -25,7 +25,7 @@ function finishStartupSplash(){
 }
 
 
-// Ver.1.9.0zt: standalone PWA向け「下に引っ張って更新」（ページ再読込なし）
+// Ver.1.9.0zu: standalone PWA向け「下に引っ張って更新」（ページ再読込なし）
 function setupPullToRefresh(){
   const indicator=document.getElementById("pullRefreshIndicator");
   const indicatorText=document.getElementById("pullRefreshText");
@@ -155,8 +155,9 @@ confirmInviteAuthButton=$("confirmInviteAuthButton");
 setupPullToRefresh();
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);try{await auth.authStateReady();if(!auth.currentUser){await signInAnonymously(auth);}}catch(error){console.error("Firebase anonymous authentication failed",error);alert("Firebaseへの認証に失敗しました。\n"+(error?.code||"")+"\n"+(error?.message||String(error)));return;}const db=getFirestore(app);
 async function refreshPortalDataFromServer(){
-  // 読み取りのみ。保存・認証・現在ユーザー(localStorage)には触れない。
-  await Promise.all([
+  // Ver.1.9.0zu: サーバーから取得した値を画面用データへ直接反映する。
+  // 保存・認証・現在ユーザー(localStorage)には触れない。
+  const [systemSnap,kyroSnap,attendanceSnap,membersSnap,announcementsSnap,messageBoardSnap,recommendationsSnap,eventsSnap]=await Promise.all([
     getDocFromServer(doc(db,"settings","system")),
     getDocFromServer(doc(db,"settings","kyro")),
     getDocsFromServer(collection(db,"attendance")),
@@ -166,13 +167,148 @@ async function refreshPortalDataFromServer(){
     getDocsFromServer(collection(db,"recommendations")),
     getDocsFromServer(collection(db,"events"))
   ]);
-  // サーバー取得でローカルキャッシュとonSnapshotが更新される。念のため現在表示も再描画。
+
+  const systemData=systemSnap.exists()?systemSnap.data():{};
+  systemSettings={
+    run:{
+      time:systemData.run?.time||defaultSystemSettings.run.time,
+      place:systemData.run?.place||defaultSystemSettings.run.place,
+      mapUrl:systemData.run?.mapUrl||defaultSystemSettings.run.mapUrl
+    },
+    gym:{
+      time:systemData.gym?.time||defaultSystemSettings.gym.time,
+      place:systemData.gym?.place||defaultSystemSettings.gym.place,
+      minParticipants:Number(systemData.gym?.minParticipants)||defaultSystemSettings.gym.minParticipants,
+      mapUrl:systemData.gym?.mapUrl||defaultSystemSettings.gym.mapUrl,
+      calendarUrl:systemData.gym?.calendarUrl||defaultSystemSettings.gym.calendarUrl
+    },
+    features:{
+      seasonActivityVisibility:systemData.features?.seasonActivityVisibility==="public"?"public":"admin"
+    }
+  };
+  requiredMembers=systemSettings.gym.minParticipants;
+  applySystemSettingsToInputs();
+
+  const kyroData=kyroSnap.exists()?kyroSnap.data():{};
+  kyroInfo={
+    area:kyroData.area||"",
+    japanRank:kyroData.japanRank||"",
+    aichiRank:kyroData.aichiRank||"",
+    previousArea:kyroData.previousArea||"",
+    previousJapanRank:kyroData.previousJapanRank||"",
+    previousAichiRank:kyroData.previousAichiRank||"",
+    news:kyroData.news||"",
+    goal:kyroData.goal||"",
+    updatedAt:kyroData.updatedAt||null
+  };
+
+  attendance={};
+  attendanceStatuses={};
+  attendanceSnap.forEach(d=>{
+    const data=d.data();
+    attendance[d.id]=data.participants||[];
+    attendanceStatuses[d.id]=data.statuses||{};
+  });
+
+  const loadedMembers=[];
+  membersSnap.forEach(d=>{
+    const data=d.data();
+    if(data.name){
+      loadedMembers.push({
+        id:d.id,
+        name:data.name,
+        admin:data.admin===true,
+        kyroMember:data.kyroMember===true,
+        kyroUserName:data.kyroUserName||data.kyroName||"",
+        kyroDistanceKm:Number.isFinite(Number(data.kyroDistanceKm))?Number(data.kyroDistanceKm):null,
+        kyroDistanceRank:Number.isFinite(Number(data.kyroDistanceRank))?Number(data.kyroDistanceRank):null,
+        kyroDataDate:data.kyroDataDate||"",
+        kyroDataUpdatedAt:data.kyroDataUpdatedAt||null,
+        kyroPreviousDistanceKm:Number.isFinite(Number(data.kyroPreviousDistanceKm))?Number(data.kyroPreviousDistanceKm):null,
+        kyroPreviousDataDate:data.kyroPreviousDataDate||"",
+        active:data.active!==false,
+        order:data.order??999,
+        inviteCode:data.inviteCode||"",
+        inviteStatus:data.inviteStatus||"registered",
+        registeredAt:data.registeredAt||null,
+        lastActiveAt:data.lastActiveAt||null,
+        profile:{
+          nickname:data.profile?.nickname||"",
+          introduction:data.profile?.introduction||"",
+          department:data.profile?.department||"",
+          hobbies:data.profile?.hobbies||"",
+          runningHistory:data.profile?.runningHistory||"",
+          bestTime:data.profile?.bestTime||"",
+          goal:data.profile?.goal||""
+        },
+        profileUpdatedAt:data.profileUpdatedAt||null,
+        hasExistingProfile:Object.values(data.profile||{}).some(value=>String(value||"").trim()),
+        profileUpdatedAtMissing:!("profileUpdatedAt" in data)||!data.profileUpdatedAt,
+        inviteCodeMissing:!("inviteCode" in data),
+        inviteStatusMissing:!("inviteStatus" in data),
+        registeredAtMissing:!("registeredAt" in data),
+        lastActiveAtMissing:!("lastActiveAt" in data),
+        needsInvitationMigration:!("inviteCode" in data)||!("inviteStatus" in data)||!("registeredAt" in data)||!("lastActiveAt" in data)
+      });
+    }
+  });
+  memberRecords=loadedMembers.sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,"ja"));
+  const activeMembers=memberRecords.filter(m=>m.active!==false);
+  if(activeMembers.length>0)members=activeMembers.map(m=>m.name);
+
+  const loadedAnnouncements=[];
+  announcementsSnap.forEach(d=>{
+    const data=d.data();
+    loadedAnnouncements.push({id:d.id,title:data.title||"",body:data.body||"",enabled:data.enabled!==false,createdAt:data.createdAt||null,updatedAt:data.updatedAt||null});
+  });
+  announcementRecords=loadedAnnouncements.sort((a,b)=>{
+    const ta=a.updatedAt?.seconds||a.createdAt?.seconds||0;
+    const tb=b.updatedAt?.seconds||b.createdAt?.seconds||0;
+    return tb-ta;
+  });
+
+  const loadedMessages=[];
+  messageBoardSnap.forEach(d=>loadedMessages.push({id:d.id,...d.data()}));
+  messageBoardRecords=loadedMessages.sort((a,b)=>messageBoardDateValue(b.createdAt)-messageBoardDateValue(a.createdAt));
+
+  recommendationRecords=recommendationsSnap.docs.map(item=>{
+    const data=item.data()||{};
+    return {id:item.id,...data,likes:Array.isArray(data.likes)?data.likes:[]};
+  });
+
+  const loadedEvents=[];
+  eventsSnap.forEach(d=>{
+    const data=d.data();
+    loadedEvents.push({
+      id:d.id,
+      type:data.type||"",
+      date:data.date||"",
+      title:data.title||"",
+      time:data.time||"19:00",
+      place:data.place||"",
+      status:data.status||"scheduled",
+      memo:data.memo||"",
+      trainingResults:Array.isArray(data.trainingResults)?data.trainingResults.filter(v=>typeof v==="string"):[]
+    });
+  });
+  eventRecords=loadedEvents.sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.type||"").localeCompare(b.type||""));
+
+  setOnline("🟢 Firebase 接続中");
+  renderNameButtons();
+  setType(currentType);
   renderAll();
   renderKyroPublic();
   renderAnnouncementsPublic();
   renderMessageBoard();
+  if(typeof renderRecommendations==="function"&&recommendationsModal&&!recommendationsModal.classList.contains("hidden"))renderRecommendations();
   if(typeof renderRecommendationPreview==="function")renderRecommendationPreview();
+  if(selectedKey)renderDetail();
+  if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
+  if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))renderAdminMembers();
+  if(announcementManageModal&&!announcementManageModal.classList.contains("hidden"))renderAdminAnnouncements();
+  if(eventManageModal&&!eventManageModal.classList.contains("hidden"))renderAdminEvents();
 }
+
 let today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
 let members=[...defaultMembers];
 let memberRecords=[];
