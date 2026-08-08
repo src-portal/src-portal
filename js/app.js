@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, getDoc, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, getDoc, getDocsFromServer, getDocFromServer, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAd4Uv89V4hZQyjYaR7MfalE8Oyp8ioAbc",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
@@ -25,7 +25,7 @@ function finishStartupSplash(){
 }
 
 
-// Ver.1.9.0zs: standalone PWA向け「下に引っ張って更新」
+// Ver.1.9.0zt: standalone PWA向け「下に引っ張って更新」（ページ再読込なし）
 function setupPullToRefresh(){
   const indicator=document.getElementById("pullRefreshIndicator");
   const indicatorText=document.getElementById("pullRefreshText");
@@ -100,8 +100,22 @@ function setupPullToRefresh(){
     indicator.classList.add("is-visible","is-refreshing");
     indicator.setAttribute("aria-hidden","false");
     indicatorText.textContent="最新データを更新中...";
-    // 通常起動と同じ読込処理をもう一度走らせることで、Firestoreの最新状態を確実に再取得する。
-    window.setTimeout(()=>window.location.reload(),180);
+    // Ver.1.9.0zt: ページ全体はreloadしない。現在ユーザーを維持したまま、
+    // Firestoreのサーバー最新値だけを取得して既存onSnapshotへ反映する。
+    refreshPortalDataFromServer().then(()=>{
+      indicatorText.textContent="更新しました";
+    }).catch(error=>{
+      console.error("pull refresh error",error);
+      indicatorText.textContent="更新できませんでした";
+    }).finally(()=>{
+      window.setTimeout(()=>{
+        refreshing=false;
+        indicator.classList.remove("is-visible","is-ready","is-refreshing");
+        indicator.setAttribute("aria-hidden","true");
+        indicatorText.textContent="下に引っ張って更新";
+        pullDistance=0;
+      },650);
+    });
   },{passive:true});
 
   document.addEventListener("touchcancel",resetIndicator,{passive:true});
@@ -139,7 +153,27 @@ inviteAuthCodeInput=$("inviteAuthCodeInput"),
 inviteAuthError=$("inviteAuthError"),
 confirmInviteAuthButton=$("confirmInviteAuthButton");
 setupPullToRefresh();
-const app=initializeApp(firebaseConfig);const auth=getAuth(app);try{await auth.authStateReady();if(!auth.currentUser){await signInAnonymously(auth);}}catch(error){console.error("Firebase anonymous authentication failed",error);alert("Firebaseへの認証に失敗しました。\n"+(error?.code||"")+"\n"+(error?.message||String(error)));return;}const db=getFirestore(app);let today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
+const app=initializeApp(firebaseConfig);const auth=getAuth(app);try{await auth.authStateReady();if(!auth.currentUser){await signInAnonymously(auth);}}catch(error){console.error("Firebase anonymous authentication failed",error);alert("Firebaseへの認証に失敗しました。\n"+(error?.code||"")+"\n"+(error?.message||String(error)));return;}const db=getFirestore(app);
+async function refreshPortalDataFromServer(){
+  // 読み取りのみ。保存・認証・現在ユーザー(localStorage)には触れない。
+  await Promise.all([
+    getDocFromServer(doc(db,"settings","system")),
+    getDocFromServer(doc(db,"settings","kyro")),
+    getDocsFromServer(collection(db,"attendance")),
+    getDocsFromServer(collection(db,"members")),
+    getDocsFromServer(collection(db,"announcements")),
+    getDocsFromServer(collection(db,"messageBoard")),
+    getDocsFromServer(collection(db,"recommendations")),
+    getDocsFromServer(collection(db,"events"))
+  ]);
+  // サーバー取得でローカルキャッシュとonSnapshotが更新される。念のため現在表示も再描画。
+  renderAll();
+  renderKyroPublic();
+  renderAnnouncementsPublic();
+  renderMessageBoard();
+  if(typeof renderRecommendationPreview==="function")renderRecommendationPreview();
+}
+let today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
 let members=[...defaultMembers];
 let memberRecords=[];
 let eventRecords=[];
