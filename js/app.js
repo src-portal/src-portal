@@ -24,6 +24,89 @@ function finishStartupSplash(){
   flushPendingDashboardAnimations();
 }
 
+
+// Ver.1.9.0zs: standalone PWA向け「下に引っ張って更新」
+function setupPullToRefresh(){
+  const indicator=document.getElementById("pullRefreshIndicator");
+  const indicatorText=document.getElementById("pullRefreshText");
+  if(!indicator||!indicatorText)return;
+
+  // Safari/Chromeの通常ブラウザには標準の再読み込み操作があるため、
+  // ホーム画面から起動したstandalone表示だけSRC Portal側で補完する。
+  const isStandalone=window.matchMedia?.("(display-mode: standalone)")?.matches||window.navigator.standalone===true;
+  if(!isStandalone)return;
+
+  const threshold=82;
+  const maxPull=130;
+  let startY=0;
+  let pullDistance=0;
+  let tracking=false;
+  let refreshing=false;
+
+  const homeIsActive=()=>homeView&&!homeView.classList.contains("hidden");
+  const modalIsOpen=()=>Boolean(document.querySelector(".modal-overlay:not(.hidden)"));
+  const atTop=()=>Math.max(window.scrollY||0,document.documentElement.scrollTop||0,document.body.scrollTop||0)<=1;
+
+  function resetIndicator(){
+    if(refreshing)return;
+    tracking=false;
+    pullDistance=0;
+    indicator.classList.remove("is-visible","is-ready");
+    indicator.setAttribute("aria-hidden","true");
+    indicatorText.textContent="下に引っ張って更新";
+  }
+
+  document.addEventListener("touchstart",event=>{
+    if(refreshing||splashFinished===false||event.touches.length!==1||!homeIsActive()||modalIsOpen()||!atTop())return;
+    startY=event.touches[0].clientY;
+    pullDistance=0;
+    tracking=true;
+  },{passive:true});
+
+  document.addEventListener("touchmove",event=>{
+    if(!tracking||refreshing||event.touches.length!==1)return;
+    if(!atTop()){
+      resetIndicator();
+      return;
+    }
+    const delta=event.touches[0].clientY-startY;
+    if(delta<=0){
+      resetIndicator();
+      return;
+    }
+    pullDistance=Math.min(delta,maxPull);
+    if(pullDistance<18)return;
+    indicator.classList.add("is-visible");
+    indicator.setAttribute("aria-hidden","false");
+    if(pullDistance>=threshold){
+      indicator.classList.add("is-ready");
+      indicatorText.textContent="離して更新";
+    }else{
+      indicator.classList.remove("is-ready");
+      indicatorText.textContent="下に引っ張って更新";
+    }
+  },{passive:true});
+
+  document.addEventListener("touchend",()=>{
+    if(!tracking||refreshing)return;
+    const shouldRefresh=pullDistance>=threshold&&homeIsActive()&&!modalIsOpen();
+    tracking=false;
+    if(!shouldRefresh){
+      resetIndicator();
+      return;
+    }
+    refreshing=true;
+    indicator.classList.remove("is-ready");
+    indicator.classList.add("is-visible","is-refreshing");
+    indicator.setAttribute("aria-hidden","false");
+    indicatorText.textContent="最新データを更新中...";
+    // 通常起動と同じ読込処理をもう一度走らせることで、Firestoreの最新状態を確実に再取得する。
+    window.setTimeout(()=>window.location.reload(),180);
+  },{passive:true});
+
+  document.addEventListener("touchcancel",resetIndicator,{passive:true});
+}
+
 window.setTimeout(()=>{
   if(!splashScreen){finishStartupSplash();return;}
   splashScreen.classList.add("is-hiding");
@@ -55,6 +138,7 @@ inviteAuthMemberName=$("inviteAuthMemberName"),
 inviteAuthCodeInput=$("inviteAuthCodeInput"),
 inviteAuthError=$("inviteAuthError"),
 confirmInviteAuthButton=$("confirmInviteAuthButton");
+setupPullToRefresh();
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);try{await auth.authStateReady();if(!auth.currentUser){await signInAnonymously(auth);}}catch(error){console.error("Firebase anonymous authentication failed",error);alert("Firebaseへの認証に失敗しました。\n"+(error?.code||"")+"\n"+(error?.message||String(error)));return;}const db=getFirestore(app);let today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
 let members=[...defaultMembers];
 let memberRecords=[];
