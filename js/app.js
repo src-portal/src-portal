@@ -58,7 +58,7 @@ inviteAuthError=$("inviteAuthError"),
 confirmInviteAuthButton=$("confirmInviteAuthButton");
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);try{await auth.authStateReady();if(!auth.currentUser){await signInAnonymously(auth);}}catch(error){console.error("Firebase anonymous authentication failed",error);alert("Firebaseへの認証に失敗しました。\n"+(error?.code||"")+"\n"+(error?.message||String(error)));return;}const db=getFirestore(app);
 async function refreshPortalDataFromServer(){
-  // Ver.1.9.0zx: メニューの「最新版に更新」から、サーバー最新値を画面用データへ直接反映する。
+  // Ver.1.9.0zxa: メニューの「最新版に更新」から、サーバー最新値を画面用データへ直接反映する。
   // 保存・認証・現在ユーザー(localStorage)には触れない。
   const [systemSnap,kyroSnap,attendanceSnap,membersSnap,announcementsSnap,messageBoardSnap,recommendationsSnap,eventsSnap]=await Promise.all([
     getDocFromServer(doc(db,"settings","system")),
