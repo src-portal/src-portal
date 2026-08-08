@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0zxa">
+<link rel="stylesheet" href="css/style.css?v=1.9.0zxb">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -130,10 +130,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zxa</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zxb</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/08 1.9.0zxa JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/08 1.9.0zxb JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -282,7 +282,7 @@
         <p>上部の「メンバー」または個人記録内の「全員の距離を見る」をタップすると、KYRO参加者全員の累積走行距離一覧と最終更新日時を確認できます。登録メンバー一覧では、KYROメンバーの名前の横に黄色の「KYRO」バッジが表示されます。</p>
         <h3>🤖 AI連携（管理者）</h3>
         <p>管理者メニューの「AI連携」から、KYROメンバー一覧のスクリーンショットをこのAIで読み取るための依頼文をコピーできます。AIが返した「KYROネーム,累積走行距離」のデータを貼り付け、内容を確認してからFirestoreへ反映します。</p>
-        <p>取込前に、メンバー管理でKYRO参加をONにし、KYROネームを登録してください。取込時は未登録名、重複、数値不正、今回のデータに含まれないKYROメンバーを確認できます。順位は累積走行距離の多い順にSRC Portalが自動計算し、同じ距離は同順位になります。</p>
+        <p>取込前に、メンバー管理でKYRO参加をONにし、KYROネームを登録してください。取込時は未登録名、重複、数値不正、今回のデータに含まれないKYROメンバーを確認できます。順位は累積走行距離の多い順にSRC Portalが自動計算し、同じ距離は同順位になります。前回取込から順位が変動した場合は、一覧の順位横に「↑2」「↓1」のように変動幅を表示します。</p>
         <p>更新頻度は自由です。新しい日付で取り込むと、前回の距離と更新日を保存し、前回更新比を自動計算します。同じ取得日で再取込した場合は、前回データとして扱いません。</p>
         <h3>🔐 招待コードとユーザー設定</h3>
         <p>初回登録やユーザーの再設定では、管理者から案内された招待コードを入力してください。登録後は同じ端末で通常利用する限り、毎回の入力は不要です。招待コードは本人以外へ共有しないでください。</p>
@@ -426,7 +426,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0zxa<br>Official Release<br>2026.08.08</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0zxb<br>Official Release<br>2026.08.08</strong></p>
       </section>
     </div>
 </div></div>
@@ -936,6 +936,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0zxa"></script>
+<script type="module" src="js/app.js?v=1.9.0zxb"></script>
 </body>
 </html>
