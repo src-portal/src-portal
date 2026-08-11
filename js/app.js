@@ -980,9 +980,9 @@ function kyroUpdatedLabel(value){
   return `🕒 クラブ更新　${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
 }
 function kyroMiniUpdatedLabel(value){
-  if(!value)return "🕒 未更新";
+  if(!value)return "🕒 更新中…";
   const date=value.toDate?value.toDate():new Date(value);
-  if(Number.isNaN(date.getTime()))return "🕒 未更新";
+  if(Number.isNaN(date.getTime()))return "🕒 更新中…";
   return `🕒 ${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())}`;
 }
 function kyroNumber(value){
