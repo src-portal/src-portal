@@ -2879,3 +2879,29 @@ body{
 /* Ver.1.9.0zn: 数字と「回」の間隔だけを通常に戻す */
 
 /* Ver.1.9.0zxc: KYRO個人順位の前回比表示。順位列を固定幅にして名前開始位置を統一 */
+
+/* Ver.1.9.0zxd: メンバー管理に最終利用日時を表示 */
+.member-admin-last-active{
+  margin-left:auto;
+  flex:0 0 auto;
+  text-align:right;
+  line-height:1.25;
+  color:#64748b;
+}
+.member-admin-last-active span{
+  display:block;
+  font-size:11px;
+  font-weight:850;
+}
+.member-admin-last-active strong{
+  display:block;
+  margin-top:2px;
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+  color:#475569;
+}
+@media(max-width:520px){
+  .member-admin-summary{gap:8px}
+  .member-admin-last-active strong{font-size:11px}
+}
