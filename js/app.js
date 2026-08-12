@@ -2885,6 +2885,23 @@ function invitationStatusLabel(member){
   return "🟢 登録済み";
 }
 
+function formatLastActiveAt(value){
+  if(!value)return "未記録";
+  try{
+    const date=typeof value.toDate==="function"?value.toDate():new Date(value);
+    if(Number.isNaN(date.getTime()))return "未記録";
+    const parts=new Intl.DateTimeFormat("ja-JP",{
+      timeZone:"Asia/Tokyo",
+      year:"numeric",month:"2-digit",day:"2-digit",
+      hour:"2-digit",minute:"2-digit",hour12:false
+    }).formatToParts(date);
+    const get=type=>parts.find(part=>part.type===type)?.value||"";
+    return `${get("year")}/${get("month")}/${get("day")} ${get("hour")}:${get("minute")}`;
+  }catch(e){
+    return "未記録";
+  }
+}
+
 function appInviteUrl(){
   return `${window.location.origin}${window.location.pathname}`;
 }
@@ -2977,12 +2994,17 @@ function renderAdminMembers(){
     summaryText.appendChild(title);
     summaryText.appendChild(status);
 
+    const lastActive=document.createElement("div");
+    lastActive.className="member-admin-last-active";
+    lastActive.innerHTML=`<span>最終利用</span><strong>${formatLastActiveAt(m.lastActiveAt)}</strong>`;
+
     const chevron=document.createElement("span");
     chevron.className="member-admin-chevron";
     chevron.textContent="›";
     chevron.setAttribute("aria-hidden","true");
 
     summary.appendChild(summaryText);
+    summary.appendChild(lastActive);
     summary.appendChild(chevron);
 
     const detail=document.createElement("div");
