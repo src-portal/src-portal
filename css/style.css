@@ -3039,3 +3039,18 @@ body{
   .announcement-preview-date{font-size:10px}
   .announcement-public-item-title{font-size:15px}
 }
+
+
+/* Ver.1.9.0zxf: 4件以上のお知らせがある場合だけ「…」を表示 */
+.announcement-more-indicator{
+  display:block;
+  margin-top:0;
+  padding:0 2px 0 0;
+  color:var(--muted);
+  font-size:20px;
+  font-weight:900;
+  line-height:.75;
+  letter-spacing:2px;
+  text-align:right;
+}
+.announcement-more-indicator.hidden{display:none!important}
