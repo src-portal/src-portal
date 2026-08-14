@@ -3200,3 +3200,58 @@ body{
     font-size:14px;
   }
 }
+
+
+/* Ver.1.9.0zxj: current-user card — menu独立配置 / metadata全幅 */
+.user-menu-card{
+  position:relative;
+  display:block;
+  align-items:initial;
+  justify-content:initial;
+}
+.user-menu-card-main{
+  width:100%;
+  min-width:0;
+  overflow:visible;
+}
+.user-menu-card .current-user{
+  width:100%;
+  min-width:0;
+  padding-right:0;
+}
+.current-user-identity{
+  width:calc(100% - 38px);
+  min-width:0;
+}
+.user-menu-card .current-user-name-button{
+  max-width:calc(100% - 150px);
+}
+.current-user-meta{
+  width:100%;
+  max-width:none;
+  gap:4px;
+  overflow:visible;
+  padding-right:0;
+}
+.current-user-separator{
+  margin:0;
+}
+.current-user-nickname{
+  flex:0 1 auto;
+  max-width:none;
+  overflow:visible;
+  text-overflow:clip;
+  white-space:nowrap;
+}
+.user-card-menu-button{
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:2;
+}
+@media(max-width:360px){
+  .user-card-menu-button{right:12px}
+  .user-menu-card .current-user-name-button{max-width:calc(100% - 126px)}
+  .current-user-meta{gap:3px}
+}
