@@ -3041,7 +3041,7 @@ body{
 }
 
 
-/* Ver.1.9.0zxf: 4件以上のお知らせがある場合だけ「…」を表示 */
+/* Ver.1.9.0zxg: 4件以上のお知らせがある場合だけ「…」を表示 */
 .announcement-more-indicator{
   display:block;
   margin-top:0;
@@ -3054,3 +3054,91 @@ body{
   text-align:right;
 }
 .announcement-more-indicator.hidden{display:none!important}
+
+
+/* Ver.1.9.0zxg: current user identity layout */
+.user-menu-card{
+  align-items:center;
+}
+.user-menu-card-main{
+  overflow:hidden;
+}
+.user-menu-card .current-user{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:4px;
+}
+.user-menu-card .current-user-emoji{
+  flex:0 0 auto;
+  font-size:28px;
+  line-height:1;
+}
+.current-user-identity{
+  min-width:0;
+  flex:1 1 auto;
+}
+.user-menu-card .current-user-name-button{
+  display:block;
+  max-width:100%;
+  border:0;
+  padding:0;
+  background:transparent;
+  color:var(--text);
+  text-align:left;
+  cursor:pointer;
+}
+.user-menu-card .current-user-name-button strong{
+  font-size:22px;
+  line-height:1.1;
+}
+.current-user-meta{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-width:0;
+  margin-top:5px;
+  color:#536273;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.2;
+  white-space:nowrap;
+}
+.current-user-src{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  flex:0 0 auto;
+}
+.current-user-src-dot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:#20b83b;
+  box-shadow:0 0 0 2px rgba(32,184,59,.08);
+}
+.current-user-kyro{
+  flex:0 0 auto;
+  margin:0;
+  padding:2px 7px 3px;
+  border-radius:6px;
+  font-size:10px;
+  line-height:1;
+}
+.current-user-nickname{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#64748b;
+  font-size:11px;
+  font-weight:800;
+}
+@media(max-width:360px){
+  .user-menu-card .current-user{gap:7px}
+  .user-menu-card .current-user-emoji{font-size:25px}
+  .user-menu-card .current-user-name-button strong{font-size:20px}
+  .current-user-meta{gap:5px;font-size:10px}
+  .current-user-kyro{font-size:9px;padding:2px 6px}
+  .current-user-nickname{font-size:10px}
+}
