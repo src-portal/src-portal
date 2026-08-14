@@ -2880,7 +2880,7 @@ body{
 
 /* Ver.1.9.0zxc: KYRO個人順位の前回比表示。順位列を固定幅にして名前開始位置を統一 */
 
-/* Ver.1.9.0zxd: メンバー管理に最終利用日時を表示 */
+/* Ver.1.9.0zxe: メンバー管理に最終利用日時を表示 */
 .member-admin-last-active{
   margin-left:auto;
   flex:0 0 auto;
@@ -2904,4 +2904,138 @@ body{
 @media(max-width:520px){
   .member-admin-summary{gap:8px}
   .member-admin-last-active strong{font-size:11px}
+}
+
+
+/* Ver.1.9.0zxe: お知らせをトップ見出し表示 + 全件モーダルへ変更 */
+#announcementCard{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  box-sizing:border-box;
+  cursor:pointer;
+  overflow:hidden;
+  outline:none;
+}
+#announcementCard:focus-visible{
+  box-shadow:0 0 0 3px rgba(28,103,207,.18),var(--shadow);
+}
+.announcement-card-main{
+  display:block;
+  flex:1;
+  min-width:0;
+}
+.announcement-card-chevron{
+  flex:0 0 auto;
+  color:#64748b;
+  font-size:34px;
+  font-weight:700;
+  line-height:1;
+}
+#announcementList{
+  max-height:none !important;
+  overflow:visible !important;
+  padding-right:0 !important;
+}
+.announcement-preview-list{
+  display:grid;
+  gap:0;
+  margin-top:8px;
+}
+.announcement-preview-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:30px;
+  padding:6px 0;
+  border-top:1px solid #e7edf4;
+}
+.announcement-preview-item:first-child{border-top:0}
+.announcement-preview-title{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:var(--charcoal);
+  font-size:14px;
+  font-weight:850;
+  text-align:left;
+}
+.announcement-preview-date{
+  flex:0 0 auto;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap;
+}
+#announcementPublicModal .announcement-public-modal-card{
+  display:flex;
+  flex-direction:column;
+  max-height:calc(100dvh - var(--member-modal-top,180px) - 50px);
+  overflow:hidden;
+}
+.announcement-public-note{
+  margin:0 0 10px;
+  color:var(--muted);
+  font-size:13px;
+  font-weight:750;
+}
+.announcement-public-list{
+  display:grid;
+  gap:10px;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:2px 3px 6px 0;
+}
+.announcement-public-item{
+  padding:13px 14px;
+  border:1px solid #f0d48b;
+  border-radius:15px;
+  background:#fff8e6;
+}
+.announcement-public-item-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+.announcement-public-item-title{
+  min-width:0;
+  margin:0;
+  color:var(--charcoal);
+  font-size:16px;
+  font-weight:900;
+  line-height:1.35;
+}
+.announcement-public-item-date{
+  flex:0 0 auto;
+  padding-top:2px;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.announcement-public-item-body{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:14px;
+  font-weight:650;
+  line-height:1.55;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.announcement-public-empty{
+  padding:20px 8px;
+  color:var(--muted);
+  font-weight:800;
+  text-align:center;
+}
+@media(max-width:390px){
+  .announcement-preview-title{font-size:13px}
+  .announcement-preview-date{font-size:10px}
+  .announcement-public-item-title{font-size:15px}
 }
