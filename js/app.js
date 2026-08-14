@@ -31,7 +31,7 @@ window.setTimeout(()=>{
   window.setTimeout(finishStartupSplash,420);
 },2400);
 
-const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),reminderCard=$("reminderCard"),reminderContent=$("reminderContent"),nextEventContent=$("nextEventContent"),nextEventCard=$("nextEventCard"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
+const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),currentUserMeta=$("currentUserMeta"),currentUserSrcMember=$("currentUserSrcMember"),currentUserKyroBadge=$("currentUserKyroBadge"),currentUserNickname=$("currentUserNickname"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),reminderCard=$("reminderCard"),reminderContent=$("reminderContent"),nextEventContent=$("nextEventContent"),nextEventCard=$("nextEventCard"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
 userChangeConfirmModal=$("userChangeConfirmModal"),
 cancelUserChangeButton=$("cancelUserChangeButton"),
 confirmUserChangeButton=$("confirmUserChangeButton"),
@@ -480,6 +480,7 @@ onSnapshot(collection(db,"members"),snap=>{
     members=activeMembers.map(m=>m.name);
   }
   renderNameButtons();
+  updateUser();
   renderAll();
   renderKyroPublic();
   if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
@@ -654,6 +655,18 @@ function updateUser(){
   const currentUserNameText=currentUserLabel.querySelector("strong");
   if(currentUserNameText)currentUserNameText.textContent=currentUser||"未設定";
   else currentUserLabel.textContent=currentUser||"未設定";
+
+  const member=memberRecords.find(item=>item.name===currentUser&&item.active!==false)||null;
+  const nickname=String(member?.profile?.nickname||"").trim();
+
+  currentUserMeta?.classList.toggle("hidden",!member);
+  currentUserSrcMember?.classList.toggle("hidden",!member);
+  currentUserKyroBadge?.classList.toggle("hidden",!member?.kyroMember);
+  if(currentUserNickname){
+    currentUserNickname.textContent=nickname;
+    currentUserNickname.classList.toggle("hidden",!nickname);
+    currentUserNickname.title=nickname;
+  }
 }
 function renderNameButtons(){
   nameButtonGrid.innerHTML="";
