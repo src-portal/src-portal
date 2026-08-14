@@ -3147,3 +3147,56 @@ body{
   .current-user-kyro{font-size:9px;padding:2px 6px}
   .current-user-nickname{font-size:10px}
 }
+
+
+/* Ver.1.9.0zxi: current-user detail row refinements */
+.current-user-card{
+  position:relative;
+}
+.current-user-main{
+  min-width:0;
+  padding-right:0;
+}
+.current-user-subrow{
+  gap:6px;
+  min-width:0;
+  width:calc(100% + 190px);
+  max-width:none;
+  overflow:visible;
+}
+.current-user-src{
+  gap:4px;
+  flex:0 0 auto;
+}
+.current-user-separator{
+  margin:0 1px;
+  flex:0 0 auto;
+}
+.current-user-kyro{
+  flex:0 0 auto;
+}
+.current-user-nickname{
+  flex:1 1 auto;
+  min-width:0;
+  max-width:none;
+  overflow:visible;
+  text-overflow:clip;
+  white-space:nowrap;
+}
+.current-user-menu{
+  position:relative;
+  z-index:2;
+}
+
+@media(max-width:640px){
+  .current-user-subrow{
+    width:calc(100% + 150px);
+    gap:5px;
+  }
+  .current-user-separator{
+    margin:0;
+  }
+  .current-user-nickname{
+    font-size:14px;
+  }
+}
