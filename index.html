@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0zxd">
+<link rel="stylesheet" href="css/style.css?v=1.9.0zxe">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -99,9 +99,12 @@
       <span class="kyro-mini-chevron">›</span>
     </button>
 
-    <section class="announcement-card" id="announcementCard">
-      <div class="section-label" id="announcementHeading">📢 お知らせ（0件）</div>
-      <div id="announcementList" class="announcement-empty">現在のお知らせはありません。</div>
+    <section class="announcement-card" id="announcementCard" role="button" tabindex="0" aria-label="お知らせを開く">
+      <span class="announcement-card-main">
+        <span class="section-label" id="announcementHeading">📢 お知らせ（0件）</span>
+        <span id="announcementList" class="announcement-empty">現在のお知らせはありません。</span>
+      </span>
+      <span class="announcement-card-chevron" aria-hidden="true">›</span>
     </section>
 
     <button class="message-board-card" id="messageBoardCard" type="button" aria-label="みんなの伝言板を開く">
@@ -130,10 +133,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zxd</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zxe</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/12 1.9.0zxd JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/14 1.9.0zxe JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -207,6 +210,17 @@
     <div class="name-button-grid" id="nameButtonGrid"></div>
   </div>
 </div>
+<div class="modal-overlay hidden" id="announcementPublicModal">
+  <div class="modal-card announcement-public-modal-card">
+    <div class="dialog-header">
+      <h2 id="announcementPublicModalTitle">📢 お知らせ</h2>
+      <button class="modal-header-close-button" id="closeAnnouncementPublicButton" type="button" aria-label="閉じる"></button>
+    </div>
+    <p class="announcement-public-note">管理者からのお知らせを新しい順に表示します。</p>
+    <div class="announcement-public-list" id="announcementPublicList"></div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="messageBoardModal">
   <div class="modal-card message-board-modal-card">
     <div class="dialog-header">
@@ -269,7 +283,7 @@
         <h3>📍 場所・休場日のリンク</h3>
         <p>ラン＆ウォークの「落合公園」と、ジムの「サンフロッグ春日井」をタップすると地図を開きます。ジムの「休場日を確認」から施設カレンダーを確認できます。</p><p>ラン＆ウォークの開催後は、イベント詳細の「🏃 今日の練習」でグループ別の距離・周回・ペースを確認できます。管理者は過去のイベントを含め、1グループ1行で入力・修正できます。</p>
         <h3>📢 お知らせ</h3>
-        <p>管理者からの正式な連絡です。「お知らせ（○件）」の枠内を上下にスクロールして確認できます。</p>
+        <p>管理者からの正式な連絡です。トップ画面では見出しを確認し、「お知らせ」をタップすると全件の詳細を表示できます。</p>
         <h3>💬 みんなの伝言板</h3>
         <p>トップ画面の「みんなの伝言板」カード、または☰メニューの「みんなの伝言板」から開けます。伝言と掲載期間（3日・7日・14日）を選んで投稿してください。自分の投稿は削除でき、管理者はすべての投稿を削除できます。期限切れの投稿は表示されません。</p>
         <h3>⭐ みんなのおすすめ</h3>
@@ -426,7 +440,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0zxd<br>Official Release<br>2026.08.12</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0zxe<br>Official Release<br>2026.08.14</strong></p>
       </section>
     </div>
 </div></div>
@@ -936,6 +950,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0zxd"></script>
+<script type="module" src="js/app.js?v=1.9.0zxe"></script>
 </body>
 </html>
