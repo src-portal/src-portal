@@ -3110,6 +3110,11 @@ body{
   gap:4px;
   flex:0 0 auto;
 }
+.current-user-separator{
+  flex:0 0 auto;
+  color:#cbd5e1;
+  font-weight:700;
+}
 .current-user-src-dot{
   width:8px;
   height:8px;
