@@ -3255,3 +3255,22 @@ body{
   .user-menu-card .current-user-name-button{max-width:calc(100% - 126px)}
   .current-user-meta{gap:3px}
 }
+
+
+/* Ver.1.9.0zxk: お知らせ一覧の日付表示を全行で完全統一 */
+.notice-date,
+.notice-item-date,
+.announcement-date,
+.announcement-item-date,
+.notice-preview-date,
+.notice-row time,
+.announcement-row time {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  font-variant-numeric: tabular-nums !important;
+  font-feature-settings: "tnum" 1 !important;
+  white-space: nowrap !important;
+}
