@@ -250,6 +250,7 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "adminMenuModal",
     "adminMemberModal",
     "announcementManageModal",
+    "announcementPublicModal",
     "messageBoardModal",
     "eventManageModal",
     "systemSettingsModal",
@@ -2175,6 +2176,10 @@ const dashboardGymButton=document.getElementById("dashboardGymButton");
 
 const announcementCard=document.getElementById("announcementCard");
 const announcementList=document.getElementById("announcementList");
+const announcementPublicModal=document.getElementById("announcementPublicModal");
+const announcementPublicModalTitle=document.getElementById("announcementPublicModalTitle");
+const announcementPublicList=document.getElementById("announcementPublicList");
+const closeAnnouncementPublicButton=document.getElementById("closeAnnouncementPublicButton");
 const announcementManageModal=document.getElementById("announcementManageModal");
 const adminAnnouncementManageButton=document.getElementById("adminAnnouncementManageButton");
 const closeAnnouncementManageButton=document.getElementById("closeAnnouncementManageButton");
@@ -2188,6 +2193,22 @@ const messageBoardModal=document.getElementById("messageBoardModal");
 const messageBoardCard=document.getElementById("messageBoardCard");
 const closeMessageBoardButton=document.getElementById("closeMessageBoardButton");
 const postMessageBoardButton=document.getElementById("postMessageBoardButton");
+
+// Ver.1.9.0zxe: トップのお知らせは見出しのみ。カード全体から全件モーダルを開く。
+function openAnnouncementPublicModal(){
+  renderAnnouncementsModal();
+  show(announcementPublicModal);
+}
+if(announcementCard){
+  announcementCard.onclick=openAnnouncementPublicModal;
+  announcementCard.onkeydown=e=>{
+    if(e.key==="Enter"||e.key===" "){
+      e.preventDefault();
+      openAnnouncementPublicModal();
+    }
+  };
+}
+if(closeAnnouncementPublicButton)closeAnnouncementPublicButton.onclick=()=>hide(announcementPublicModal);
 
 // Ver.1.3.0k: bind message-board controls only after their DOM references are initialized.
 if(messageBoardCard)messageBoardCard.onclick=()=>{renderMessageBoard();show(messageBoardModal);};
@@ -2550,36 +2571,73 @@ function renderAnnouncementsPublic(){
   if(active.length===0){
     announcementList.className="announcement-empty";
     announcementList.textContent=uiT("noAnnouncements","現在のお知らせはありません。");
+    if(announcementCard)announcementCard.setAttribute("aria-label",uiT("announcements","お知らせ"));
     return;
   }
 
-  announcementList.className="announcement-list";
+  announcementList.className="announcement-preview-list";
   announcementList.innerHTML="";
 
+  active.slice(0,3).forEach(a=>{
+    const item=document.createElement("span");
+    item.className="announcement-preview-item";
+
+    const title=document.createElement("span");
+    title.className="announcement-preview-title";
+    title.textContent=a.title||"お知らせ";
+
+    const date=document.createElement("span");
+    date.className="announcement-preview-date";
+    date.textContent=formatAnnouncementDate(a.updatedAt||a.createdAt);
+
+    item.appendChild(title);
+    if(date.textContent)item.appendChild(date);
+    announcementList.appendChild(item);
+  });
+
+  if(announcementCard)announcementCard.setAttribute("aria-label",`${uiT("announcements","お知らせ")} ${active.length}${uiT("itemsSuffix","件")}を開く`);
+}
+
+function renderAnnouncementsModal(){
+  if(!announcementPublicList)return;
+  const active=announcementRecords.filter(a=>a.enabled);
+  if(announcementPublicModalTitle){
+    announcementPublicModalTitle.textContent=`📢 ${uiT("announcements","お知らせ")}（${active.length}${uiT("itemsSuffix","件")}）`;
+  }
+  announcementPublicList.innerHTML="";
+
+  if(active.length===0){
+    const empty=document.createElement("div");
+    empty.className="announcement-public-empty";
+    empty.textContent=uiT("noAnnouncements","現在のお知らせはありません。");
+    announcementPublicList.appendChild(empty);
+    return;
+  }
+
   active.forEach(a=>{
-    const item=document.createElement("div");
-    item.className="announcement-item";
+    const item=document.createElement("article");
+    item.className="announcement-public-item";
 
     const head=document.createElement("div");
-    head.className="announcement-item-head";
+    head.className="announcement-public-item-head";
 
-    const title=document.createElement("div");
-    title.className="announcement-item-title";
+    const title=document.createElement("h3");
+    title.className="announcement-public-item-title";
     title.textContent=a.title||"お知らせ";
 
     const date=document.createElement("div");
-    date.className="announcement-item-date";
+    date.className="announcement-public-item-date";
     date.textContent=formatAnnouncementDate(a.updatedAt||a.createdAt);
 
     const body=document.createElement("div");
-    body.className="announcement-item-body";
+    body.className="announcement-public-item-body";
     body.textContent=a.body||"";
 
     head.appendChild(title);
     if(date.textContent)head.appendChild(date);
     item.appendChild(head);
     if(a.body)item.appendChild(body);
-    announcementList.appendChild(item);
+    announcementPublicList.appendChild(item);
   });
 }
 
