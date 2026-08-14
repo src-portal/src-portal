@@ -2566,7 +2566,9 @@ function renderAnnouncementsPublic(){
 
   const active=announcementRecords.filter(a=>a.enabled);
   const heading=document.getElementById("announcementHeading");
+  const moreIndicator=document.getElementById("announcementMoreIndicator");
   if(heading)heading.textContent=`📢 ${uiT("announcements","お知らせ")}（${active.length}${uiT("itemsSuffix","件")}）`;
+  if(moreIndicator)moreIndicator.classList.toggle("hidden",active.length<=3);
 
   if(active.length===0){
     announcementList.className="announcement-empty";
