@@ -1420,6 +1420,7 @@ function myUpcomingGymKey(){return upcomingGymKeys().find(key=>getNames("gym",ke
 function renderGymQuestCard(){
   if(!gymQuestCard)return;
   gymQuestCard.classList.remove("gym-quest-compact","gym-quest-candidate","gym-quest-mine","gym-quest-subsidy");
+  gymQuestCard.dataset.key="";
   if(!currentUser){
     gymQuestCard.classList.add("gym-quest-compact");
     gymQuestHeading.textContent="🎮 GYM QUEST";
@@ -1431,6 +1432,7 @@ function renderGymQuestCard(){
   const myKey=myUpcomingGymKey();
   const candidateKey=upcomingGymKeys()[0]||"";
   const key=myKey||candidateKey;
+  gymQuestCard.dataset.key=key||"";
   if(!key){
     gymQuestCard.classList.add("gym-quest-compact");
     gymQuestHeading.textContent="🎮 GYM QUEST";
@@ -1468,10 +1470,15 @@ function renderGymQuestCard(){
   gymQuestActionButton.dataset.mode="quest";
   gymQuestActionButton.dataset.key=key;
 }
-function openGymCalendarForQuest(){
+function openGymCalendarForQuest(key=""){
   currentType="gym";
   setType("gym");
-  const now=new Date();currentYear=now.getFullYear();currentMonth=now.getMonth();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(key)){
+    const [y,m]=key.split("-").map(Number);
+    currentYear=y;currentMonth=m-1;
+  }else{
+    const now=new Date();currentYear=now.getFullYear();currentMonth=now.getMonth();
+  }
   renderAll();
   requestAnimationFrame(()=>scrollToBelowHeader(document.querySelector(".calendar-card"),8));
 }
@@ -1514,10 +1521,23 @@ async function saveGymQuestSelection(){
 function renderNextPlan(){
   nextPlanTarget=null;
   if(gymQuestActionButton){
-  gymQuestActionButton.onclick=()=>{
+  gymQuestActionButton.onclick=event=>{
+    event.stopPropagation();
     const mode=gymQuestActionButton.dataset.mode||"calendar";
     const key=gymQuestActionButton.dataset.key||"";
-    if(mode==="quest"&&key)openGymQuestModal(key);else openGymCalendarForQuest();
+    if(mode==="quest"&&key)openGymQuestModal(key);else openGymCalendarForQuest(key);
+  };
+}
+if(gymQuestCard){
+  gymQuestCard.onclick=event=>{
+    if(event.target.closest("button"))return;
+    openGymCalendarForQuest(gymQuestCard.dataset.key||"");
+  };
+  gymQuestCard.onkeydown=event=>{
+    if(event.key!=="Enter"&&event.key!==" ")return;
+    if(event.target.closest("button"))return;
+    event.preventDefault();
+    openGymCalendarForQuest(gymQuestCard.dataset.key||"");
   };
 }
 if(gymQuestOptionList){gymQuestOptionList.onclick=event=>{const button=event.target.closest("[data-quest-id]");if(!button)return;gymQuestSelectedId=button.dataset.questId||"";renderGymQuestOptions();};}
