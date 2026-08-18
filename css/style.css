@@ -3274,3 +3274,32 @@ body{
   font-feature-settings: "tnum" 1 !important;
   white-space: nowrap !important;
 }
+
+
+/* Ver.1.9.0zxl: ラン＆ウォーク以外のイベントを薄い黄色〜オレンジで識別 */
+.day-cell.other-run-event:not(.cancelled-event){
+  background:#fff7e6;
+  border-color:#f4c26b;
+}
+.day-cell.other-run-event:not(.cancelled-event)::after{
+  background:#f59e0b;
+}
+.day-cell.other-run-event:not(.cancelled-event) .day-note{
+  color:#b45309;
+  font-weight:900;
+}
+.day-cell.other-run-event:not(.cancelled-event) .calendar-event-label{
+  background:#fffaf0;
+  color:#9a5a00;
+}
+/* 中止イベントは種類にかかわらず従来の赤表示を優先 */
+.day-cell.other-run-event.cancelled-event{
+  background:#fcebea;
+  border-color:rgba(214,69,69,.45);
+}
+.day-cell.other-run-event.cancelled-event::after{
+  background:var(--red);
+}
+.day-cell.other-run-event.cancelled-event .day-note{
+  color:var(--red);
+}
