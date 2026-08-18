@@ -1325,15 +1325,9 @@ function renderCalendar(){
       }else{
         cell.classList.add("has-event","run-event");
 
-        // Ver.1.9.0zxm: standard Run & Walk stays green; custom events use yellow/orange.
-        // Legacy standard events may have the place name stored in the title field, so treat
-        // both "ラン＆ウォーク" and title===place as standard Run & Walk.
+        // Ver.1.9.0zxn: 「落合公園」だけ通常のラン＆ウォーク色。
         const calendarEventTitle=String(runEvent.title||eventTypeLabel(runEvent.type)).trim();
-        const calendarEventPlace=String(runEvent.place||"").trim();
-        const isStandardRunWalk=
-          calendarEventTitle==="ラン＆ウォーク" ||
-          !calendarEventTitle ||
-          (calendarEventPlace && calendarEventTitle===calendarEventPlace);
+        const isStandardRunWalk=calendarEventTitle==="落合公園";
         cell.classList.add(isStandardRunWalk?"standard-run-event":"other-run-event");
 
         if(runEvent.status==="cancelled"){
@@ -2911,7 +2905,7 @@ async function deleteEvent(ev){
 }
 
 function fillEventDefaults(){
-  if(!eventTitleInput.value)eventTitleInput.value="ラン＆ウォーク";
+  if(!eventTitleInput.value)eventTitleInput.value="落合公園";
   if(!eventPlaceInput.value)eventPlaceInput.value=systemSettings.run.place;
   if(!eventTimeInput.value)eventTimeInput.value=systemSettings.run.time;
 }
@@ -3413,7 +3407,7 @@ adminEventManageButton.onclick=()=>{
   // システム設定の最新値を、新規イベント入力欄へ毎回反映する
   eventTimeInput.value=systemSettings.run.time;
   eventPlaceInput.value=systemSettings.run.place;
-  if(!eventTitleInput.value)eventTitleInput.value="ラン＆ウォーク";
+  if(!eventTitleInput.value)eventTitleInput.value="落合公園";
   renderAdminEvents();
   openAdminChildModal(eventManageModal);
 };
