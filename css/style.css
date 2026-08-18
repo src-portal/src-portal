@@ -3402,3 +3402,12 @@ body{
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+
+/* Ver.1.9.0zxs: compact QUEST action + level/XP */
+.gym-quest-action-hidden{display:none!important}
+.gym-quest-selected-head{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+.gym-quest-selected-head>span{grid-column:auto;min-width:0}
+.gym-quest-inline-action{appearance:none;border:0;background:transparent;padding:4px 0 4px 8px;margin:0;color:#0f5fc8;font-size:12px;line-height:1.2;font-weight:900;white-space:nowrap;cursor:pointer}
+.gym-quest-level{margin-top:6px;padding:0 2px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#334155;font-size:12px;line-height:1.3;font-weight:900}
+.gym-quest-level span{color:#64748b;white-space:nowrap}
+@media(max-width:360px){.gym-quest-inline-action{font-size:11px}.gym-quest-level{gap:7px;font-size:11px}}
