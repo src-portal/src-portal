@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0zxn">
+<link rel="stylesheet" href="css/style.css?v=1.9.0zxo">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -81,6 +81,12 @@
 
     <section class="next-card next-card-link" id="nextPlanCard" role="button" tabindex="0" aria-label="次回参加予定をカレンダーで開く"><div class="section-label">✨ あなたの次回参加予定</div><div id="nextPlanContent" class="next-plan-empty">参加予定はまだありません。</div></section>
 
+    <section class="gym-quest-card gym-quest-compact" id="gymQuestCard" aria-live="polite">
+      <div class="gym-quest-heading" id="gymQuestHeading">🎮 GYM QUEST</div>
+      <div class="gym-quest-content" id="gymQuestContent">次のジム、誰が最初に動く？</div>
+      <button class="gym-quest-action" id="gymQuestActionButton" type="button">ジム行きたい！ ＞</button>
+    </section>
+
     <button class="season-activity-card hidden" id="seasonActivityCard" type="button" aria-live="polite" aria-label="シーズン活動記録の詳細を開く">
       <div class="season-activity-heading">
         <div class="section-label">📈 シーズン活動記録（今季）</div>
@@ -142,10 +148,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zxn</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zxo</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/14 1.9.0zxn JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/14 1.9.0zxo JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -449,7 +455,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0zxn<br>Official Release<br>2026.08.14</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0zxo<br>Official Release<br>2026.08.14</strong></p>
       </section>
     </div>
 </div></div>
@@ -883,6 +889,19 @@ Gear,100.86"></textarea>
 
 
 
+<div class="modal-overlay hidden" id="gymQuestModal">
+  <div class="modal-card gym-quest-modal-card">
+    <div class="dialog-header">
+      <h2>🎮 GYM QUEST</h2>
+      <button class="modal-header-close-button" id="closeGymQuestModalButton" type="button" aria-label="閉じる"></button>
+    </div>
+    <p class="gym-quest-modal-lead" id="gymQuestModalLead">今回のQUESTを1つ選ぼう！</p>
+    <div class="gym-quest-option-list" id="gymQuestOptionList"></div>
+    <button class="primary-button" id="confirmGymQuestButton" type="button" disabled>このQUESTで参加する</button>
+    <p class="settings-note">QUESTはトレーニングの一部として楽しむ軽いチャレンジです。参加後もトレーニング開始前までは変更できます。</p>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="systemSettingsModal">
   <div class="modal-card admin-fixed-modal-card">
     <div class="dialog-header">
@@ -959,6 +978,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0zxn"></script>
+<script type="module" src="js/app.js?v=1.9.0zxo"></script>
 </body>
 </html>
