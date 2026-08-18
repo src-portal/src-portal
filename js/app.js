@@ -1325,9 +1325,15 @@ function renderCalendar(){
       }else{
         cell.classList.add("has-event","run-event");
 
-        // Ver.1.9.0zxl: standard Run & Walk stays green; custom events use yellow/orange.
+        // Ver.1.9.0zxm: standard Run & Walk stays green; custom events use yellow/orange.
+        // Legacy standard events may have the place name stored in the title field, so treat
+        // both "ラン＆ウォーク" and title===place as standard Run & Walk.
         const calendarEventTitle=String(runEvent.title||eventTypeLabel(runEvent.type)).trim();
-        const isStandardRunWalk=calendarEventTitle==="ラン＆ウォーク";
+        const calendarEventPlace=String(runEvent.place||"").trim();
+        const isStandardRunWalk=
+          calendarEventTitle==="ラン＆ウォーク" ||
+          !calendarEventTitle ||
+          (calendarEventPlace && calendarEventTitle===calendarEventPlace);
         cell.classList.add(isStandardRunWalk?"standard-run-event":"other-run-event");
 
         if(runEvent.status==="cancelled"){
