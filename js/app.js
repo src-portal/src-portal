@@ -31,7 +31,7 @@ window.setTimeout(()=>{
   window.setTimeout(finishStartupSplash,420);
 },2400);
 
-const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),currentUserMeta=$("currentUserMeta"),currentUserSrcMember=$("currentUserSrcMember"),currentUserKyroSeparator=$("currentUserKyroSeparator"),currentUserKyroBadge=$("currentUserKyroBadge"),currentUserNickname=$("currentUserNickname"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),reminderCard=$("reminderCard"),reminderContent=$("reminderContent"),nextEventContent=$("nextEventContent"),nextEventCard=$("nextEventCard"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
+const $=id=>document.getElementById(id);const calendarTitle=$("calendarTitle"),calendarGrid=$("calendarGrid"),prevMonthButton=$("prevMonthButton"),nextMonthButton=$("nextMonthButton"),helpButton=$("helpButton"),helpModal=$("helpModal"),closeHelpButton=$("closeHelpButton"),setupModal=$("setupModal"),setupModalTitle=$("setupModalTitle"),setupModalText=$("setupModalText"),closeSetupModalButton=$("closeSetupModalButton"),nameButtonGrid=$("nameButtonGrid"),changeUserButton=$("changeUserButton"),currentUserLabel=$("currentUserLabel"),currentUserMeta=$("currentUserMeta"),currentUserSrcMember=$("currentUserSrcMember"),currentUserKyroSeparator=$("currentUserKyroSeparator"),currentUserKyroBadge=$("currentUserKyroBadge"),currentUserNickname=$("currentUserNickname"),homeView=$("homeView"),detailView=$("detailView"),backButton=$("backButton"),detailDate=$("detailDate"),detailEvent=$("detailEvent"),detailTime=$("detailTime"),detailPlace=$("detailPlace"),participantTitle=$("participantTitle"),participantList=$("participantList"),progressText=$("progressText"),progressFill=$("progressFill"),progressBox=$("progressBox"),progressBar=$("progressBar"),eventMessage=$("eventMessage"),joinButton=$("joinButton"),cancelButton=$("cancelButton"),myStatus=$("myStatus"),gymTab=$("gymTab"),runTab=$("runTab"),eventTitle=$("eventTitle"),eventSummary=$("eventSummary"),eventPlace=$("eventPlace"),eventTime=$("eventTime"),ruleTitle=$("ruleTitle"),ruleValue=$("ruleValue"),calendarLegend=$("calendarLegend"),nextPlanContent=$("nextPlanContent"),gymQuestCard=$("gymQuestCard"),gymQuestHeading=$("gymQuestHeading"),gymQuestContent=$("gymQuestContent"),gymQuestActionButton=$("gymQuestActionButton"),gymQuestModal=$("gymQuestModal"),closeGymQuestModalButton=$("closeGymQuestModalButton"),gymQuestModalLead=$("gymQuestModalLead"),gymQuestOptionList=$("gymQuestOptionList"),confirmGymQuestButton=$("confirmGymQuestButton"),reminderCard=$("reminderCard"),reminderContent=$("reminderContent"),nextEventContent=$("nextEventContent"),nextEventCard=$("nextEventCard"),connectionCard=$("connectionCard"),connectionStatus=$("connectionStatus"),
 userChangeConfirmModal=$("userChangeConfirmModal"),
 cancelUserChangeButton=$("cancelUserChangeButton"),
 confirmUserChangeButton=$("confirmUserChangeButton"),
@@ -107,10 +107,12 @@ async function refreshPortalDataFromServer(){
 
   attendance={};
   attendanceStatuses={};
+  attendanceQuestSelections={};
   attendanceSnap.forEach(d=>{
     const data=d.data();
     attendance[d.id]=data.participants||[];
     attendanceStatuses[d.id]=data.statuses||{};
+    attendanceQuestSelections[d.id]=data.questSelections||{};
   });
 
   const loadedMembers=[];
@@ -240,7 +242,7 @@ let userSelectionMode="public";
 let returnToAdminMenuAfterSetup=false;
 let pendingInviteMember=null;
 let setupAdminLongPressTimer=null;
-let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},selectedSameDayUser="";
+let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},attendanceQuestSelections={},selectedSameDayUser="",gymQuestTargetKey="",gymQuestSelectedId="";
 let memberInvitationMigrationStarted=false;
 let memberProfileDateMigrationStarted=false;
 let lastActiveUpdatedMemberId="";
@@ -417,10 +419,12 @@ onSnapshot(doc(db,"settings","kyro"),snap=>{
 onSnapshot(collection(db,"attendance"),snap=>{
   attendance={};
   attendanceStatuses={};
+  attendanceQuestSelections={};
   snap.forEach(d=>{
     const data=d.data();
     attendance[d.id]=data.participants||[];
     attendanceStatuses[d.id]=data.statuses||{};
+    attendanceQuestSelections[d.id]=data.questSelections||{};
   });
   setOnline("🟢 Firebase 接続中");
   renderAll();
@@ -559,6 +563,11 @@ async function joinEvent(){
       alert("中止イベントには参加登録できません。");
       return;
     }
+  }
+
+  if(currentType==="gym"){
+    openGymQuestModal(selectedKey);
+    return;
   }
 
   try{
@@ -1231,7 +1240,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderGymQuestCard();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -1390,9 +1399,132 @@ function openNextEventInCalendar(){
   });
 }
 
+const GYM_QUESTS=[
+  {id:"new_one",icon:"🎲",name:"NEW ONE",text:"いつもと違うマシンを1つ使う"},
+  {id:"plus5",icon:"🔥",name:"PLUS 5",text:"有酸素運動を5分だけプラス"},
+  {id:"one_more",icon:"💪",name:"ONE MORE",text:"いつものメニューに1種目だけ追加"},
+  {id:"cool_down",icon:"🧘",name:"COOL DOWN",text:"最後に5分ストレッチ"},
+  {id:"warm_up",icon:"🚶",name:"WARM UP",text:"最初に5分ウォームアップ"},
+  {id:"balance",icon:"⚖️",name:"BALANCE",text:"上半身と下半身を1種目ずつ"}
+];
+function gymQuestById(id){return GYM_QUESTS.find(q=>q.id===id)||null}
+function gymQuestFor(key,name=currentUser){return attendanceQuestSelections[eventId("gym",key)]?.[name]||""}
+function upcomingGymKeys(){
+  const todayKey=todayKeyJST();
+  return Object.keys(attendance)
+    .filter(id=>id.startsWith("gym_")&&id.slice(4)>=todayKey&&(attendance[id]||[]).length>0)
+    .map(id=>id.slice(4))
+    .sort();
+}
+function myUpcomingGymKey(){return upcomingGymKeys().find(key=>getNames("gym",key).includes(currentUser))||""}
+function renderGymQuestCard(){
+  if(!gymQuestCard)return;
+  gymQuestCard.classList.remove("gym-quest-compact","gym-quest-candidate","gym-quest-mine","gym-quest-subsidy");
+  if(!currentUser){
+    gymQuestCard.classList.add("gym-quest-compact");
+    gymQuestHeading.textContent="🎮 GYM QUEST";
+    gymQuestContent.innerHTML='<div class="gym-quest-main">名前を選択すると表示されます。</div>';
+    gymQuestActionButton.textContent="ジムを見る ＞";
+    gymQuestActionButton.dataset.mode="calendar";
+    return;
+  }
+  const myKey=myUpcomingGymKey();
+  const candidateKey=upcomingGymKeys()[0]||"";
+  const key=myKey||candidateKey;
+  if(!key){
+    gymQuestCard.classList.add("gym-quest-compact");
+    gymQuestHeading.textContent="🎮 GYM QUEST";
+    gymQuestContent.innerHTML=`<div class="gym-quest-main">次のジム、誰が最初に動く？</div><div class="gym-quest-sub">🏋️ ${escapeHtml(systemSettings.gym.time)} START　QUESTでジムを楽しもう！</div>`;
+    gymQuestActionButton.textContent="ジム行きたい！ ＞";
+    gymQuestActionButton.dataset.mode="calendar";
+    gymQuestActionButton.dataset.key="";
+    return;
+  }
+  const names=getNames("gym",key);
+  const joined=names.includes(currentUser);
+  const count=names.length;
+  const remain=Math.max(requiredMembers-count,0);
+  const subsidy=count>=requiredMembers;
+  if(joined){
+    gymQuestCard.classList.add("gym-quest-mine");
+    if(subsidy)gymQuestCard.classList.add("gym-quest-subsidy");
+    gymQuestHeading.textContent="🎮 NEXT GYM QUEST";
+    const q=gymQuestById(gymQuestFor(key));
+    const support=subsidy?'🎁 補助対象！':`あと${remain}名で補助対象`;
+    gymQuestContent.innerHTML=`<div class="gym-quest-date">📅 ${escapeHtml(fmt(key))}　🕖 ${escapeHtml(systemSettings.gym.time)}〜</div><div class="gym-quest-participants">👥 参加予定 ${count}名　<span>${escapeHtml(support)}</span></div>${q?`<div class="gym-quest-selected"><span>あなたのQUEST</span><strong>${q.icon} ${escapeHtml(q.name)}</strong><small>${escapeHtml(q.text)}</small></div>`:'<div class="gym-quest-selected empty"><span>あなたのQUEST</span><strong>まだ選んでいません</strong></div>'}`;
+    gymQuestActionButton.textContent=q?"QUESTを変更 ＞":"QUESTを選ぶ ＞";
+    gymQuestActionButton.dataset.mode="quest";
+    gymQuestActionButton.dataset.key=key;
+    return;
+  }
+  gymQuestCard.classList.add("gym-quest-candidate");
+  if(subsidy)gymQuestCard.classList.add("gym-quest-subsidy");
+  gymQuestHeading.textContent="🔥 次回ジム開催候補";
+  const starter=names[0]||"メンバー";
+  const starterLine=count===1?`${escapeHtml(starter)}さんが「ジム行きたい！」`:`${escapeHtml(starter)}さんほか${count-1}名が参加希望`;
+  const support=subsidy?'🎁 補助対象！':`あと${remain}名で補助対象`;
+  gymQuestContent.innerHTML=`<div class="gym-quest-date">📅 ${escapeHtml(fmt(key))}　🕖 ${escapeHtml(systemSettings.gym.time)}〜</div><div class="gym-quest-main">${starterLine}</div><div class="gym-quest-participants">👥 現在 ${count}名　<span>${escapeHtml(support)}</span></div><div class="gym-quest-sub">🎲 参加するとQUESTを選べます</div>`;
+  gymQuestActionButton.textContent="自分も参加する ＞";
+  gymQuestActionButton.dataset.mode="quest";
+  gymQuestActionButton.dataset.key=key;
+}
+function openGymCalendarForQuest(){
+  currentType="gym";
+  setType("gym");
+  const now=new Date();currentYear=now.getFullYear();currentMonth=now.getMonth();
+  renderAll();
+  requestAnimationFrame(()=>scrollToBelowHeader(document.querySelector(".calendar-card"),8));
+}
+function renderGymQuestOptions(){
+  const current=gymQuestSelectedId;
+  gymQuestOptionList.innerHTML=GYM_QUESTS.map(q=>`<button class="gym-quest-option ${current===q.id?"selected":""}" type="button" data-quest-id="${q.id}"><span class="gym-quest-option-icon">${q.icon}</span><span class="gym-quest-option-copy"><strong>${escapeHtml(q.name)}</strong><small>${escapeHtml(q.text)}</small></span><span class="gym-quest-option-check">${current===q.id?"✓":""}</span></button>`).join("");
+  confirmGymQuestButton.disabled=!gymQuestSelectedId;
+}
+function openGymQuestModal(key){
+  if(!currentUser){requireName(true);return}
+  gymQuestTargetKey=key;
+  gymQuestSelectedId=gymQuestFor(key)||"";
+  const joined=getNames("gym",key).includes(currentUser);
+  gymQuestModalLead.textContent=`${fmt(key)} ${systemSettings.gym.time}〜　今回のQUESTを1つ選ぼう！`;
+  confirmGymQuestButton.textContent=joined?"このQUESTに変更":"このQUESTで参加する";
+  renderGymQuestOptions();
+  show(gymQuestModal);
+}
+async function saveGymQuestSelection(){
+  if(!gymQuestTargetKey||!gymQuestSelectedId||!currentUser)return;
+  confirmGymQuestButton.disabled=true;
+  const ref=eventPath("gym",gymQuestTargetKey);
+  try{
+    const snap=await getDoc(ref);
+    const existing=snap.exists()?(snap.data().questSelections||{}):{};
+    await setDoc(ref,{
+      type:"gym",date:gymQuestTargetKey,
+      participants:arrayUnion(currentUser),
+      questSelections:{...existing,[currentUser]:gymQuestSelectedId},
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    hide(gymQuestModal);
+  }catch(e){
+    console.error(e);
+    alert("QUESTの保存に失敗しました。Firestoreのルールを確認してください。");
+    confirmGymQuestButton.disabled=false;
+  }
+}
+
 function renderNextPlan(){
   nextPlanTarget=null;
-  const nextPlanCard=document.getElementById("nextPlanCard");
+  if(gymQuestActionButton){
+  gymQuestActionButton.onclick=()=>{
+    const mode=gymQuestActionButton.dataset.mode||"calendar";
+    const key=gymQuestActionButton.dataset.key||"";
+    if(mode==="quest"&&key)openGymQuestModal(key);else openGymCalendarForQuest();
+  };
+}
+if(gymQuestOptionList){gymQuestOptionList.onclick=event=>{const button=event.target.closest("[data-quest-id]");if(!button)return;gymQuestSelectedId=button.dataset.questId||"";renderGymQuestOptions();};}
+if(closeGymQuestModalButton)closeGymQuestModalButton.onclick=()=>hide(gymQuestModal);
+if(gymQuestModal)gymQuestModal.onclick=event=>{if(event.target===gymQuestModal)hide(gymQuestModal);};
+if(confirmGymQuestButton)confirmGymQuestButton.onclick=saveGymQuestSelection;
+const nextPlanCard=document.getElementById("nextPlanCard");
   const nextPlanLabel=nextPlanCard?.querySelector(".section-label");
   const resetNextPlanLabel=()=>{
     if(nextPlanLabel)nextPlanLabel.textContent="✨ あなたの次回参加予定";
@@ -1712,7 +1844,7 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
   updateButtons();
 }
 
-function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
+function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;if(currentType==="gym"&&!joined)joinButton.textContent=names.length===0?"🏋️ ジム行きたい！":"🏋️ 参加する";else if(currentType==="run")joinButton.textContent="参加する";joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
 joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{const returnType=currentType;hide(detailView);show(homeView);setType(returnType);requestAnimationFrame(()=>{document.querySelector(".calendar-card")?.scrollIntoView({behavior:"smooth",block:"start"})})};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};
 nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};
 calendarTitle.onclick=openMonthJump;
