@@ -3353,3 +3353,52 @@ body{
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+
+
+/* Ver.1.9.0zxr: 「このイベントを開く」遷移先でも長いURLを折り返す */
+#detailView,
+#detailView *,
+#eventDetailView,
+#eventDetailView *,
+#eventDetailModal,
+#eventDetailModal *,
+.event-detail-view,
+.event-detail-view *,
+.event-detail-screen,
+.event-detail-screen *,
+.detail-view,
+.detail-view * {
+  min-width: 0;
+}
+
+#detailMemo,
+#eventMemo,
+#eventDetailMemo,
+#detailView .memo,
+#detailView .note,
+#eventDetailView .memo,
+#eventDetailView .note,
+#eventDetailModal .memo,
+#eventDetailModal .note,
+.event-detail-view .memo,
+.event-detail-view .note,
+.event-detail-screen .memo,
+.event-detail-screen .note,
+.detail-view .memo,
+.detail-view .note {
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* opened event views sometimes render memo text without a dedicated memo class */
+#detailView p,
+#detailView div,
+#eventDetailView p,
+#eventDetailView div,
+.event-detail-screen p,
+.event-detail-screen div {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
