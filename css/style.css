@@ -3332,3 +3332,24 @@ body{
   font-size:12px;
   line-height:1.15;
 }
+
+
+/* Ver.1.9.0zxq: prevent long event-detail text / URLs from overflowing */
+.event-detail-view,
+.event-detail-view *,
+.event-detail-card,
+.event-detail-card *,
+.event-detail-memo,
+.event-detail-note {
+  min-width: 0;
+}
+.event-detail-memo,
+.event-detail-note,
+.event-detail-view .memo,
+.event-detail-view .note,
+.event-detail-view .settings-note {
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
