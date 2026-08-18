@@ -1420,6 +1420,7 @@ function myUpcomingGymKey(){return upcomingGymKeys().find(key=>getNames("gym",ke
 function renderGymQuestCard(){
   if(!gymQuestCard)return;
   gymQuestCard.classList.remove("gym-quest-compact","gym-quest-candidate","gym-quest-mine","gym-quest-subsidy");
+  gymQuestActionButton?.classList.remove("gym-quest-action-hidden");
   gymQuestCard.dataset.key="";
   if(!currentUser){
     gymQuestCard.classList.add("gym-quest-compact");
@@ -1453,10 +1454,11 @@ function renderGymQuestCard(){
     gymQuestHeading.textContent="🎮 NEXT GYM QUEST";
     const q=gymQuestById(gymQuestFor(key));
     const support=subsidy?'🎁 補助対象！':`あと${remain}名で補助対象`;
-    gymQuestContent.innerHTML=`<div class="gym-quest-date">📅 ${escapeHtml(fmt(key))}　🕖 ${escapeHtml(systemSettings.gym.time)}〜</div><div class="gym-quest-participants">👥 参加予定 ${count}名　<span>${escapeHtml(support)}</span></div>${q?`<div class="gym-quest-selected"><span>あなたのQUEST</span><strong>${q.icon} ${escapeHtml(q.name)}</strong><small>${escapeHtml(q.text)}</small></div>`:'<div class="gym-quest-selected empty"><span>あなたのQUEST</span><strong>まだ選んでいません</strong></div>'}`;
+    gymQuestContent.innerHTML=`<div class="gym-quest-date">📅 ${escapeHtml(fmt(key))}　🕖 ${escapeHtml(systemSettings.gym.time)}〜</div><div class="gym-quest-participants">👥 参加予定 ${count}名　<span>${escapeHtml(support)}</span></div>${q?`<div class="gym-quest-selected"><div class="gym-quest-selected-head"><span>あなたのQUEST</span><button class="gym-quest-inline-action" type="button" data-gym-quest-inline="1">QUESTを変更 ＞</button></div><strong>${q.icon} ${escapeHtml(q.name)}</strong><small>${escapeHtml(q.text)}</small></div><div class="gym-quest-level">🏅 GYM QUEST Lv.1 <span>⚡ 30 / 50 XP</span></div>`:'<div class="gym-quest-selected empty"><div class="gym-quest-selected-head"><span>あなたのQUEST</span><button class="gym-quest-inline-action" type="button" data-gym-quest-inline="1">QUESTを選ぶ ＞</button></div><strong>まだ選んでいません</strong></div>'}`;
     gymQuestActionButton.textContent=q?"QUESTを変更 ＞":"QUESTを選ぶ ＞";
     gymQuestActionButton.dataset.mode="quest";
     gymQuestActionButton.dataset.key=key;
+    gymQuestActionButton.classList.add("gym-quest-action-hidden");
     return;
   }
   gymQuestCard.classList.add("gym-quest-candidate");
@@ -1539,6 +1541,16 @@ if(gymQuestCard){
     event.preventDefault();
     openGymCalendarForQuest(gymQuestCard.dataset.key||"");
   };
+}
+if(gymQuestCard){
+  gymQuestCard.addEventListener("click",event=>{
+    const inline=event.target.closest("[data-gym-quest-inline]");
+    if(!inline)return;
+    event.preventDefault();
+    event.stopPropagation();
+    const key=gymQuestCard.dataset.key||"";
+    if(key)openGymQuestModal(key);
+  });
 }
 if(gymQuestOptionList){gymQuestOptionList.onclick=event=>{const button=event.target.closest("[data-quest-id]");if(!button)return;gymQuestSelectedId=button.dataset.questId||"";renderGymQuestOptions();};}
 if(closeGymQuestModalButton)closeGymQuestModalButton.onclick=()=>hide(gymQuestModal);
