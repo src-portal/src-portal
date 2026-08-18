@@ -1325,6 +1325,11 @@ function renderCalendar(){
       }else{
         cell.classList.add("has-event","run-event");
 
+        // Ver.1.9.0zxl: standard Run & Walk stays green; custom events use yellow/orange.
+        const calendarEventTitle=String(runEvent.title||eventTypeLabel(runEvent.type)).trim();
+        const isStandardRunWalk=calendarEventTitle==="ラン＆ウォーク";
+        cell.classList.add(isStandardRunWalk?"standard-run-event":"other-run-event");
+
         if(runEvent.status==="cancelled"){
           cell.classList.add("cancelled","cancelled-event");
           note="中止";
@@ -1333,7 +1338,7 @@ function renderCalendar(){
           note="開催";
         }
 
-        eventLabel=`<span class="calendar-event-label">${escapeHtml(runEvent.title||eventTypeLabel(runEvent.type))}</span>`;
+        eventLabel=`<span class="calendar-event-label">${escapeHtml(calendarEventTitle)}</span>`;
         cell.onclick=()=>showEventDetail(runEvent);
       }
     }
