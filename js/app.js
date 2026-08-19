@@ -3040,7 +3040,7 @@ function linkifyEventMemo(value){
       tail=href.slice(-1)+tail;
       href=href.slice(0,-1);
     }
-    return `<a class="event-memo-link" href="${href}" target="_blank" rel="noopener noreferrer">${href}</a>${tail}`;
+    return `<a class="event-memo-link" href="${href}">${href}</a>${tail}`;
   });
 }
 
