@@ -2212,17 +2212,27 @@ function openRecommendationForm(record=null){
 function renderRecommendationPreview(){
   const preview=document.getElementById("recommendationMiniPreview");
   const card=document.getElementById("recommendationMiniCard");
+  const title=document.getElementById("recommendationMiniTitle");
+  const moreIndicator=document.getElementById("recommendationMoreIndicator");
   if(!preview||!card)return;
-  if(!recommendationRecords.length){
+  const list=[...recommendationRecords].sort((a,b)=>recommendationDateValue(b.createdAt).getTime()-recommendationDateValue(a.createdAt).getTime());
+  if(title)title.textContent=`⭐ みんなのおすすめ（${list.length}件）`;
+  if(moreIndicator)moreIndicator.classList.toggle("hidden",list.length<=3);
+  if(!list.length){
+    preview.className="recommendation-mini-preview recommendation-mini-empty";
     preview.textContent="おすすめ情報を投稿してみよう";
     card.classList.add("is-empty");
+    card.setAttribute("aria-label","みんなのおすすめ 0件を開く");
     return;
   }
-  const latest=[...recommendationRecords].sort((a,b)=>recommendationDateValue(b.createdAt).getTime()-recommendationDateValue(a.createdAt).getTime())[0];
-  const likes=Array.isArray(latest.likes)?latest.likes.length:0;
-  const category=recommendationCategoryLabels[latest.category]||recommendationCategoryLabels.other;
-  preview.innerHTML=`<span>${escapeHtml(category)} ${escapeHtml(latest.title||"")}</span><span class="recommendation-mini-likes">👍 ${likes}</span>`;
+  preview.className="recommendation-mini-preview recommendation-mini-list";
+  preview.innerHTML=list.slice(0,3).map(record=>{
+    const likes=Array.isArray(record.likes)?record.likes.length:0;
+    const category=recommendationCategoryLabels[record.category]||recommendationCategoryLabels.other;
+    return `<span class="recommendation-mini-item"><span class="recommendation-mini-item-title">${escapeHtml(category)} ${escapeHtml(record.title||"")}</span><span class="recommendation-mini-likes">👍 ${likes}</span></span>`;
+  }).join("");
   card.classList.remove("is-empty");
+  card.setAttribute("aria-label",`みんなのおすすめ ${list.length}件を開く`);
 }
 
 function renderRecommendations(){
