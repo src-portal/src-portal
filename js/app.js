@@ -1853,14 +1853,14 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
     progressBar.style.display="none";
     progressBox.classList.add("cancelled");
     progressText.textContent="🔴 中止";
-    eventMessage.textContent=ev.memo||"";
+    eventMessage.innerHTML=linkifyEventMemo(ev.memo||"");
     if(ev.memo)eventMessage.classList.remove("hidden");
   }else{
     progressFill.style.width="100%";
     progressBar.style.display="none";
     progressBox.classList.add("confirmed");
     progressText.textContent="🟢 開催予定";
-    eventMessage.textContent=ev.memo||"";
+    eventMessage.innerHTML=linkifyEventMemo(ev.memo||"");
     if(ev.memo)eventMessage.classList.remove("hidden");
   }
 
@@ -2870,7 +2870,7 @@ function showEventDetail(ev){
     <div class="event-detail-card">
       <div class="event-detail-title">${statusIcon} ${typeIcon} ${escapeHtml(displayTitle)} ${statusText}</div>
       <div class="event-detail-sub">📅 ${fmt(ev.date)}<br>🕖 ${ev.time||"19:00"}<br>📍 ${ev.place||"-"}</div>
-      ${ev.memo?`<div class="event-detail-memo">📝 ${escapeHtml(ev.memo)}</div>`:""}
+      ${ev.memo?`<div class="event-detail-memo">📝 ${linkifyEventMemo(ev.memo)}</div>`:""}
     </div>
     ${resultsHtml}
     ${adminEditHtml}
@@ -3029,6 +3029,19 @@ function escapeHtml(value){
     .replaceAll(">","&gt;")
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
+}
+
+function linkifyEventMemo(value){
+  const escaped=escapeHtml(value||"");
+  return escaped.replace(/https?:\/\/[^\s<]+/gi,url=>{
+    let href=url;
+    let tail="";
+    while(/[。、，．,.!?！？)）\]】」』》〉]$/.test(href)){
+      tail=href.slice(-1)+tail;
+      href=href.slice(0,-1);
+    }
+    return `<a class="event-memo-link" href="${href}" target="_blank" rel="noopener noreferrer">${href}</a>${tail}`;
+  });
 }
 
 async function saveEventEdit(eventId,editBox){
