@@ -3031,8 +3031,16 @@ function escapeHtml(value){
     .replaceAll("'","&#039;");
 }
 
+function isStandalonePwa(){
+  return !!(
+    window.matchMedia?.("(display-mode: standalone)").matches ||
+    window.matchMedia?.("(display-mode: fullscreen)").matches ||
+    window.navigator.standalone === true
+  );
+}
 function linkifyEventMemo(value){
   const escaped=escapeHtml(value||"");
+  const linkTarget=isStandalonePwa()?"":' target="_blank" rel="noopener noreferrer"';
   return escaped.replace(/https?:\/\/[^\s<]+/gi,url=>{
     let href=url;
     let tail="";
@@ -3040,7 +3048,7 @@ function linkifyEventMemo(value){
       tail=href.slice(-1)+tail;
       href=href.slice(0,-1);
     }
-    return `<a class="event-memo-link" href="${href}">${href}</a>${tail}`;
+    return `<a class="event-memo-link" href="${href}"${linkTarget}>${href}</a>${tail}`;
   });
 }
 
