@@ -3411,3 +3411,17 @@ body{
 .gym-quest-level{margin-top:6px;padding:0 2px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#334155;font-size:12px;line-height:1.3;font-weight:900}
 .gym-quest-level span{color:#64748b;white-space:nowrap}
 @media(max-width:360px){.gym-quest-inline-action{font-size:11px}.gym-quest-level{gap:7px;font-size:11px}}
+
+
+/* Ver.1.9.0zxu: TOP「みんなのおすすめ」最大3件プレビュー */
+.recommendation-mini-main{gap:5px}
+.recommendation-mini-title{display:block}
+.recommendation-mini-preview.recommendation-mini-list{display:grid;align-items:stretch;gap:0;overflow:visible}
+.recommendation-mini-item{min-width:0;min-height:27px;padding:5px 0;border-top:1px solid #e7edf4;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#425466;font-size:12px;font-weight:850}
+.recommendation-mini-item:first-child{border-top:0}
+.recommendation-mini-item-title{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.recommendation-mini-likes{flex:0 0 auto;color:var(--blue);white-space:nowrap;font-size:11px}
+.recommendation-mini-empty{display:block;color:#425466}
+.recommendation-more-indicator{display:block;margin-top:-1px;padding-right:2px;text-align:right;color:var(--muted);font-size:19px;line-height:.75;font-weight:900;letter-spacing:2px}
+.recommendation-more-indicator.hidden{display:none!important}
+@media(max-width:380px){.recommendation-mini-item{font-size:11px;min-height:25px;padding:4px 0}.recommendation-mini-likes{font-size:10px}}
