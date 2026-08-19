@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0zxs">
+<link rel="stylesheet" href="css/style.css?v=1.9.0zxu">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -131,7 +131,11 @@
     </button>
 
     <button class="recommendation-mini-card" id="recommendationMiniCard" type="button" aria-label="みんなのおすすめを開く">
-      <span class="recommendation-mini-main"><span class="recommendation-mini-title">⭐ みんなのおすすめ</span><span class="recommendation-mini-preview" id="recommendationMiniPreview">おすすめはまだありません。</span></span>
+      <span class="recommendation-mini-main">
+        <span class="recommendation-mini-title" id="recommendationMiniTitle">⭐ みんなのおすすめ（0件）</span>
+        <span class="recommendation-mini-preview" id="recommendationMiniPreview">おすすめはまだありません。</span>
+        <span id="recommendationMoreIndicator" class="recommendation-more-indicator hidden" aria-hidden="true">…</span>
+      </span>
       <span class="recommendation-mini-chevron">›</span>
     </button>
     <section class="reminder-card hidden" id="reminderCard" aria-live="polite">
@@ -148,10 +152,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zxs</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zxu</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/14 1.9.0zxs JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/14 1.9.0zxu JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -278,7 +282,7 @@
           <li>現在のユーザーを選択します。</li>
           <li>「ラン＆ウォーク」または「ジム」を選択します。</li>
           <li>参加したい日付をタップします。</li>
-          <li>「参加する」または「参加取消」を押します。</li>
+          <li>ラン＆ウォークは「参加する」、ジムはQUESTを選択して参加登録します。登録後は必要に応じて「参加取消」を押せます。</li>
         </ol>
         <p>参加人数や参加者はリアルタイムで更新されます。ダッシュボードの「次回イベント」をタップすると、該当月のカレンダーへ移動します。</p>
         <p>今日または明日に参加予定がある場合は、「あなたの次回参加予定」のタイトルと背景色が変わり、予定を目立たせて表示します。参加予定のイベントは名称・日時・場所を表示します。未回答のイベントや、ほかのメンバーが参加登録している翌日のジムがある場合は、別途リマインダーで参加登録を案内します。</p>
@@ -287,8 +291,20 @@
         <p>増加した場合は少し強調し、同じ場合は穏やかに表示します。減少した場合は評価せず、回数の事実だけを表示します。ラン＆ウォークとジムの個人順位は表示しません。</p>
         <p>ラン＆ウォークには通常活動・大会・駅伝を含みます。中止イベントと「行けなくなりました」は集計から除外します。ジムは実際に参加登録が残っている日を実績として集計します。</p>
 
-        <h3>🏋️ ジムの参加・料金</h3>
-        <p>ジムは1人から利用できます。参加できる日が決まったら、カレンダーから参加登録してください。3人以上集まった場合は、ジム利用料300円／人をクラブ費から補助します。</p>
+        <h3>🏋️ ジムの参加・GYM QUEST</h3>
+        <p>ジムトレーニングは定期開催ではありません。行きたいメンバーがカレンダーから参加を表明すると、その日が「次回ジム開催候補」として共有されます。基本の開始時刻は19:00です。</p>
+        <p>トップ画面の「GYM QUEST」カードでは、次回ジム開催候補、参加人数、補助対象までの人数、自分が選んだQUESTを確認できます。カード本体をタップするとジムのカレンダーへ移動します。</p>
+        <h3>🎮 GYM QUESTの参加方法</h3>
+        <ol class="help-steps">
+          <li>ジムのカレンダーで参加したい日を選びます。</li>
+          <li>最初の参加者は「ジム行きたい！」、すでに参加希望者がいる場合は「参加する」を押します。</li>
+          <li>「YOUR GYM QUEST」で好きなQUESTを1つ選びます。</li>
+          <li>「このQUESTで参加する」を押すと参加確定です。</li>
+        </ol>
+        <p>QUESTは、普段のトレーニングに小さな遊びを加えるための軽いチャレンジです。トレーニング開始前までは、トップ画面の「あなたのQUEST」にある「QUESTを変更 ＞」から選び直せます。</p>
+        <p>トップ画面には「GYM QUEST Lv.」とXPもコンパクトに表示します。QUESTのクリアによるXP・レベル・称号・バッジなどの詳細な成長ルールは現在検討中です。</p>
+        <h3>💰 ジムの料金・補助</h3>
+        <p>ジムは1人から利用できます。3人以上集まった場合は、ジム利用料300円／人をクラブ費から補助します。「開催決定」ではなく、3名以上になった時点で「補助対象」として表示します。</p>
         <ul>
           <li>登録カード料：初回のみ200円</li>
           <li>ロッカー利用料：50円</li>
@@ -455,7 +471,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0zxs<br>Official Release<br>2026.08.14</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0zxu<br>Official Release<br>2026.08.14</strong></p>
       </section>
     </div>
 </div></div>
@@ -978,6 +994,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0zxs"></script>
+<script type="module" src="js/app.js?v=1.9.0zxu"></script>
 </body>
 </html>
