@@ -3425,3 +3425,20 @@ body{
 .recommendation-more-indicator{display:block;margin-top:-1px;padding-right:2px;text-align:right;color:var(--muted);font-size:19px;line-height:.75;font-weight:900;letter-spacing:2px}
 .recommendation-more-indicator.hidden{display:none!important}
 @media(max-width:380px){.recommendation-mini-item{font-size:11px;min-height:25px;padding:4px 0}.recommendation-mini-likes{font-size:10px}}
+
+
+/* Ver.1.9.0zxv: イベント「メモ」内URLをクリック可能にする */
+.event-message,
+.event-detail-memo{
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.event-memo-link{
+  color:#0f63c9;
+  text-decoration:underline;
+  text-underline-offset:2px;
+  overflow-wrap:anywhere;
+  word-break:break-all;
+}
+.event-memo-link:visited{color:#0f63c9}
