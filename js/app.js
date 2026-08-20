@@ -1240,7 +1240,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="ジムトレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderGymQuestCard();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="フィットネストレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderGymQuestCard();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -1378,7 +1378,7 @@ function renderNextEventPublic(){
   }
   const ev=events[0];
   const [,m,d]=ev.date.split("-").map(Number);
-  const eventName=ev.title||ev.place||(ev.type==="gym"?"ジム":"ラン＆ウォーク");
+  const eventName=ev.title||ev.place||(ev.type==="gym"?"フィットネス":"ラン＆ウォーク");
   nextEventContent.className="dashboard-value dashboard-next-event-content";
   nextEventContent.innerHTML=`<span class="dashboard-next-date">${m}/${d}</span><span class="dashboard-next-name">${escapeHtml(eventName)}</span>`;
   nextEventCard?.classList.remove("is-empty");
@@ -1437,8 +1437,8 @@ function renderGymQuestCard(){
   if(!key){
     gymQuestCard.classList.add("gym-quest-compact");
     gymQuestHeading.textContent="🎮 GYM QUEST";
-    gymQuestContent.innerHTML=`<div class="gym-quest-main">次のジム、誰が最初に動く？</div><div class="gym-quest-sub">🏋️ ${escapeHtml(systemSettings.gym.time)} START　QUESTでジムを楽しもう！</div>`;
-    gymQuestActionButton.textContent="ジム行きたい！ ＞";
+    gymQuestContent.innerHTML=`<div class="gym-quest-main">次のフィットネス、誰が最初に動く？</div><div class="gym-quest-sub">🏋️ ${escapeHtml(systemSettings.gym.time)} START　QUESTでジムを楽しもう！</div>`;
+    gymQuestActionButton.textContent="フィットネス行きたい！ ＞";
     gymQuestActionButton.dataset.mode="calendar";
     gymQuestActionButton.dataset.key="";
     return;
@@ -1463,9 +1463,9 @@ function renderGymQuestCard(){
   }
   gymQuestCard.classList.add("gym-quest-candidate");
   if(subsidy)gymQuestCard.classList.add("gym-quest-subsidy");
-  gymQuestHeading.textContent="🔥 次回ジム開催候補";
+  gymQuestHeading.textContent="🔥 次回フィットネス開催候補";
   const starter=names[0]||"メンバー";
-  const starterLine=count===1?`${escapeHtml(starter)}さんが「ジム行きたい！」`:`${escapeHtml(starter)}さんほか${count-1}名が参加希望`;
+  const starterLine=count===1?`${escapeHtml(starter)}さんが「フィットネス行きたい！」`:`${escapeHtml(starter)}さんほか${count-1}名が参加希望`;
   const support=subsidy?'🎁 補助対象！':`あと${remain}名で補助対象`;
   gymQuestContent.innerHTML=`<div class="gym-quest-date">📅 ${escapeHtml(fmt(key))}　🕖 ${escapeHtml(systemSettings.gym.time)}〜</div><div class="gym-quest-main">${starterLine}</div><div class="gym-quest-participants">👥 現在 ${count}名　<span>${escapeHtml(support)}</span></div><div class="gym-quest-sub">🎲 参加するとQUESTを選べます</div>`;
   gymQuestActionButton.textContent="自分も参加する ＞";
@@ -1621,7 +1621,7 @@ const nextPlanCard=document.getElementById("nextPlanCard");
         ? "🔔 明日は参加予定です！"
         : "✨ あなたの次回参加予定";
   }
-  const label=p.type==="gym"?"🏋️ ジム":`🏃 ${escapeHtml(p.title||"ラン＆ウォーク")}`;
+  const label=p.type==="gym"?"🏋️ フィットネス":`🏃 ${escapeHtml(p.title||"ラン＆ウォーク")}`;
   nextPlanContent.className="next-plan-item next-plan-compact";
   nextPlanContent.innerHTML=`<span class="next-plan-name">${label}</span><span class="next-plan-meta">📅 ${fmt(p.key)}　🕖${escapeHtml(p.time)}　📍${escapeHtml(p.place)}</span>`;
   nextPlanCard?.classList.remove("is-empty","is-today","is-tomorrow");
@@ -1876,7 +1876,7 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
   updateButtons();
 }
 
-function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;if(currentType==="gym"&&!joined)joinButton.textContent=names.length===0?"🏋️ ジム行きたい！":"🏋️ 参加する";else if(currentType==="run")joinButton.textContent="参加する";joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
+function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;if(currentType==="gym"&&!joined)joinButton.textContent=names.length===0?"🏋️ フィットネス行きたい！":"🏋️ 参加する";else if(currentType==="run")joinButton.textContent="参加する";joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
 joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{const returnType=currentType;hide(detailView);show(homeView);setType(returnType);requestAnimationFrame(()=>{document.querySelector(".calendar-card")?.scrollIntoView({behavior:"smooth",block:"start"})})};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};
 nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};
 calendarTitle.onclick=openMonthJump;
@@ -3705,10 +3705,10 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
   const messages = {
     ja: {
       help:"ヘルプ", refreshLatest:"最新版に更新", refreshing:"最新情報を取得中...", refreshDone:"最新情報に更新しました", refreshFailed:"更新できませんでした", currentUser:"現在のユーザー", unset:"未設定", change:"変更", menu:"メニュー", recommendations:"みんなのおすすめ", adminMenu:"管理者メニュー",
-      members:"登録メンバー", monthlyRun:"今月ラン参加", monthlyGym:"今月ジム参加", announcements:"お知らせ",
+      members:"登録メンバー", monthlyRun:"今月ラン参加", monthlyGym:"今月フィットネス参加", announcements:"お知らせ",
       noAnnouncements:"現在のお知らせはありません。", nextPlan:"あなたの次回参加予定", noNextPlan:"参加予定はまだありません。",
       nextEvent:"次回イベント", noNextEvent:"今後のイベントは登録されていません。", openEvent:"このイベントを開く",
-      runWalk:"ラン＆ウォーク", gym:"ジム", calendarBack:"カレンダーへ戻る",
+      runWalk:"ラン＆ウォーク", gym:"フィットネス", calendarBack:"カレンダーへ戻る",
       runSummary:"イベント管理で登録された開催日を表示します。", gymSummary:"😊 一緒に行ける方募集中！",
       runRuleTitle:"開催状態", runRuleValue:"管理者がイベントごとに設定", gymRuleTitle:"補助条件",
       participants:"参加者", notJoined:"まだ参加していません。", join:"参加する", cancelJoin:"参加取消",
@@ -3731,7 +3731,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
       members:"Members", monthlyRun:"Run this month", monthlyGym:"Gym this month", announcements:"Announcements",
       noAnnouncements:"There are no announcements.", nextPlan:"Your next plan", noNextPlan:"You have no upcoming plans.",
       nextEvent:"Next event", noNextEvent:"There are no upcoming events.", openEvent:"Open this event",
-      runWalk:"Run & Walk", gym:"Gym", calendarBack:"Back to calendar",
+      runWalk:"Run & Walk", gym:"Fitness", calendarBack:"Back to calendar",
       runSummary:"Shows dates registered in Event Management.", gymSummary:"😊 Looking for gym partners!",
       runRuleTitle:"Event status", runRuleValue:"Set for each event by the administrator", gymRuleTitle:"Subsidy conditions",
       participants:"Participants", notJoined:"You are not joining yet.", join:"Join", cancelJoin:"Cancel participation",
