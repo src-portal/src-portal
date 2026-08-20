@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0zxz">
+<link rel="stylesheet" href="css/style.css?v=1.9.0zya">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -87,6 +87,14 @@
       <button class="gym-quest-action" id="gymQuestActionButton" type="button">フィットネス行きたい！ ＞</button>
     </section>
 
+    <button class="fitness-point-card" id="fitnessPointCard" type="button" aria-label="FITNESS POINTランキングを開く">
+      <span class="fitness-point-card-main">
+        <span class="fitness-point-card-title">🏆 FITNESS POINT</span>
+        <span class="fitness-point-card-value">今季 <strong>--pt</strong>　現在 <strong>--位</strong></span>
+      </span>
+      <span class="fitness-point-card-chevron">›</span>
+    </button>
+
     <button class="season-activity-card hidden" id="seasonActivityCard" type="button" aria-live="polite" aria-label="シーズン活動記録の詳細を開く">
       <div class="season-activity-heading">
         <div class="section-label">📈 シーズン活動記録（今季）</div>
@@ -152,12 +160,55 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zxz</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zya</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/14 1.9.0zxz JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/14 1.9.0zya JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
+</div>
+
+<div class="modal-overlay hidden" id="fitnessPointModal">
+  <div class="modal-card fitness-point-modal-card">
+    <div class="modal-header">
+      <h2>🏆 FITNESS POINT</h2>
+      <button class="modal-header-close-button" id="closeFitnessPointModalButton" type="button" aria-label="閉じる"></button>
+    </div>
+    <div class="fitness-point-season">2026 上期（4/1〜9/30）</div>
+    <div class="fitness-point-tabs" role="tablist">
+      <button class="fitness-point-tab active" id="fitnessPointRankingTab" type="button">ランキング</button>
+      <button class="fitness-point-tab" id="fitnessPointMyTab" type="button">自分の記録</button>
+    </div>
+    <section id="fitnessPointRankingPanel" class="fitness-point-panel">
+      <div class="fitness-point-placeholder">
+        <strong>シーズンランキング</strong>
+        <p>POINT登録機能の実装後、ここにメンバーの順位と獲得POINTを表示します。</p>
+      </div>
+      <div class="fitness-point-ranking-demo" aria-label="表示イメージ">
+        <div><span>🥇 1位</span><strong>-- pt</strong></div>
+        <div><span>🥈 2位</span><strong>-- pt</strong></div>
+        <div><span>🥉 3位</span><strong>-- pt</strong></div>
+      </div>
+      <p class="fitness-point-note">同POINTは同順位。シーズン終了時に順位を確定します。</p>
+    </section>
+    <section id="fitnessPointMyPanel" class="fitness-point-panel hidden">
+      <div class="fitness-point-summary-grid">
+        <div><span>今季POINT</span><strong>-- pt</strong></div>
+        <div><span>現在順位</span><strong>-- 位</strong></div>
+        <div><span>参加回数</span><strong>-- 回</strong></div>
+        <div><span>平均</span><strong>-- pt</strong></div>
+      </div>
+      <div class="fitness-point-placeholder fitness-point-history">
+        <strong>参加履歴・POINT推移</strong>
+        <p>POINT登録機能の実装後、日付ごとの獲得POINTとQUESTを表示します。</p>
+      </div>
+    </section>
+    <div class="fitness-point-rule-mini">
+      <strong>POINTルール</strong>
+      <span>来館 +1 / 有酸素10分 +1 / 柔軟 +1 / マシン最大 +3 / BONUS QUEST +1〜2</span>
+      <span>1回 最大8pt</span>
+    </div>
+  </div>
 </div>
 
 <div class="modal-overlay hidden" id="seasonActivityModal">
@@ -471,7 +522,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0zxz<br>Official Release<br>2026.08.14</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0zya<br>Official Release<br>2026.08.14</strong></p>
       </section>
     </div>
 </div></div>
@@ -994,6 +1045,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0zxz"></script>
+<script type="module" src="js/app.js?v=1.9.0zya"></script>
 </body>
 </html>
