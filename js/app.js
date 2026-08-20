@@ -1503,17 +1503,39 @@ function openGymQuestModal(key){
 async function saveGymQuestSelection(){
   if(!gymQuestTargetKey||!gymQuestSelectedId||!currentUser)return;
   confirmGymQuestButton.disabled=true;
-  const ref=eventPath("gym",gymQuestTargetKey);
+
+  const targetKey=gymQuestTargetKey;
+  const selectedQuestId=gymQuestSelectedId;
+  const ref=eventPath("gym",targetKey);
+  const attendanceId=eventId("gym",targetKey);
+
   try{
-    const snap=await getDoc(ref);
-    const existing=snap.exists()?(snap.data().questSelections||{}):{};
+    // merge:true で既存の参加者・QUESTを残したまま、このユーザー分だけ追加/更新する。
+    // 事前の getDoc は不要なので、Firestore の読み取り回数も1回削減。
     await setDoc(ref,{
-      type:"gym",date:gymQuestTargetKey,
+      type:"gym",
+      date:targetKey,
       participants:arrayUnion(currentUser),
-      questSelections:{...existing,[currentUser]:gymQuestSelectedId},
+      questSelections:{[currentUser]:selectedQuestId},
       updatedAt:serverTimestamp()
     },{merge:true});
+
+    // Firestore の onSnapshot を待たず、書き込み成功直後に画面へ即時反映する。
+    const localParticipants=Array.isArray(attendance[attendanceId])
+      ? [...attendance[attendanceId]]
+      : [];
+    if(!localParticipants.includes(currentUser))localParticipants.push(currentUser);
+    attendance[attendanceId]=localParticipants;
+    attendanceQuestSelections[attendanceId]={
+      ...(attendanceQuestSelections[attendanceId]||{}),
+      [currentUser]:selectedQuestId
+    };
+
     hide(gymQuestModal);
+    renderAll();
+
+    // カレンダーの日付詳細から参加した場合は、その場の参加者表示も更新する。
+    if(currentType==="gym"&&selectedKey===targetKey)renderDetail();
   }catch(e){
     console.error(e);
     alert("QUESTの保存に失敗しました。Firestoreのルールを確認してください。");
