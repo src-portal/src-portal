@@ -270,6 +270,7 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "adminKyroModal",
     "adminKyroImportModal",
     "seasonActivityModal",
+    "fitnessPointModal",
     "kyroDistanceListModal"
   ].includes(e.id)){
     positionMemberModalBelowHeader(e);
@@ -1556,6 +1557,28 @@ if(gymQuestOptionList){gymQuestOptionList.onclick=event=>{const button=event.tar
 if(closeGymQuestModalButton)closeGymQuestModalButton.onclick=()=>hide(gymQuestModal);
 if(gymQuestModal)gymQuestModal.onclick=event=>{if(event.target===gymQuestModal)hide(gymQuestModal);};
 if(confirmGymQuestButton)confirmGymQuestButton.onclick=saveGymQuestSelection;
+
+/* FITNESS POINT Phase 1: UI only. Firestore/point records are intentionally untouched. */
+const fitnessPointCard=document.getElementById("fitnessPointCard");
+const fitnessPointModal=document.getElementById("fitnessPointModal");
+const closeFitnessPointModalButton=document.getElementById("closeFitnessPointModalButton");
+const fitnessPointRankingTab=document.getElementById("fitnessPointRankingTab");
+const fitnessPointMyTab=document.getElementById("fitnessPointMyTab");
+const fitnessPointRankingPanel=document.getElementById("fitnessPointRankingPanel");
+const fitnessPointMyPanel=document.getElementById("fitnessPointMyPanel");
+function setFitnessPointTab(mode){
+  const ranking=mode!=="my";
+  fitnessPointRankingTab?.classList.toggle("active",ranking);
+  fitnessPointMyTab?.classList.toggle("active",!ranking);
+  fitnessPointRankingPanel?.classList.toggle("hidden",!ranking);
+  fitnessPointMyPanel?.classList.toggle("hidden",ranking);
+}
+if(fitnessPointCard)fitnessPointCard.onclick=()=>{setFitnessPointTab("ranking");show(fitnessPointModal);};
+if(closeFitnessPointModalButton)closeFitnessPointModalButton.onclick=()=>hide(fitnessPointModal);
+if(fitnessPointModal)fitnessPointModal.onclick=event=>{if(event.target===fitnessPointModal)hide(fitnessPointModal);};
+if(fitnessPointRankingTab)fitnessPointRankingTab.onclick=()=>setFitnessPointTab("ranking");
+if(fitnessPointMyTab)fitnessPointMyTab.onclick=()=>setFitnessPointTab("my");
+
 const nextPlanCard=document.getElementById("nextPlanCard");
   const nextPlanLabel=nextPlanCard?.querySelector(".section-label");
   const resetNextPlanLabel=()=>{
