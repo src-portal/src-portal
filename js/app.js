@@ -1757,7 +1757,7 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
 
   detailDate.textContent=fmt(selectedKey);
   detailEvent.textContent=currentType==="gym"
-    ? "🏋️ ジムトレーニング"
+    ? "🏋️ フィットネストレーニング"
     : `🏃 ${ev?.title||"ラン＆ウォーク"}`;
 
   if(currentType==="gym"){
@@ -3917,7 +3917,7 @@ renderNameButtons();updateUser();renderAll();requireName(false)});
     else if (el.id === "nextPlanContent" && text === "参加予定はまだありません。") el.textContent=m.noNextPlan;
     else if (el.id === "eventTitle") {
       if(text === "ラン＆ウォーク") el.textContent=m.runWalk;
-      else if(text === "ジムトレーニング") el.textContent=m.gym;
+      else if(text === "フィットネストレーニング") el.textContent=m.gym;
     } else if (el.id === "eventSummary") {
       if(text === "イベント管理で登録された開催日を表示します。") el.textContent=m.runSummary;
       else if(text === "好きな日を選んで参加表明" || text === "😊 一緒に行ける方募集中！") el.textContent=m.gymSummary;
