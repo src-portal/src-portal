@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0zxx">
+<link rel="stylesheet" href="css/style.css?v=1.9.0zxy">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -74,17 +74,17 @@
   <div class="dashboard-grid">
     <button class="dashboard-stat dashboard-stat-button" id="dashboardMembersButton" type="button"><div class="dashboard-icon members">👥</div><div class="dashboard-label">登録メンバー</div><div class="dashboard-value" id="dashboardMemberCount">--</div></button>
     <button class="dashboard-stat dashboard-stat-button" id="dashboardRunButton" type="button"><div class="dashboard-icon run">🏃</div><div class="dashboard-label">今月ラン参加者数</div><div class="dashboard-value" id="dashboardRunCount">--</div></button>
-    <button class="dashboard-stat dashboard-stat-button" id="dashboardGymButton" type="button"><div class="dashboard-icon gym">🏋️</div><div class="dashboard-label">今月ジム参加者数</div><div class="dashboard-value" id="dashboardGymCount">--</div></button>
+    <button class="dashboard-stat dashboard-stat-button" id="dashboardGymButton" type="button"><div class="dashboard-icon gym">🏋️</div><div class="dashboard-label">今月フィットネス参加者数</div><div class="dashboard-value" id="dashboardGymCount">--</div></button>
     <button class="dashboard-stat dashboard-stat-button dashboard-next-event" id="nextEventCard" type="button" aria-label="次回イベントをカレンダーで開く"><div class="dashboard-icon next-event">📅</div><div class="dashboard-label">次回イベント</div><div class="dashboard-value dashboard-next-event-content" id="nextEventContent">--</div></button>
   </div>
 </section>
 
     <section class="next-card next-card-link" id="nextPlanCard" role="button" tabindex="0" aria-label="次回参加予定をカレンダーで開く"><div class="section-label">✨ あなたの次回参加予定</div><div id="nextPlanContent" class="next-plan-empty">参加予定はまだありません。</div></section>
 
-    <section class="gym-quest-card gym-quest-compact" id="gymQuestCard" role="button" tabindex="0" aria-live="polite" aria-label="ジムのカレンダーを開く">
+    <section class="gym-quest-card gym-quest-compact" id="gymQuestCard" role="button" tabindex="0" aria-live="polite" aria-label="フィットネスのカレンダーを開く">
       <div class="gym-quest-heading" id="gymQuestHeading">🎮 GYM QUEST</div>
-      <div class="gym-quest-content" id="gymQuestContent">次のジム、誰が最初に動く？</div>
-      <button class="gym-quest-action" id="gymQuestActionButton" type="button">ジム行きたい！ ＞</button>
+      <div class="gym-quest-content" id="gymQuestContent">次のフィットネス、誰が最初に動く？</div>
+      <button class="gym-quest-action" id="gymQuestActionButton" type="button">フィットネス行きたい！ ＞</button>
     </section>
 
     <button class="season-activity-card hidden" id="seasonActivityCard" type="button" aria-live="polite" aria-label="シーズン活動記録の詳細を開く">
@@ -95,7 +95,7 @@
       <div class="season-activity-period" id="seasonActivityPeriod">シーズンを確認中...</div>
       <div class="season-activity-count-grid">
         <div class="season-activity-count"><span>🏃 ラン＆ウォーク</span><strong id="seasonActivityRunCount">--回</strong></div>
-        <div class="season-activity-count season-activity-count-gym"><span>🏋️ ジム</span><strong id="seasonActivityGymCount">--回</strong></div>
+        <div class="season-activity-count season-activity-count-gym"><span>🏋️ フィットネス</span><strong id="seasonActivityGymCount">--回</strong></div>
       </div>
     </button>
 
@@ -142,7 +142,7 @@
       <div class="section-label">🔔 リマインダー</div>
       <div id="reminderContent" class="reminder-content"></div>
     </section>
-    <section class="event-switch-card"><div class="event-tabs"><button class="event-tab active" id="runTab" type="button">🏃 ラン＆ウォーク</button><button class="event-tab" id="gymTab" type="button">🏋️ ジム</button></div></section>
+    <section class="event-switch-card"><div class="event-tabs"><button class="event-tab active" id="runTab" type="button">🏃 ラン＆ウォーク</button><button class="event-tab" id="gymTab" type="button">🏋️ フィットネス</button></div></section>
     <section class="event-info-card"><h1 id="eventTitle">ラン＆ウォーク</h1><p class="event-summary" id="eventSummary">イベント管理で登録された開催日を表示します。</p><div class="event-main-info"><div><span id="eventPlace">📍 落合公園</span></div><div>🕖 <span id="eventTime">19:00〜</span></div></div><div class="rule-strip"><div class="rule-title" id="ruleTitle">開催状態</div><div class="rule-value" id="ruleValue">管理者が設定</div></div></section>
     <section class="calendar-card"><div class="calendar-header"><button class="month-button" id="prevMonthButton" type="button">‹</button><button class="calendar-title-button" id="calendarTitle" type="button" aria-label="表示する年月を選択">----</button><button class="month-button" id="nextMonthButton" type="button">›</button></div><div class="weekday-row"><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span><span>日</span></div><div class="calendar-grid" id="calendarGrid"></div><div class="calendar-legend" id="calendarLegend"></div></section>
   </main>
@@ -152,10 +152,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zxx</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zxy</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/14 1.9.0zxx JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/14 1.9.0zxy JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -184,7 +184,7 @@
         <p class="season-detail-message" id="seasonDetailRunMessage"></p>
       </section>
       <section class="season-detail-type season-detail-gym">
-        <h3>🏋️ ジム</h3>
+        <h3>🏋️ フィットネス</h3>
         <div class="season-detail-comparison">
           <div><span class="season-detail-label">今季</span><strong id="seasonDetailGymCurrent">--回</strong></div>
           <div><span class="season-detail-label">前期</span><strong id="seasonDetailGymPrevious">--回</strong></div>
@@ -200,7 +200,7 @@
     <div class="season-detail-rules">
       <strong>💡 集計ルール</strong>
       <p>ラン：ラン＆ウォーク・大会・駅伝の参加実績</p>
-      <p>ジム：実際に参加した日の実績</p>
+      <p>フィットネス：実際に参加した日の実績</p>
       <p>シーズン：上期（4～9月）／下期（10～3月）</p>
     </div>
   </div>
@@ -273,31 +273,31 @@
     <div class="help-content">
       <section class="help-section">
         <h3>📖 SRC Portalについて</h3>
-        <p>SRCメンバーのラン＆ウォークやジムへの参加予定を共有し、仲間と楽しく運動を続けるためのアプリです。</p>
+        <p>SRCメンバーのラン＆ウォークやフィットネスへの参加予定を共有し、仲間と楽しく運動を続けるためのアプリです。</p>
       </section>
 
       <section class="help-section">
         <h3>📋 使い方</h3>
         <ol class="help-steps">
           <li>現在のユーザーを選択します。</li>
-          <li>「ラン＆ウォーク」または「ジム」を選択します。</li>
+          <li>「ラン＆ウォーク」または「フィットネス」を選択します。</li>
           <li>参加したい日付をタップします。</li>
-          <li>ラン＆ウォークは「参加する」、ジムはQUESTを選択して参加登録します。登録後は必要に応じて「参加取消」を押せます。</li>
+          <li>ラン＆ウォークは「参加する」、フィットネスはQUESTを選択して参加登録します。登録後は必要に応じて「参加取消」を押せます。</li>
         </ol>
         <p>参加人数や参加者はリアルタイムで更新されます。ダッシュボードの「次回イベント」をタップすると、該当月のカレンダーへ移動します。</p>
-        <p>今日または明日に参加予定がある場合は、「あなたの次回参加予定」のタイトルと背景色が変わり、予定を目立たせて表示します。参加予定のイベントは名称・日時・場所を表示します。未回答のイベントや、ほかのメンバーが参加登録している翌日のジムがある場合は、別途リマインダーで参加登録を案内します。</p>
+        <p>今日または明日に参加予定がある場合は、「あなたの次回参加予定」のタイトルと背景色が変わり、予定を目立たせて表示します。参加予定のイベントは名称・日時・場所を表示します。未回答のイベントや、ほかのメンバーが参加登録している翌日のフィットネスがある場合は、別途リマインダーで参加登録を案内します。</p>
         <h3>📈 シーズン活動記録</h3>
-        <p>上期（4～9月）・下期（10～3月）ごとに、自分のラン＆ウォークとジムの参加回数を確認できます。トップ画面には今期の回数を表示し、カードをタップすると前期との比較やチームの参考値を確認できます。</p>
-        <p>増加した場合は少し強調し、同じ場合は穏やかに表示します。減少した場合は評価せず、回数の事実だけを表示します。ラン＆ウォークとジムの個人順位は表示しません。</p>
-        <p>ラン＆ウォークには通常活動・大会・駅伝を含みます。中止イベントと「行けなくなりました」は集計から除外します。ジムは実際に参加登録が残っている日を実績として集計します。</p>
+        <p>上期（4～9月）・下期（10～3月）ごとに、自分のラン＆ウォークとフィットネスの参加回数を確認できます。トップ画面には今期の回数を表示し、カードをタップすると前期との比較やチームの参考値を確認できます。</p>
+        <p>増加した場合は少し強調し、同じ場合は穏やかに表示します。減少した場合は評価せず、回数の事実だけを表示します。ラン＆ウォークとフィットネスの個人順位は表示しません。</p>
+        <p>ラン＆ウォークには通常活動・大会・駅伝を含みます。中止イベントと「行けなくなりました」は集計から除外します。フィットネスは実際に参加登録が残っている日を実績として集計します。</p>
 
-        <h3>🏋️ ジムの参加・GYM QUEST</h3>
-        <p>ジムトレーニングは定期開催ではありません。行きたいメンバーがカレンダーから参加を表明すると、その日が「次回ジム開催候補」として共有されます。基本の開始時刻は19:00です。</p>
-        <p>トップ画面の「GYM QUEST」カードでは、次回ジム開催候補、参加人数、補助対象までの人数、自分が選んだQUESTを確認できます。カード本体をタップするとジムのカレンダーへ移動します。</p>
+        <h3>🏋️ フィットネスの参加・GYM QUEST</h3>
+        <p>フィットネストレーニングは定期開催ではありません。行きたいメンバーがカレンダーから参加を表明すると、その日が「次回フィットネス開催候補」として共有されます。基本の開始時刻は19:00です。</p>
+        <p>トップ画面の「GYM QUEST」カードでは、次回フィットネス開催候補、参加人数、補助対象までの人数、自分が選んだQUESTを確認できます。カード本体をタップするとフィットネスのカレンダーへ移動します。</p>
         <h3>🎮 GYM QUESTの参加方法</h3>
         <ol class="help-steps">
-          <li>ジムのカレンダーで参加したい日を選びます。</li>
-          <li>最初の参加者は「ジム行きたい！」、すでに参加希望者がいる場合は「参加する」を押します。</li>
+          <li>フィットネスのカレンダーで参加したい日を選びます。</li>
+          <li>最初の参加者は「フィットネス行きたい！」、すでに参加希望者がいる場合は「参加する」を押します。</li>
           <li>「YOUR GYM QUEST」で好きなQUESTを1つ選びます。</li>
           <li>「このQUESTで参加する」を押すと参加確定です。</li>
         </ol>
@@ -471,7 +471,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0zxx<br>Official Release<br>2026.08.14</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0zxy<br>Official Release<br>2026.08.14</strong></p>
       </section>
     </div>
 </div></div>
@@ -499,7 +499,7 @@
       <div class="member-legend-row">
         <span id="memberOverviewTotalLegend">🔥 今月参加合計</span>
         <span>🏃 ラン</span>
-        <span>🏋️ ジム</span>
+        <span>🏋️ フィットネス</span>
       </div>
       <div class="member-legend-row member-kyro-legend-row">
         <span class="kyro-badge">KYRO</span><span>＝ SRC-KYRO-Clubメンバー</span>
@@ -935,7 +935,7 @@ Gear,100.86"></textarea>
       <p class="settings-note">参加締切はありません。集合場所URLは場所変更時に更新できます。</p>
     </div>
     <div class="settings-section">
-      <h3>🏋️ ジム</h3>
+      <h3>🏋️ フィットネス</h3>
       <label class="admin-form-label">開始時刻</label>
       <input id="settingsGymTime" class="admin-input" type="time" value="19:00">
       <label class="admin-form-label">開催場所</label>
@@ -994,6 +994,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0zxx"></script>
+<script type="module" src="js/app.js?v=1.9.0zxy"></script>
 </body>
 </html>
