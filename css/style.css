@@ -3446,7 +3446,7 @@ body{
 
 /* Ver.1.9.0zya: FITNESS POINT Phase 1（画面骨格） */
 .fitness-point-card{
-  width:100%;margin:10px 0 0;padding:12px 14px;border:1px solid #cfe0ff;border-radius:16px;
+  width:100%;margin:0 0 14px;padding:12px 14px;border:1px solid #cfe0ff;border-radius:16px;
   background:#f7faff;display:flex;align-items:center;justify-content:space-between;gap:12px;
   text-align:left;box-shadow:0 5px 14px rgba(20,55,95,.06);cursor:pointer
 }
