@@ -1531,11 +1531,8 @@ async function saveGymQuestSelection(){
     confirmGymQuestButton.classList.remove("is-saving");
     confirmGymQuestButton.classList.add("is-success");
     confirmGymQuestButton.textContent="✓ 参加登録完了";
-    const questLabel=selectedQuest?`${selectedQuest.icon} ${escapeHtml(selectedQuest.name)}`:escapeHtml(selectedQuestId);
-
     setTimeout(()=>{
       hide(gymQuestModal);
-      showAppToast(`✅ <strong>参加登録しました！</strong><br>🎮 QUEST：${questLabel}`);
       confirmGymQuestButton.classList.remove("is-success");
       confirmGymQuestButton.textContent=originalLabel;
       confirmGymQuestButton.disabled=false;
@@ -1551,7 +1548,7 @@ async function saveGymQuestSelection(){
       }catch(renderError){
         console.error("QUEST保存後の画面更新に失敗しました:",renderError);
       }
-    },420);
+    },1400);
   }catch(err){
     console.error(err);
     confirmGymQuestButton.classList.remove("is-saving","is-success");
