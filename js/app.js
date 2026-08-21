@@ -1519,56 +1519,45 @@ function openGymQuestModal(key){
 }
 async function saveGymQuestSelection(){
   if(!gymQuestTargetKey||!gymQuestSelectedId||!currentUser)return;
-
-  const targetKey=gymQuestTargetKey;
-  const selectedQuestId=gymQuestSelectedId;
-  const selectedQuest=gymQuestById(selectedQuestId);
-  const ref=eventPath("gym",targetKey);
-  const attendanceId=eventId("gym",targetKey);
-  const originalLabel=confirmGymQuestButton.textContent;
-
+  const targetKey=gymQuestTargetKey,selectedQuestId=gymQuestSelectedId,selectedQuest=gymQuestById(selectedQuestId);
+  const ref=eventPath("gym",targetKey),attendanceId=eventId("gym",targetKey),originalLabel=confirmGymQuestButton.textContent;
   confirmGymQuestButton.disabled=true;
   confirmGymQuestButton.textContent="保存中…";
   confirmGymQuestButton.classList.add("is-saving");
-
   try{
-    await setDoc(ref,{
-      type:"gym",
-      date:targetKey,
-      participants:arrayUnion(currentUser),
-      questSelections:{[currentUser]:selectedQuestId},
-      updatedAt:serverTimestamp()
-    },{merge:true});
+    await setDoc(ref,{type:"gym",date:targetKey,participants:arrayUnion(currentUser),questSelections:{[currentUser]:selectedQuestId},updatedAt:serverTimestamp()},{merge:true});
 
-    const localParticipants=Array.isArray(attendance[attendanceId])?[...attendance[attendanceId]]:[];
-    if(!localParticipants.includes(currentUser))localParticipants.push(currentUser);
-    attendance[attendanceId]=localParticipants;
-    attendanceQuestSelections[attendanceId]={
-      ...(attendanceQuestSelections[attendanceId]||{}),
-      [currentUser]:selectedQuestId
-    };
-
-    confirmGymQuestButton.textContent="✓ 参加登録完了";
+    // Firestore保存完了を最優先でユーザーへ返す。
     confirmGymQuestButton.classList.remove("is-saving");
     confirmGymQuestButton.classList.add("is-success");
-
-    renderAll();
-    if(currentType==="gym"&&selectedKey===targetKey)renderDetail();
+    confirmGymQuestButton.textContent="✓ 参加登録完了";
+    const questLabel=selectedQuest?`${selectedQuest.icon} ${escapeHtml(selectedQuest.name)}`:escapeHtml(selectedQuestId);
 
     setTimeout(()=>{
       hide(gymQuestModal);
+      showAppToast(`✅ <strong>参加登録しました！</strong><br>🎮 QUEST：${questLabel}`);
       confirmGymQuestButton.classList.remove("is-success");
       confirmGymQuestButton.textContent=originalLabel;
       confirmGymQuestButton.disabled=false;
-      const questLabel=selectedQuest?`${selectedQuest.icon} ${escapeHtml(selectedQuest.name)}`:escapeHtml(selectedQuestId);
-      showAppToast(`✅ <strong>参加登録しました！</strong><br>🎮 QUEST：${questLabel}`);
+
+      // 再描画は成功表示の後。失敗しても保存成功UIを止めない。
+      try{
+        const localParticipants=Array.isArray(attendance[attendanceId])?[...attendance[attendanceId]]:[];
+        if(!localParticipants.includes(currentUser))localParticipants.push(currentUser);
+        attendance[attendanceId]=localParticipants;
+        attendanceQuestSelections[attendanceId]={...(attendanceQuestSelections[attendanceId]||{}),[currentUser]:selectedQuestId};
+        renderAll();
+        if(currentType==="gym"&&selectedKey===targetKey)renderDetail();
+      }catch(renderError){
+        console.error("QUEST保存後の画面更新に失敗しました:",renderError);
+      }
     },420);
-  }catch(e){
-    console.error(e);
+  }catch(err){
+    console.error(err);
     confirmGymQuestButton.classList.remove("is-saving","is-success");
     confirmGymQuestButton.textContent=originalLabel;
     confirmGymQuestButton.disabled=false;
-    showAppToast('⚠️ <strong>参加登録に失敗しました</strong><br>通信状態を確認して、もう一度お試しください。');
+    showAppToast("⚠️ <strong>参加登録に失敗しました</strong><br>通信状態を確認して、もう一度お試しください。");
   }
 }
 function renderNextPlan(){
