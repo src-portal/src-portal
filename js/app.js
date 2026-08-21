@@ -108,11 +108,13 @@ async function refreshPortalDataFromServer(){
   attendance={};
   attendanceStatuses={};
   attendanceQuestSelections={};
+  attendancePointRecords={};
   attendanceSnap.forEach(d=>{
     const data=d.data();
     attendance[d.id]=data.participants||[];
     attendanceStatuses[d.id]=data.statuses||{};
     attendanceQuestSelections[d.id]=data.questSelections||{};
+    attendancePointRecords[d.id]=data.pointRecords||{};
   });
 
   const loadedMembers=[];
@@ -242,7 +244,7 @@ let userSelectionMode="public";
 let returnToAdminMenuAfterSetup=false;
 let pendingInviteMember=null;
 let setupAdminLongPressTimer=null;
-let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},attendanceQuestSelections={},selectedSameDayUser="",gymQuestTargetKey="",gymQuestSelectedId="";
+let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},attendanceQuestSelections={},attendancePointRecords={},selectedSameDayUser="",gymQuestTargetKey="",gymQuestSelectedId="";
 let memberInvitationMigrationStarted=false;
 let memberProfileDateMigrationStarted=false;
 let lastActiveUpdatedMemberId="";
@@ -271,6 +273,7 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "adminKyroImportModal",
     "seasonActivityModal",
     "fitnessPointModal",
+    "fitnessPointRecordModal",
     "kyroDistanceListModal"
   ].includes(e.id)){
     positionMemberModalBelowHeader(e);
@@ -421,6 +424,7 @@ onSnapshot(collection(db,"attendance"),snap=>{
   attendance={};
   attendanceStatuses={};
   attendanceQuestSelections={};
+  attendancePointRecords={};
   snap.forEach(d=>{
     const data=d.data();
     attendance[d.id]=data.participants||[];
@@ -1786,6 +1790,7 @@ async function saveSameDayStatus(status){
 }
 
 function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderDetail();window.scrollTo({top:0,behavior:"smooth"})}function renderDetail(){
+  fitnessPointRecordButton?.classList.add("hidden");
   const ev=currentType==="run"
     ? primaryEventForDate(selectedKey,"run")
     : null;
@@ -1872,6 +1877,8 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
       progressText.innerHTML=`🟡 あと${remain}名で補助<div class="progress-subtext">💰 ${requiredMembers}人集まれば利用料300円/人補助</div>`;
     }
 
+    renderFitnessPointRecordAction();
+
     if(isPast){
       eventMessage.textContent="過去の日付のため、参加・取消はできません。";
       eventMessage.classList.remove("hidden");
@@ -1920,6 +1927,14 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
 
   updateButtons();
 }
+
+const fitnessPointRecordButton=document.getElementById("fitnessPointRecordButton"),fitnessPointRecordModal=document.getElementById("fitnessPointRecordModal"),closeFitnessPointRecordModalButton=document.getElementById("closeFitnessPointRecordModalButton"),fitnessPointRecordDate=document.getElementById("fitnessPointRecordDate"),fitnessPointCardio=document.getElementById("fitnessPointCardio"),fitnessPointStretch=document.getElementById("fitnessPointStretch"),fitnessPointQuestRow=document.getElementById("fitnessPointQuestRow"),fitnessPointQuestClear=document.getElementById("fitnessPointQuestClear"),fitnessPointQuestName=document.getElementById("fitnessPointQuestName"),fitnessPointTodayTotal=document.getElementById("fitnessPointTodayTotal"),saveFitnessPointButton=document.getElementById("saveFitnessPointButton");let fitnessPointTargetKey="";
+function gymStartReached(key){if(!key)return false;const t=todayKeyJST();if(key<t)return true;if(key>t)return false;const[h,m]=String(systemSettings.gym.time||"19:00").split(":").map(Number),parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Tokyo",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date()),v=Object.fromEntries(parts.map(p=>[p.type,p.value]));return Number(v.hour)*60+Number(v.minute)>=h*60+m}
+function renderFitnessPointRecordAction(){if(!fitnessPointRecordButton)return;const joined=currentUser&&selectedKey&&getNames("gym",selectedKey).includes(currentUser),ok=currentType==="gym"&&joined&&gymStartReached(selectedKey);fitnessPointRecordButton.classList.toggle("hidden",!ok);if(ok)fitnessPointRecordButton.textContent=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser]?"🏆 今日のPOINTを修正 ＞":"🏆 今日のPOINTを記録 ＞"}
+function machinePoint(){return Math.min(3,Math.max(0,Number(document.querySelector('input[name="fitnessPointMachines"]:checked')?.value||0)))}function questPoint(){return gymQuestFor(fitnessPointTargetKey,currentUser)&&fitnessPointQuestClear?.checked?1:0}function fitnessPointTotal(){return 1+(fitnessPointCardio?.checked?1:0)+(fitnessPointStretch?.checked?1:0)+machinePoint()+questPoint()}function refreshFitnessPointTotal(){fitnessPointTodayTotal.textContent=`${fitnessPointTotal()} pt`}
+function openFitnessPointRecord(){fitnessPointTargetKey=selectedKey;fitnessPointRecordDate.textContent=fmt(selectedKey);const saved=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser]||null;fitnessPointCardio.checked=Boolean(saved?.cardio);fitnessPointStretch.checked=Boolean(saved?.stretch);document.querySelector(`input[name="fitnessPointMachines"][value="${Math.min(3,Math.max(0,Number(saved?.machines)||0))}"]`)?.click();const q=gymQuestById(gymQuestFor(selectedKey,currentUser));fitnessPointQuestRow.classList.toggle("hidden",!q);if(q){fitnessPointQuestName.textContent=`${q.icon} ${q.name}｜${q.text}`;fitnessPointQuestClear.checked=Boolean(saved?.questClear)}else fitnessPointQuestClear.checked=false;refreshFitnessPointTotal();show(fitnessPointRecordModal)}
+async function saveFitnessPointRecord(){const id=eventId("gym",fitnessPointTargetKey);if(!getNames("gym",fitnessPointTargetKey).includes(currentUser)){alert("参加登録が確認できないため、POINTを保存できません。");return}const q=gymQuestFor(fitnessPointTargetKey,currentUser),record={date:fitnessPointTargetKey,attendance:1,cardio:fitnessPointCardio.checked?1:0,stretch:fitnessPointStretch.checked?1:0,machines:machinePoint(),questId:q||"",questClear:Boolean(q&&fitnessPointQuestClear.checked),questPoint:questPoint(),total:fitnessPointTotal(),updatedAt:new Date().toISOString()};saveFitnessPointButton.disabled=true;try{await setDoc(eventPath("gym",fitnessPointTargetKey),{pointRecords:{[currentUser]:record},updatedAt:serverTimestamp()},{merge:true});attendancePointRecords[id]={...(attendancePointRecords[id]||{}),[currentUser]:record};hide(fitnessPointRecordModal);renderFitnessPointRecordAction()}catch(e){console.error(e);alert("POINTの保存に失敗しました。Firestoreのルールを確認してください。")}finally{saveFitnessPointButton.disabled=false}}
+fitnessPointRecordButton&&(fitnessPointRecordButton.onclick=openFitnessPointRecord);closeFitnessPointRecordModalButton&&(closeFitnessPointRecordModalButton.onclick=()=>hide(fitnessPointRecordModal));fitnessPointRecordModal&&(fitnessPointRecordModal.onclick=e=>{if(e.target===fitnessPointRecordModal)hide(fitnessPointRecordModal)});[fitnessPointCardio,fitnessPointStretch,fitnessPointQuestClear].forEach(el=>el&&(el.onchange=refreshFitnessPointTotal));document.querySelectorAll('input[name="fitnessPointMachines"]').forEach(el=>el.onchange=refreshFitnessPointTotal);saveFitnessPointButton&&(saveFitnessPointButton.onclick=saveFitnessPointRecord);
 
 function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;if(currentType==="gym"&&!joined)joinButton.textContent=names.length===0?"🏋️ フィットネス行きたい！":"🏋️ 参加する";else if(currentType==="run")joinButton.textContent="参加する";joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
 joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{const returnType=currentType;hide(detailView);show(homeView);setType(returnType);requestAnimationFrame(()=>{document.querySelector(".calendar-card")?.scrollIntoView({behavior:"smooth",block:"start"})})};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};
