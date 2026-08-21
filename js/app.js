@@ -279,7 +279,20 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     positionMemberModalBelowHeader(e);
   }
   e.classList.remove("hidden");
-}function hide(e){e.classList.add("hidden")}function eventId(type,key){return `${type}_${key}`}function eventPath(type,key){return doc(db,"attendance",eventId(type,key))}function getNames(type,key){return attendance[eventId(type,key)]||[]}function isToday(y,m,d){return today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d}
+}function hide(e){e.classList.add("hidden")}
+let appToastTimer=null;
+function showAppToast(message){
+  const toast=document.getElementById("appToast");
+  if(!toast)return;
+  clearTimeout(appToastTimer);
+  toast.innerHTML=message;
+  toast.classList.remove("hidden","show");
+  requestAnimationFrame(()=>toast.classList.add("show"));
+  appToastTimer=setTimeout(()=>{
+    toast.classList.remove("show");
+    setTimeout(()=>toast.classList.add("hidden"),180);
+  },2600);
+}function eventId(type,key){return `${type}_${key}`}function eventPath(type,key){return doc(db,"attendance",eventId(type,key))}function getNames(type,key){return attendance[eventId(type,key)]||[]}function isToday(y,m,d){return today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d}
 function todayKeyJST(){
   const parts=new Intl.DateTimeFormat("en-CA",{
     timeZone:"Asia/Tokyo",
@@ -1506,16 +1519,19 @@ function openGymQuestModal(key){
 }
 async function saveGymQuestSelection(){
   if(!gymQuestTargetKey||!gymQuestSelectedId||!currentUser)return;
-  confirmGymQuestButton.disabled=true;
 
   const targetKey=gymQuestTargetKey;
   const selectedQuestId=gymQuestSelectedId;
+  const selectedQuest=gymQuestById(selectedQuestId);
   const ref=eventPath("gym",targetKey);
   const attendanceId=eventId("gym",targetKey);
+  const originalLabel=confirmGymQuestButton.textContent;
+
+  confirmGymQuestButton.disabled=true;
+  confirmGymQuestButton.textContent="保存中…";
+  confirmGymQuestButton.classList.add("is-saving");
 
   try{
-    // merge:true で既存の参加者・QUESTを残したまま、このユーザー分だけ追加/更新する。
-    // 事前の getDoc は不要なので、Firestore の読み取り回数も1回削減。
     await setDoc(ref,{
       type:"gym",
       date:targetKey,
@@ -1524,10 +1540,7 @@ async function saveGymQuestSelection(){
       updatedAt:serverTimestamp()
     },{merge:true});
 
-    // Firestore の onSnapshot を待たず、書き込み成功直後に画面へ即時反映する。
-    const localParticipants=Array.isArray(attendance[attendanceId])
-      ? [...attendance[attendanceId]]
-      : [];
+    const localParticipants=Array.isArray(attendance[attendanceId])?[...attendance[attendanceId]]:[];
     if(!localParticipants.includes(currentUser))localParticipants.push(currentUser);
     attendance[attendanceId]=localParticipants;
     attendanceQuestSelections[attendanceId]={
@@ -1535,18 +1548,29 @@ async function saveGymQuestSelection(){
       [currentUser]:selectedQuestId
     };
 
-    hide(gymQuestModal);
-    renderAll();
+    confirmGymQuestButton.textContent="✓ 参加登録完了";
+    confirmGymQuestButton.classList.remove("is-saving");
+    confirmGymQuestButton.classList.add("is-success");
 
-    // カレンダーの日付詳細から参加した場合は、その場の参加者表示も更新する。
+    renderAll();
     if(currentType==="gym"&&selectedKey===targetKey)renderDetail();
+
+    setTimeout(()=>{
+      hide(gymQuestModal);
+      confirmGymQuestButton.classList.remove("is-success");
+      confirmGymQuestButton.textContent=originalLabel;
+      confirmGymQuestButton.disabled=false;
+      const questLabel=selectedQuest?`${selectedQuest.icon} ${escapeHtml(selectedQuest.name)}`:escapeHtml(selectedQuestId);
+      showAppToast(`✅ <strong>参加登録しました！</strong><br>🎮 QUEST：${questLabel}`);
+    },420);
   }catch(e){
     console.error(e);
-    alert("QUESTの保存に失敗しました。Firestoreのルールを確認してください。");
+    confirmGymQuestButton.classList.remove("is-saving","is-success");
+    confirmGymQuestButton.textContent=originalLabel;
     confirmGymQuestButton.disabled=false;
+    showAppToast('⚠️ <strong>参加登録に失敗しました</strong><br>通信状態を確認して、もう一度お試しください。');
   }
 }
-
 function renderNextPlan(){
   nextPlanTarget=null;
   if(gymQuestActionButton){
