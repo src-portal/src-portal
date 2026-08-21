@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0zyc">
+<link rel="stylesheet" href="css/style.css?v=1.9.0zyd">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -156,14 +156,14 @@
   </main>
 
   <main class="main-content detail-view hidden" id="detailView">
-    <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button></div></section>
+    <section class="detail-card"><button class="back-button" id="backButton" type="button">← カレンダーへ戻る</button><div class="detail-date" id="detailDate">----</div><div class="detail-event" id="detailEvent">----</div><div class="detail-time" id="detailTime">----</div><div class="detail-place" id="detailPlace">----</div><div class="progress-box" id="progressBox"><div class="progress-text" id="progressText">----</div><div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div></div><div class="event-message hidden" id="eventMessage"></div><div class="participants-box"><h2 id="participantTitle">参加者（0名）</h2><ul class="participant-list" id="participantList"></ul></div><div class="action-box"><p class="my-status" id="myStatus">まだ参加していません。</p><button class="primary-button" id="joinButton" type="button">参加する</button><button class="secondary-button hidden" id="cancelButton" type="button">参加取消</button><button class="fitness-point-record-button hidden" id="fitnessPointRecordButton" type="button">🏆 今日のPOINTを記録 ＞</button></div></section>
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zyc</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zyd</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/14 1.9.0zyc JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/14 1.9.0zyd JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -522,7 +522,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0zyc<br>Official Release<br>2026.08.14</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0zyd<br>Official Release<br>2026.08.14</strong></p>
       </section>
     </div>
 </div></div>
@@ -956,7 +956,16 @@ Gear,100.86"></textarea>
 
 
 
-<div class="modal-overlay hidden" id="gymQuestModal">
+<div class="modal-overlay hidden" id="fitnessPointRecordModal"><div class="modal-card fitness-point-record-modal-card">
+<div class="modal-header"><h2>🏁 TODAY'S FITNESS RESULT</h2><button class="modal-header-close-button" id="closeFitnessPointRecordModalButton" type="button" aria-label="閉じる"></button></div>
+<div class="fitness-point-record-date" id="fitnessPointRecordDate">--</div><p class="fitness-point-record-lead">今日やったことをチェック！ POINTは自動計算されます。</p>
+<label class="fitness-point-check-row"><input type="checkbox" checked disabled><span>🏋️ フィットネスに来た</span><strong>+1pt</strong></label>
+<label class="fitness-point-check-row"><input id="fitnessPointCardio" type="checkbox"><span>🏃 有酸素運動10分</span><strong>+1pt</strong></label>
+<label class="fitness-point-check-row"><input id="fitnessPointStretch" type="checkbox"><span>🧘 柔軟・ストレッチ</span><strong>+1pt</strong></label>
+<div class="fitness-point-machine-box"><div><strong>💪 マシン</strong><span>最大3pt</span></div><div class="fitness-point-machine-options"><label><input type="radio" name="fitnessPointMachines" value="0" checked>0台</label><label><input type="radio" name="fitnessPointMachines" value="1">1台</label><label><input type="radio" name="fitnessPointMachines" value="2">2台</label><label><input type="radio" name="fitnessPointMachines" value="3">3台以上</label></div></div>
+<label class="fitness-point-check-row fitness-point-quest-row" id="fitnessPointQuestRow"><input id="fitnessPointQuestClear" type="checkbox"><span><small>BONUS QUEST</small><b id="fitnessPointQuestName">--</b></span><strong>+1pt</strong></label>
+<div class="fitness-point-total"><span>本日の獲得POINT</span><strong id="fitnessPointTodayTotal">1 pt</strong></div><button class="primary-button" id="saveFitnessPointButton" type="button">この内容で記録する</button>
+<p class="settings-note">現行QUESTでは1回最大7pt。同じ日の再保存は上書きします。</p></div></div><div class="modal-overlay hidden" id="gymQuestModal">
   <div class="modal-card gym-quest-modal-card">
     <div class="dialog-header">
       <h2>🎮 GYM QUEST</h2>
@@ -1045,6 +1054,6 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0zyc"></script>
+<script type="module" src="js/app.js?v=1.9.0zyd"></script>
 </body>
 </html>
