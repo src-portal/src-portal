@@ -608,17 +608,43 @@ async function cancelEvent(){
     return;
   }
   if(!currentUser||!selectedKey)return;
+
+  const targetType=currentType;
+  const targetKey=selectedKey;
+  const id=eventId(targetType,targetKey);
+  const originalLabel=cancelButton.textContent;
+
+  cancelButton.disabled=true;
+  cancelButton.textContent="取消中…";
+
   try{
-    await updateDoc(eventPath(currentType,selectedKey),{
+    await updateDoc(eventPath(targetType,targetKey),{
       participants:arrayRemove(currentUser),
       updatedAt:serverTimestamp()
     });
-  }catch(e){
+
+    // Firestoreの通知待ちにせず、その場で参加者一覧・残人数を更新。
+    attendance[id]=(attendance[id]||[]).filter(name=>name!==currentUser);
+
+    try{
+      renderCalendar();
+      renderGymQuestCard();
+      renderNextPlan();
+      renderDashboard();
+      renderFitnessPointSummary();
+      if(currentType===targetType&&selectedKey===targetKey)renderDetail();
+    }catch(renderError){
+      console.error("参加取消後の画面更新に失敗しました:",renderError);
+    }
+
+  }catch(err){
+    console.error(err);
     alert("参加取消に失敗しました。");
-    console.error(e);
+  }finally{
+    cancelButton.disabled=false;
+    cancelButton.textContent=originalLabel;
   }
 }
-
 function openInviteAuthentication(member){
   pendingInviteMember=member;
   inviteAuthMemberName.textContent=member.name;
@@ -1522,34 +1548,51 @@ async function saveGymQuestSelection(){
   if(!gymQuestTargetKey||!gymQuestSelectedId||!currentUser)return;
   const targetKey=gymQuestTargetKey,selectedQuestId=gymQuestSelectedId,selectedQuest=gymQuestById(selectedQuestId);
   const ref=eventPath("gym",targetKey),attendanceId=eventId("gym",targetKey),originalLabel=confirmGymQuestButton.textContent;
+
   confirmGymQuestButton.disabled=true;
   confirmGymQuestButton.textContent="保存中…";
   confirmGymQuestButton.classList.add("is-saving");
-  try{
-    await setDoc(ref,{type:"gym",date:targetKey,participants:arrayUnion(currentUser),questSelections:{[currentUser]:selectedQuestId},updatedAt:serverTimestamp()},{merge:true});
 
-    // Firestore保存完了を最優先でユーザーへ返す。
+  try{
+    await setDoc(ref,{
+      type:"gym",
+      date:targetKey,
+      participants:arrayUnion(currentUser),
+      questSelections:{[currentUser]:selectedQuestId},
+      updatedAt:serverTimestamp()
+    },{merge:true});
+
+    // 保存成功直後にローカル参加者数を更新して、残人数・カレンダーを即時反映。
+    const localParticipants=Array.isArray(attendance[attendanceId])?[...attendance[attendanceId]]:[];
+    if(!localParticipants.includes(currentUser))localParticipants.push(currentUser);
+    attendance[attendanceId]=localParticipants;
+    attendanceQuestSelections[attendanceId]={
+      ...(attendanceQuestSelections[attendanceId]||{}),
+      [currentUser]:selectedQuestId
+    };
+
+    try{
+      renderCalendar();
+      renderGymQuestCard();
+      renderNextPlan();
+      renderDashboard();
+      renderFitnessPointSummary();
+      if(currentType==="gym"&&selectedKey===targetKey)renderDetail();
+    }catch(renderError){
+      console.error("QUEST保存後の画面更新に失敗しました:",renderError);
+    }
+
     confirmGymQuestButton.classList.remove("is-saving");
     confirmGymQuestButton.classList.add("is-success");
     confirmGymQuestButton.textContent="✓ 参加登録完了";
+
     setTimeout(()=>{
       hide(gymQuestModal);
       confirmGymQuestButton.classList.remove("is-success");
       confirmGymQuestButton.textContent=originalLabel;
       confirmGymQuestButton.disabled=false;
-
-      // 再描画は成功表示の後。失敗しても保存成功UIを止めない。
-      try{
-        const localParticipants=Array.isArray(attendance[attendanceId])?[...attendance[attendanceId]]:[];
-        if(!localParticipants.includes(currentUser))localParticipants.push(currentUser);
-        attendance[attendanceId]=localParticipants;
-        attendanceQuestSelections[attendanceId]={...(attendanceQuestSelections[attendanceId]||{}),[currentUser]:selectedQuestId};
-        renderAll();
-        if(currentType==="gym"&&selectedKey===targetKey)renderDetail();
-      }catch(renderError){
-        console.error("QUEST保存後の画面更新に失敗しました:",renderError);
-      }
     },1400);
+
   }catch(err){
     console.error(err);
     confirmGymQuestButton.classList.remove("is-saving","is-success");
