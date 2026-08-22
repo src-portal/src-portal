@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, getDoc, getDocsFromServer, getDocFromServer, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, getDoc, getDocsFromServer, getDocFromServer, deleteDoc, deleteField, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAd4Uv89V4hZQyjYaR7MfalE8Oyp8ioAbc",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
@@ -245,7 +245,7 @@ let returnToAdminMenuAfterSetup=false;
 let pendingInviteMember=null;
 let setupAdminLongPressTimer=null;
 let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},attendanceQuestSelections={},attendancePointRecords={},selectedSameDayUser="",gymQuestTargetKey="",gymQuestSelectedId="";
-const pendingAttendanceUi=new Map();
+let attendanceSnapshotReady=false,eventsSnapshotReady=false;
 let memberInvitationMigrationStarted=false;
 let memberProfileDateMigrationStarted=false;
 let lastActiveUpdatedMemberId="";
@@ -309,12 +309,16 @@ function isPastKey(key){return Boolean(key)&&key<todayKeyJST()}
 let lastKnownTodayKey=todayKeyJST();
 function refreshAfterAppResume(){
   const currentTodayKey=todayKeyJST();
-  if(currentTodayKey===lastKnownTodayKey)return;
+  if(currentTodayKey!==lastKnownTodayKey){
+    lastKnownTodayKey=currentTodayKey;
+    today=new Date();
+  }
 
-  lastKnownTodayKey=currentTodayKey;
-  today=new Date();
+  // iPhoneホーム画面PWAの復帰時は、日付が同じでも現在のメモリ状態から再描画する。
   renderAll();
-  if(selectedKey)renderDetail();
+  if(selectedKey&&!detailView.classList.contains("hidden")){
+    renderDetail();
+  }
   if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
   if(eventManageModal&&!eventManageModal.classList.contains("hidden"))renderAdminEvents();
 }
@@ -435,10 +439,12 @@ onSnapshot(doc(db,"settings","kyro"),snap=>{
 },err=>console.error("KYRO settings read error",err));
 
 onSnapshot(collection(db,"attendance"),snap=>{
+  attendanceSnapshotReady=true;
   attendance={};
   attendanceStatuses={};
   attendanceQuestSelections={};
   attendancePointRecords={};
+
   snap.forEach(d=>{
     const data=d.data();
     attendance[d.id]=data.participants||[];
@@ -447,43 +453,10 @@ onSnapshot(collection(db,"attendance"),snap=>{
     attendancePointRecords[d.id]=data.pointRecords||{};
   });
 
-  // 保存直後に古いsnapshotが届いても、画面を元に戻さない。
-  const now=Date.now();
-  [...pendingAttendanceUi.entries()].forEach(([id,pending])=>{
-    if(pending.expiresAt<=now){
-      pendingAttendanceUi.delete(id);
-      return;
-    }
-    const names=Array.isArray(attendance[id])?[...attendance[id]]:[];
-    const serverHas=names.includes(pending.name);
-
-    // サーバー状態が意図した状態まで追いついたらoverride終了。
-    if(serverHas===pending.joined){
-      pendingAttendanceUi.delete(id);
-      return;
-    }
-
-    if(pending.joined){
-      if(!names.includes(pending.name))names.push(pending.name);
-    }else{
-      const filtered=names.filter(name=>name!==pending.name);
-      names.length=0;
-      names.push(...filtered);
-    }
-    attendance[id]=names;
-
-    if(pending.joined&&pending.questId){
-      attendanceQuestSelections[id]={
-        ...(attendanceQuestSelections[id]||{}),
-        [pending.name]:pending.questId
-      };
-    }
-  });
-
   setOnline("🟢 Firebase 接続中");
   renderAll();
   if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
-  if(selectedKey)renderDetail();
+  if(selectedKey&&!detailView.classList.contains("hidden"))renderDetail();
 },err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
 onSnapshot(collection(db,"members"),snap=>{
   const loaded=[];
@@ -572,6 +545,7 @@ onSnapshot(collection(db,"recommendations"),snap=>{
 },error=>console.error("Recommendations snapshot error",error));
 
 onSnapshot(collection(db,"events"),snap=>{
+  eventsSnapshotReady=true;
   const loaded=[];
   snap.forEach(d=>{
     const data=d.data();
@@ -592,6 +566,7 @@ onSnapshot(collection(db,"events"),snap=>{
   renderReminder();
   renderCalendar();
   renderDashboard();
+  if(selectedKey&&!detailView.classList.contains("hidden"))renderDetail();
   if(eventManageModal&&!eventManageModal.classList.contains("hidden"))renderAdminEvents();
 },err=>{
   console.error("events read error",err);
@@ -637,44 +612,44 @@ async function joinEvent(){
   }
 }
 
-function renderGymDetailAfterCancel(){
-  if(currentType!=="gym"||!selectedKey)return;
+function applyAttendanceLocalState(type,key,name,joined,questId=""){
+  const id=eventId(type,key);
+  const names=Array.isArray(attendance[id])?[...attendance[id]]:[];
 
-  const names=getNames("gym",selectedKey);
-  const count=names.length;
-  const remain=Math.max(requiredMembers-count,0);
-  const rate=Math.min(count/requiredMembers,1)*100;
-
-  participantTitle.textContent=`参加者（${count}名）`;
-  participantList.innerHTML="";
-  if(count===0){
-    const li=document.createElement("li");
-    li.className="empty-message";
-    li.textContent="まだ参加者はいません。";
-    participantList.appendChild(li);
+  if(joined){
+    if(!names.includes(name))names.push(name);
   }else{
-    names.forEach(name=>{
-      const li=document.createElement("li");
-      li.innerHTML=`<span class="participant-name">${name===currentUser?"⭐":"😊"} ${escapeHtml(name)}</span>`;
-      participantList.appendChild(li);
-    });
+    const filtered=names.filter(item=>item!==name);
+    names.length=0;
+    names.push(...filtered);
+  }
+  attendance[id]=names;
+
+  if(type==="gym"){
+    if(joined&&questId){
+      attendanceQuestSelections[id]={
+        ...(attendanceQuestSelections[id]||{}),
+        [name]:questId
+      };
+    }else if(!joined){
+      const nextQuestSelections={...(attendanceQuestSelections[id]||{})};
+      delete nextQuestSelections[name];
+      attendanceQuestSelections[id]=nextQuestSelections;
+
+      const savedPoint=attendancePointRecords[id]?.[name];
+      if(savedPoint?.test===true){
+        const nextPointRecords={...(attendancePointRecords[id]||{})};
+        delete nextPointRecords[name];
+        attendancePointRecords[id]=nextPointRecords;
+      }
+    }
   }
 
-  progressBox.classList.remove("confirmed","cancelled");
-  progressBar.style.display="block";
-  progressFill.style.width=`${rate}%`;
-  if(count>=requiredMembers){
-    progressBox.classList.add("confirmed");
-    progressText.innerHTML=`🟢 補助対象です（${count}名参加）<div class="progress-subtext">💰 利用料300円/人補助</div>`;
-  }else{
-    progressText.innerHTML=`🟡 あと${remain}名で補助<div class="progress-subtext">💰 ${requiredMembers}人集まれば利用料300円/人補助</div>`;
+  // 参加/取消の画面更新は、この1系統だけに統一する。
+  renderAll();
+  if(currentType===type&&selectedKey===key&&!detailView.classList.contains("hidden")){
+    renderDetail();
   }
-
-  myStatus.textContent=`${currentUser||"未設定"}さんはまだ参加していません。`;
-  cancelButton.classList.add("hidden");
-  joinButton.classList.remove("hidden");
-  joinButton.textContent=names.length===0?"🏋️ フィットネス行きたい！":"🏋️ 参加する";
-  fitnessPointRecordButton?.classList.add("hidden");
 }
 
 async function cancelEvent(){
@@ -687,57 +662,45 @@ async function cancelEvent(){
   const targetType=currentType;
   const targetKey=selectedKey;
   const id=eventId(targetType,targetKey);
+  const originalNames=Array.isArray(attendance[id])?[...attendance[id]]:[];
   const originalLabel=cancelButton.textContent;
 
   cancelButton.disabled=true;
   cancelButton.textContent="取消中…";
 
+  // iPhone PWAでも再起動を待たず、その場で取消状態へ切り替える。
+  applyAttendanceLocalState(targetType,targetKey,currentUser,false);
+
   try{
-    await updateDoc(eventPath(targetType,targetKey),{
+    const payload={
       participants:arrayRemove(currentUser),
       updatedAt:serverTimestamp()
-    });
+    };
 
-    pendingAttendanceUi.set(id,{
-      name:currentUser,
-      joined:false,
-      questId:"",
-      expiresAt:Date.now()+10000
-    });
-
-    attendance[id]=(attendance[id]||[]).filter(name=>name!==currentUser);
-
-    // 取消成功をその場で見せる。
-    cancelButton.textContent="✓ 取消しました";
-
-    // フィットネス詳細はrenderDetailに依存せず、必要な表示を直接確定させる。
-    if(targetType==="gym"&&currentType===targetType&&selectedKey===targetKey){
-      setTimeout(()=>{
-        try{
-          renderGymDetailAfterCancel();
-        }catch(uiError){
-          console.error("参加取消後の直接表示更新に失敗しました:",uiError);
-        }
-      },650);
+    if(targetType==="gym"){
+      payload[`questSelections.${currentUser}`]=deleteField();
+      const savedPoint=attendancePointRecords[id]?.[currentUser];
+      if(savedPoint?.test===true){
+        payload[`pointRecords.${currentUser}`]=deleteField();
+      }
     }
 
-    // TOP・カレンダー側も即時更新。
-    try{
-      renderCalendar();
-      renderGymQuestCard();
-      renderNextPlan();
-      renderDashboard();
-      renderFitnessPointSummary();
-    }catch(renderError){
-      console.error("参加取消後の周辺画面更新に失敗しました:",renderError);
-    }
-
+    await updateDoc(eventPath(targetType,targetKey),payload);
   }catch(err){
     console.error(err);
+
+    // DB失敗時だけ元の参加状態へ戻す。
+    attendance[id]=originalNames;
+    renderAll();
+    if(currentType===targetType&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
+      renderDetail();
+    }
     alert("参加取消に失敗しました。");
-    cancelButton.textContent=originalLabel;
   }finally{
     cancelButton.disabled=false;
+    if(!cancelButton.classList.contains("hidden")){
+      cancelButton.textContent=originalLabel||"参加取消";
+    }
   }
 }
 function openInviteAuthentication(member){
@@ -1641,8 +1604,11 @@ function openGymQuestModal(key){
 }
 async function saveGymQuestSelection(){
   if(!gymQuestTargetKey||!gymQuestSelectedId||!currentUser)return;
-  const targetKey=gymQuestTargetKey,selectedQuestId=gymQuestSelectedId,selectedQuest=gymQuestById(selectedQuestId);
-  const ref=eventPath("gym",targetKey),attendanceId=eventId("gym",targetKey),originalLabel=confirmGymQuestButton.textContent;
+
+  const targetKey=gymQuestTargetKey;
+  const selectedQuestId=gymQuestSelectedId;
+  const ref=eventPath("gym",targetKey);
+  const originalLabel=confirmGymQuestButton.textContent;
 
   confirmGymQuestButton.disabled=true;
   confirmGymQuestButton.textContent="保存中…";
@@ -1657,36 +1623,8 @@ async function saveGymQuestSelection(){
       updatedAt:serverTimestamp()
     },{merge:true});
 
-    // 保存成功直後にローカル参加者数を更新して、残人数・カレンダーを即時反映。
-    pendingAttendanceUi.set(attendanceId,{
-      name:currentUser,
-      joined:true,
-      questId:selectedQuestId,
-      expiresAt:Date.now()+10000
-    });
-
-    const localParticipants=Array.isArray(attendance[attendanceId])?[...attendance[attendanceId]]:[];
-    if(!localParticipants.includes(currentUser))localParticipants.push(currentUser);
-    attendance[attendanceId]=localParticipants;
-    attendanceQuestSelections[attendanceId]={
-      ...(attendanceQuestSelections[attendanceId]||{}),
-      [currentUser]:selectedQuestId
-    };
-
-    // 再参加時に前回の取消完了表示を残さない。
-    cancelButton.disabled=false;
-    cancelButton.textContent="参加取消";
-
-    try{
-      renderCalendar();
-      renderGymQuestCard();
-      renderNextPlan();
-      renderDashboard();
-      renderFitnessPointSummary();
-      if(currentType==="gym"&&selectedKey===targetKey)renderDetail();
-    }catch(renderError){
-      console.error("QUEST保存後の画面更新に失敗しました:",renderError);
-    }
+    // 保存成功後の状態更新は1系統だけ。
+    applyAttendanceLocalState("gym",targetKey,currentUser,true,selectedQuestId);
 
     confirmGymQuestButton.classList.remove("is-saving");
     confirmGymQuestButton.classList.add("is-success");
@@ -1698,20 +1636,10 @@ async function saveGymQuestSelection(){
       confirmGymQuestButton.textContent=originalLabel;
       confirmGymQuestButton.disabled=false;
 
-      // QUEST画面を閉じた後に、背後のイベント詳細を最終状態で再描画する。
-      // これにより「参加者0名 / あと3名 / フィットネス行きたい！」の古い表示を残さない。
-      requestAnimationFrame(()=>{
-        try{
-          renderCalendar();
-          renderGymQuestCard();
-          renderNextPlan();
-          if(currentType==="gym"&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
-            renderDetail();
-          }
-        }catch(finalRenderError){
-          console.error("QUEST画面終了後の最終描画に失敗しました:",finalRenderError);
-        }
-      });
+      // モーダルが閉じた時点でも同じローカル状態から詳細を再表示。
+      if(currentType==="gym"&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
+        renderDetail();
+      }
     },1400);
 
   }catch(err){
@@ -2081,7 +2009,36 @@ async function saveSameDayStatus(status){
   hide(sameDayStatusModal);
 }
 
-function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderDetail();window.scrollTo({top:0,behavior:"smooth"})}function renderDetail(){
+function renderDetailLoading(){
+  detailDate.textContent=selectedKey?fmt(selectedKey):"";
+  detailEvent.textContent="読み込み中...";
+  detailTime.textContent="";
+  detailPlace.textContent="";
+  participantTitle.textContent="参加者";
+  participantList.innerHTML='<li class="empty-message">最新情報を読み込んでいます...</li>';
+  progressText.textContent="同期中...";
+  progressFill.style.width="0%";
+  myStatus.textContent="";
+  joinButton.classList.add("hidden");
+  cancelButton.classList.add("hidden");
+  fitnessPointRecordButton?.classList.add("hidden");
+}
+
+function openDetail(key){
+  selectedKey=key;
+  hide(homeView);
+  show(detailView);
+  const ready=attendanceSnapshotReady&&(currentType!=="run"||eventsSnapshotReady);
+  if(ready)renderDetail();
+  else renderDetailLoading();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function renderDetail(){
+  const ready=attendanceSnapshotReady&&(currentType!=="run"||eventsSnapshotReady);
+  if(!ready){
+    renderDetailLoading();
+    return;
+  }
   fitnessPointRecordButton?.classList.add("hidden");
   const ev=currentType==="run"
     ? primaryEventForDate(selectedKey,"run")
