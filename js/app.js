@@ -443,6 +443,7 @@ onSnapshot(collection(db,"attendance"),snap=>{
     attendance[d.id]=data.participants||[];
     attendanceStatuses[d.id]=data.statuses||{};
     attendanceQuestSelections[d.id]=data.questSelections||{};
+    attendancePointRecords[d.id]=data.pointRecords||{};
   });
   setOnline("🟢 Firebase 接続中");
   renderAll();
