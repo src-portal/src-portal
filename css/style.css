@@ -3524,3 +3524,14 @@ body{
 .fitness-point-history-main strong{display:block;font-size:12px;color:#34475d}
 .fitness-point-history-main small{display:block;margin-top:2px;font-size:10px;color:#78889b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fitness-point-history-score{font-size:14px;font-weight:950;color:#0f63c9;white-space:nowrap}
+
+/* Ver.1.9.0zyt: ラン＆ウォーク詳細の参加者サマリー */
+.event-detail-attendance-summary{
+  margin-top:10px;
+  padding:9px 11px;
+  border-radius:10px;
+  background:#f4f8fd;
+  color:#52647a;
+  font-size:12px;
+  font-weight:800;
+}
