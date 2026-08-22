@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, getDoc, getDocsFromServer, getDocFromServer, deleteDoc, deleteField, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, getDoc, getDocsFromServer, getDocFromServer, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAd4Uv89V4hZQyjYaR7MfalE8Oyp8ioAbc",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
@@ -245,7 +245,6 @@ let returnToAdminMenuAfterSetup=false;
 let pendingInviteMember=null;
 let setupAdminLongPressTimer=null;
 let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},attendanceQuestSelections={},attendancePointRecords={},selectedSameDayUser="",gymQuestTargetKey="",gymQuestSelectedId="";
-let attendanceSnapshotReady=false,eventsSnapshotReady=false;
 let memberInvitationMigrationStarted=false;
 let memberProfileDateMigrationStarted=false;
 let lastActiveUpdatedMemberId="";
@@ -309,23 +308,12 @@ function isPastKey(key){return Boolean(key)&&key<todayKeyJST()}
 let lastKnownTodayKey=todayKeyJST();
 function refreshAfterAppResume(){
   const currentTodayKey=todayKeyJST();
-  if(currentTodayKey!==lastKnownTodayKey){
-    lastKnownTodayKey=currentTodayKey;
-    today=new Date();
-  }
+  if(currentTodayKey===lastKnownTodayKey)return;
 
-  // iPhoneホーム画面PWAの復帰時は、日付が同じでも現在のメモリ状態から再描画する。
+  lastKnownTodayKey=currentTodayKey;
+  today=new Date();
   renderAll();
-  if(selectedKey&&!detailView.classList.contains("hidden")){
-    const targetType=currentType;
-    const targetKey=selectedKey;
-    renderDetail();
-    syncSelectedAttendanceFromServer(targetType,targetKey).then(()=>{
-      if(currentType===targetType&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
-        renderDetail();
-      }
-    });
-  }
+  if(selectedKey)renderDetail();
   if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
   if(eventManageModal&&!eventManageModal.classList.contains("hidden"))renderAdminEvents();
 }
@@ -446,24 +434,20 @@ onSnapshot(doc(db,"settings","kyro"),snap=>{
 },err=>console.error("KYRO settings read error",err));
 
 onSnapshot(collection(db,"attendance"),snap=>{
-  attendanceSnapshotReady=true;
   attendance={};
   attendanceStatuses={};
   attendanceQuestSelections={};
   attendancePointRecords={};
-
   snap.forEach(d=>{
     const data=d.data();
     attendance[d.id]=data.participants||[];
     attendanceStatuses[d.id]=data.statuses||{};
     attendanceQuestSelections[d.id]=data.questSelections||{};
-    attendancePointRecords[d.id]=data.pointRecords||{};
   });
-
   setOnline("🟢 Firebase 接続中");
   renderAll();
   if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
-  if(selectedKey&&!detailView.classList.contains("hidden"))renderDetail();
+  if(selectedKey)renderDetail();
 },err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
 onSnapshot(collection(db,"members"),snap=>{
   const loaded=[];
@@ -552,7 +536,6 @@ onSnapshot(collection(db,"recommendations"),snap=>{
 },error=>console.error("Recommendations snapshot error",error));
 
 onSnapshot(collection(db,"events"),snap=>{
-  eventsSnapshotReady=true;
   const loaded=[];
   snap.forEach(d=>{
     const data=d.data();
@@ -573,7 +556,6 @@ onSnapshot(collection(db,"events"),snap=>{
   renderReminder();
   renderCalendar();
   renderDashboard();
-  if(selectedKey&&!detailView.classList.contains("hidden"))renderDetail();
   if(eventManageModal&&!eventManageModal.classList.contains("hidden"))renderAdminEvents();
 },err=>{
   console.error("events read error",err);
@@ -619,97 +601,23 @@ async function joinEvent(){
   }
 }
 
-function applyAttendanceLocalState(type,key,name,joined,questId=""){
-  const id=eventId(type,key);
-  const names=Array.isArray(attendance[id])?[...attendance[id]]:[];
-
-  if(joined){
-    if(!names.includes(name))names.push(name);
-  }else{
-    const filtered=names.filter(item=>item!==name);
-    names.length=0;
-    names.push(...filtered);
-  }
-  attendance[id]=names;
-
-  if(type==="gym"){
-    if(joined&&questId){
-      attendanceQuestSelections[id]={
-        ...(attendanceQuestSelections[id]||{}),
-        [name]:questId
-      };
-    }else if(!joined){
-      const nextQuestSelections={...(attendanceQuestSelections[id]||{})};
-      delete nextQuestSelections[name];
-      attendanceQuestSelections[id]=nextQuestSelections;
-
-      const savedPoint=attendancePointRecords[id]?.[name];
-      if(savedPoint?.test===true){
-        const nextPointRecords={...(attendancePointRecords[id]||{})};
-        delete nextPointRecords[name];
-        attendancePointRecords[id]=nextPointRecords;
-      }
-    }
-  }
-
-  // 参加/取消の画面更新は、この1系統だけに統一する。
-  renderAll();
-  if(currentType===type&&selectedKey===key&&!detailView.classList.contains("hidden")){
-    renderDetail();
-  }
-}
-
 async function cancelEvent(){
   if(isPastKey(selectedKey)){
     alert("過去の日付の参加取消はできません。");
     return;
   }
   if(!currentUser||!selectedKey)return;
-
-  const targetType=currentType;
-  const targetKey=selectedKey;
-  const id=eventId(targetType,targetKey);
-  const originalNames=Array.isArray(attendance[id])?[...attendance[id]]:[];
-  const originalLabel=cancelButton.textContent;
-
-  cancelButton.disabled=true;
-  cancelButton.textContent="取消中…";
-
-  // iPhone PWAでも再起動を待たず、その場で取消状態へ切り替える。
-  applyAttendanceLocalState(targetType,targetKey,currentUser,false);
-
   try{
-    const payload={
+    await updateDoc(eventPath(currentType,selectedKey),{
       participants:arrayRemove(currentUser),
       updatedAt:serverTimestamp()
-    };
-
-    if(targetType==="gym"){
-      payload[`questSelections.${currentUser}`]=deleteField();
-      const savedPoint=attendancePointRecords[id]?.[currentUser];
-      if(savedPoint?.test===true){
-        payload[`pointRecords.${currentUser}`]=deleteField();
-      }
-    }
-
-    await updateDoc(eventPath(targetType,targetKey),payload);
-  }catch(err){
-    console.error(err);
-
-    // DB失敗時だけ元の参加状態へ戻す。
-    attendance[id]=originalNames;
-    renderAll();
-    if(currentType===targetType&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
-      renderDetail();
-    }
+    });
+  }catch(e){
     alert("参加取消に失敗しました。");
-  }finally{
-    cancelButton.disabled=false;
-    if(!cancelButton.classList.contains("hidden")){
-      cancelButton.textContent=originalLabel||"参加取消";
-    }
+    console.error(e);
   }
 }
+
 function openInviteAuthentication(member){
   pendingInviteMember=member;
   inviteAuthMemberName.textContent=member.name;
@@ -1350,7 +1258,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="フィットネストレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderGymQuestCard();renderFitnessPointSummary();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="フィットネストレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderGymQuestCard();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -1614,7 +1522,9 @@ async function saveGymQuestSelection(){
 
   const targetKey=gymQuestTargetKey;
   const selectedQuestId=gymQuestSelectedId;
+  const selectedQuest=gymQuestById(selectedQuestId);
   const ref=eventPath("gym",targetKey);
+  const attendanceId=eventId("gym",targetKey);
   const originalLabel=confirmGymQuestButton.textContent;
 
   confirmGymQuestButton.disabled=true;
@@ -1630,31 +1540,35 @@ async function saveGymQuestSelection(){
       updatedAt:serverTimestamp()
     },{merge:true});
 
-    // 保存成功後の状態更新は1系統だけ。
-    applyAttendanceLocalState("gym",targetKey,currentUser,true,selectedQuestId);
+    const localParticipants=Array.isArray(attendance[attendanceId])?[...attendance[attendanceId]]:[];
+    if(!localParticipants.includes(currentUser))localParticipants.push(currentUser);
+    attendance[attendanceId]=localParticipants;
+    attendanceQuestSelections[attendanceId]={
+      ...(attendanceQuestSelections[attendanceId]||{}),
+      [currentUser]:selectedQuestId
+    };
 
+    confirmGymQuestButton.textContent="✓ 参加登録完了";
     confirmGymQuestButton.classList.remove("is-saving");
     confirmGymQuestButton.classList.add("is-success");
-    confirmGymQuestButton.textContent="✓ 参加登録完了";
+
+    renderAll();
+    if(currentType==="gym"&&selectedKey===targetKey)renderDetail();
 
     setTimeout(()=>{
       hide(gymQuestModal);
       confirmGymQuestButton.classList.remove("is-success");
       confirmGymQuestButton.textContent=originalLabel;
       confirmGymQuestButton.disabled=false;
-
-      // モーダルが閉じた時点でも同じローカル状態から詳細を再表示。
-      if(currentType==="gym"&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
-        renderDetail();
-      }
-    },1400);
-
-  }catch(err){
-    console.error(err);
+      const questLabel=selectedQuest?`${selectedQuest.icon} ${escapeHtml(selectedQuest.name)}`:escapeHtml(selectedQuestId);
+      showAppToast(`✅ <strong>参加登録しました！</strong><br>🎮 QUEST：${questLabel}`);
+    },420);
+  }catch(e){
+    console.error(e);
     confirmGymQuestButton.classList.remove("is-saving","is-success");
     confirmGymQuestButton.textContent=originalLabel;
     confirmGymQuestButton.disabled=false;
-    showAppToast("⚠️ <strong>参加登録に失敗しました</strong><br>通信状態を確認して、もう一度お試しください。");
+    showAppToast('⚠️ <strong>参加登録に失敗しました</strong><br>通信状態を確認して、もう一度お試しください。');
   }
 }
 function renderNextPlan(){
@@ -1694,7 +1608,7 @@ if(closeGymQuestModalButton)closeGymQuestModalButton.onclick=()=>hide(gymQuestMo
 if(gymQuestModal)gymQuestModal.onclick=event=>{if(event.target===gymQuestModal)hide(gymQuestModal);};
 if(confirmGymQuestButton)confirmGymQuestButton.onclick=saveGymQuestSelection;
 
-/* FITNESS POINT Phase 3: existing attendance data only; no extra Firestore read. */
+/* FITNESS POINT Phase 1: UI only. Firestore/point records are intentionally untouched. */
 const fitnessPointCard=document.getElementById("fitnessPointCard");
 const fitnessPointModal=document.getElementById("fitnessPointModal");
 const closeFitnessPointModalButton=document.getElementById("closeFitnessPointModalButton");
@@ -1702,129 +1616,12 @@ const fitnessPointRankingTab=document.getElementById("fitnessPointRankingTab");
 const fitnessPointMyTab=document.getElementById("fitnessPointMyTab");
 const fitnessPointRankingPanel=document.getElementById("fitnessPointRankingPanel");
 const fitnessPointMyPanel=document.getElementById("fitnessPointMyPanel");
-const fitnessPointTopTotal=document.getElementById("fitnessPointTopTotal");
-const fitnessPointTopRank=document.getElementById("fitnessPointTopRank");
-const fitnessPointSeasonLabel=document.getElementById("fitnessPointSeasonLabel");
-const fitnessPointRankingList=document.getElementById("fitnessPointRankingList");
-const fitnessPointMyTotal=document.getElementById("fitnessPointMyTotal");
-const fitnessPointMyRank=document.getElementById("fitnessPointMyRank");
-const fitnessPointMyVisits=document.getElementById("fitnessPointMyVisits");
-const fitnessPointMyAverage=document.getElementById("fitnessPointMyAverage");
-const fitnessPointHistoryList=document.getElementById("fitnessPointHistoryList");
-
-function fitnessSeasonForKey(key){
-  const [year,month]=String(key||"").split("-").map(Number);
-  if(!year||!month)return null;
-  if(month>=4&&month<=9){
-    return {id:`${year}-first`,label:`${year} 上期（4/1〜9/30）`,start:`${year}-04-01`,end:`${year}-09-30`};
-  }
-  const startYear=month>=10?year:year-1;
-  return {id:`${startYear}-second`,label:`${startYear} 下期（10/1〜${startYear+1}/3/31）`,start:`${startYear}-10-01`,end:`${startYear+1}-03-31`};
-}
-function currentFitnessSeason(){
-  return fitnessSeasonForKey(todayKeyJST());
-}
-function fitnessPointRecordsForSeason(season=currentFitnessSeason()){
-  const rows=[];
-  if(!season)return rows;
-  Object.entries(attendancePointRecords||{}).forEach(([attendanceId,records])=>{
-    if(!attendanceId.startsWith("gym_"))return;
-    const date=attendanceId.slice(4);
-    if(date<season.start||date>season.end)return;
-    Object.entries(records||{}).forEach(([name,record])=>{
-      if(!record||record.test===true)return;
-      const total=Math.max(0,Number(record.total)||0);
-      rows.push({name,date,total,record});
-    });
-  });
-  return rows;
-}
-function buildFitnessPointRanking(season=currentFitnessSeason()){
-  const totals=new Map();
-  fitnessPointRecordsForSeason(season).forEach(row=>{
-    const prev=totals.get(row.name)||{name:row.name,total:0,visits:0};
-    prev.total+=row.total;
-    prev.visits+=1;
-    totals.set(row.name,prev);
-  });
-  const ranking=[...totals.values()].sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name,"ja"));
-  let previousScore=null,previousRank=0;
-  ranking.forEach((row,index)=>{
-    if(previousScore===null||row.total!==previousScore){
-      previousRank=index+1;
-      previousScore=row.total;
-    }
-    row.rank=previousRank;
-  });
-  return ranking;
-}
-function myFitnessPointHistory(season=currentFitnessSeason()){
-  if(!currentUser)return [];
-  return fitnessPointRecordsForSeason(season)
-    .filter(row=>row.name===currentUser)
-    .sort((a,b)=>b.date.localeCompare(a.date));
-}
-function renderFitnessPointSummary(){
-  const season=currentFitnessSeason();
-  const ranking=buildFitnessPointRanking(season);
-  const me=ranking.find(row=>row.name===currentUser)||null;
-  const history=myFitnessPointHistory(season);
-  const total=me?.total||0;
-  const visits=me?.visits||history.length||0;
-  const average=visits?total/visits:0;
-
-  if(fitnessPointSeasonLabel)fitnessPointSeasonLabel.textContent=season?.label||"--";
-  if(fitnessPointTopTotal)fitnessPointTopTotal.textContent=currentUser?`${total}pt`:"--pt";
-  if(fitnessPointTopRank)fitnessPointTopRank.textContent=currentUser&&me?`${me.rank}位`:"--位";
-  if(fitnessPointMyTotal)fitnessPointMyTotal.textContent=currentUser?`${total} pt`:"-- pt";
-  if(fitnessPointMyRank)fitnessPointMyRank.textContent=currentUser&&me?`${me.rank} 位`:"-- 位";
-  if(fitnessPointMyVisits)fitnessPointMyVisits.textContent=currentUser?`${visits} 回`:"-- 回";
-  if(fitnessPointMyAverage)fitnessPointMyAverage.textContent=currentUser&&visits?`${average.toFixed(1)} pt`:"-- pt";
-
-  if(fitnessPointRankingList){
-    if(!ranking.length){
-      fitnessPointRankingList.innerHTML='<div class="fitness-point-ranking-empty">今季のPOINT記録はまだありません。</div>';
-    }else{
-      fitnessPointRankingList.innerHTML=ranking.map(row=>{
-        const medal=row.rank===1?"🥇":row.rank===2?"🥈":row.rank===3?"🥉":"";
-        return `<div class="fitness-point-ranking-row ${row.name===currentUser?"is-me":""}">
-          <span class="fitness-point-ranking-position rank-${row.rank}">${medal||row.rank+"位"}</span>
-          <span class="fitness-point-ranking-name">${escapeHtml(row.name)}${row.name===currentUser?"（あなた）":""}</span>
-          <strong class="fitness-point-ranking-score">${row.total} pt</strong>
-        </div>`;
-      }).join("");
-    }
-  }
-
-  if(fitnessPointHistoryList){
-    if(!currentUser){
-      fitnessPointHistoryList.innerHTML='<div class="fitness-point-ranking-empty">名前を選択すると自分の記録を表示します。</div>';
-    }else if(!history.length){
-      fitnessPointHistoryList.innerHTML='<div class="fitness-point-ranking-empty">今季のPOINT記録はまだありません。</div>';
-    }else{
-      fitnessPointHistoryList.innerHTML=history.map(row=>{
-        const quest=gymQuestById(row.record.questId||"");
-        const details=[
-          row.record.cardio?"有酸素":"",row.record.stretch?"柔軟":"",
-          Number(row.record.machines)>0?`マシン${row.record.machines}pt`:"",
-          row.record.questClear&&quest?`QUEST ${quest.name}`:""
-        ].filter(Boolean).join(" / ")||"来館";
-        return `<div class="fitness-point-history-row">
-          <span class="fitness-point-history-date">${escapeHtml(fmt(row.date))}</span>
-          <span class="fitness-point-history-main"><strong>フィットネス</strong><small>${escapeHtml(details)}</small></span>
-          <strong class="fitness-point-history-score">+${row.total}pt</strong>
-        </div>`;
-      }).join("");
-    }
-  }
-}
 function setFitnessPointTab(mode){
   const ranking=mode!=="my";
   fitnessPointRankingTab?.classList.toggle("active",ranking);
   fitnessPointMyTab?.classList.toggle("active",!ranking);
   fitnessPointRankingPanel?.classList.toggle("hidden",!ranking);
   fitnessPointMyPanel?.classList.toggle("hidden",ranking);
-  renderFitnessPointSummary();
 }
 if(fitnessPointCard)fitnessPointCard.onclick=()=>{setFitnessPointTab("ranking");show(fitnessPointModal);};
 if(closeFitnessPointModalButton)closeFitnessPointModalButton.onclick=()=>hide(fitnessPointModal);
@@ -2016,80 +1813,7 @@ async function saveSameDayStatus(status){
   hide(sameDayStatusModal);
 }
 
-async function syncSelectedAttendanceFromServer(type,key){
-  if(!type||!key)return false;
-  const id=eventId(type,key);
-
-  try{
-    const snap=await getDocFromServer(eventPath(type,key));
-
-    if(snap.exists()){
-      const data=snap.data()||{};
-      attendance[id]=Array.isArray(data.participants)?data.participants:[];
-      attendanceStatuses[id]=data.statuses||{};
-      attendanceQuestSelections[id]=data.questSelections||{};
-      attendancePointRecords[id]=data.pointRecords||{};
-    }else{
-      attendance[id]=[];
-      attendanceStatuses[id]={};
-      attendanceQuestSelections[id]={};
-      attendancePointRecords[id]={};
-    }
-
-    return true;
-  }catch(error){
-    console.error("event attendance direct sync error",error);
-    return false;
-  }
-}
-
-function renderDetailLoading(){
-  detailDate.textContent=selectedKey?fmt(selectedKey):"";
-  detailEvent.textContent="読み込み中...";
-  detailTime.textContent="";
-  detailPlace.textContent="";
-  participantTitle.textContent="参加者";
-  participantList.innerHTML='<li class="empty-message">最新情報を読み込んでいます...</li>';
-  progressText.textContent="同期中...";
-  progressFill.style.width="0%";
-  myStatus.textContent="";
-  joinButton.classList.add("hidden");
-  cancelButton.classList.add("hidden");
-  fitnessPointRecordButton?.classList.add("hidden");
-}
-
-function openDetail(key){
-  selectedKey=key;
-  hide(homeView);
-  show(detailView);
-
-  const targetType=currentType;
-  const targetKey=key;
-  const ready=attendanceSnapshotReady&&(targetType!=="run"||eventsSnapshotReady);
-
-  if(ready)renderDetail();
-  else renderDetailLoading();
-
-  window.scrollTo({top:0,behavior:"smooth"});
-
-  // iPhone PWAではcollection snapshotだけで過去attendanceが揃わない場合があるため、
-  // 開いたイベント1件だけサーバーから直接同期して最終表示する。
-  syncSelectedAttendanceFromServer(targetType,targetKey).then(()=>{
-    if(currentType===targetType&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
-      renderCalendar();
-      renderGymQuestCard();
-      renderNextPlan();
-      renderFitnessPointSummary();
-      renderDetail();
-    }
-  });
-}
-function renderDetail(){
-  const ready=attendanceSnapshotReady&&(currentType!=="run"||eventsSnapshotReady);
-  if(!ready){
-    renderDetailLoading();
-    return;
-  }
+function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderDetail();window.scrollTo({top:0,behavior:"smooth"})}function renderDetail(){
   fitnessPointRecordButton?.classList.add("hidden");
   const ev=currentType==="run"
     ? primaryEventForDate(selectedKey,"run")
@@ -2228,84 +1952,15 @@ function renderDetail(){
   updateButtons();
 }
 
-const fitnessPointRecordButton=document.getElementById("fitnessPointRecordButton"),fitnessPointRecordModal=document.getElementById("fitnessPointRecordModal"),closeFitnessPointRecordModalButton=document.getElementById("closeFitnessPointRecordModalButton"),fitnessPointRecordDate=document.getElementById("fitnessPointRecordDate"),fitnessPointTestNotice=document.getElementById("fitnessPointTestNotice"),fitnessPointCardio=document.getElementById("fitnessPointCardio"),fitnessPointStretch=document.getElementById("fitnessPointStretch"),fitnessPointQuestRow=document.getElementById("fitnessPointQuestRow"),fitnessPointQuestClear=document.getElementById("fitnessPointQuestClear"),fitnessPointQuestName=document.getElementById("fitnessPointQuestName"),fitnessPointTodayTotal=document.getElementById("fitnessPointTodayTotal"),saveFitnessPointButton=document.getElementById("saveFitnessPointButton");let fitnessPointTargetKey="",fitnessPointSavedSnapshot=null;
+const fitnessPointRecordButton=document.getElementById("fitnessPointRecordButton"),fitnessPointRecordModal=document.getElementById("fitnessPointRecordModal"),closeFitnessPointRecordModalButton=document.getElementById("closeFitnessPointRecordModalButton"),fitnessPointRecordDate=document.getElementById("fitnessPointRecordDate"),fitnessPointCardio=document.getElementById("fitnessPointCardio"),fitnessPointStretch=document.getElementById("fitnessPointStretch"),fitnessPointQuestRow=document.getElementById("fitnessPointQuestRow"),fitnessPointQuestClear=document.getElementById("fitnessPointQuestClear"),fitnessPointQuestName=document.getElementById("fitnessPointQuestName"),fitnessPointTodayTotal=document.getElementById("fitnessPointTodayTotal"),saveFitnessPointButton=document.getElementById("saveFitnessPointButton");let fitnessPointTargetKey="";
 function gymStartReached(key){if(!key)return false;const t=todayKeyJST();if(key<t)return true;if(key>t)return false;const[h,m]=String(systemSettings.gym.time||"19:00").split(":").map(Number),parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Tokyo",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date()),v=Object.fromEntries(parts.map(p=>[p.type,p.value]));return Number(v.hour)*60+Number(v.minute)>=h*60+m}
-function renderFitnessPointRecordAction(){if(!fitnessPointRecordButton)return;const joined=currentUser&&selectedKey&&getNames("gym",selectedKey).includes(currentUser),started=gymStartReached(selectedKey),adminTest=currentType==="gym"&&joined&&!started&&isCurrentAdmin(),ok=currentType==="gym"&&joined&&(started||adminTest);fitnessPointRecordButton.classList.toggle("hidden",!ok);if(ok){const saved=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser];fitnessPointRecordButton.textContent=adminTest?(saved?"🧪 POINTテストを修正 ＞":"🧪 POINT登録をテスト ＞"):(saved?"🏆 今日のPOINTを修正 ＞":"🏆 今日のPOINTを記録 ＞")}}
-function machinePoint(){return Math.min(3,Math.max(0,Number(document.querySelector('input[name="fitnessPointMachines"]:checked')?.value||0)))}
-function questPoint(){return gymQuestFor(fitnessPointTargetKey,currentUser)&&fitnessPointQuestClear?.checked?1:0}
-function fitnessPointTotal(){return 1+(fitnessPointCardio?.checked?1:0)+(fitnessPointStretch?.checked?1:0)+machinePoint()+questPoint()}
-function currentFitnessPointSnapshot(){
-  const q=gymQuestFor(fitnessPointTargetKey,currentUser);
-  const testMode=!gymStartReached(fitnessPointTargetKey)&&isCurrentAdmin();
-  return {cardio:fitnessPointCardio.checked?1:0,stretch:fitnessPointStretch.checked?1:0,machines:machinePoint(),questId:q||"",questClear:Boolean(q&&fitnessPointQuestClear.checked),questPoint:questPoint(),total:fitnessPointTotal(),test:testMode};
-}
-function sameFitnessPointSnapshot(a,b){
-  if(!a||!b)return false;
-  return ["cardio","stretch","machines","questId","questClear","questPoint","total","test"].every(k=>a[k]===b[k]);
-}
-function refreshFitnessPointSaveState(){
-  fitnessPointTodayTotal.textContent=`${fitnessPointTotal()} pt`;
-  if(!saveFitnessPointButton)return;
-  if(!fitnessPointSavedSnapshot){
-    saveFitnessPointButton.disabled=false;
-    saveFitnessPointButton.textContent="この内容で記録する";
-    return;
-  }
-  const unchanged=sameFitnessPointSnapshot(currentFitnessPointSnapshot(),fitnessPointSavedSnapshot);
-  saveFitnessPointButton.disabled=unchanged;
-  saveFitnessPointButton.textContent=unchanged?"✓ 記録済み":"変更内容を保存する";
-}
-function openFitnessPointRecord(){
-  fitnessPointTargetKey=selectedKey;
-  fitnessPointRecordDate.textContent=fmt(selectedKey);
-  const testMode=!gymStartReached(selectedKey)&&isCurrentAdmin();
-  fitnessPointTestNotice?.classList.toggle("hidden",!testMode);
-  const saved=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser]||null;
-  fitnessPointCardio.checked=Boolean(saved?.cardio);
-  fitnessPointStretch.checked=Boolean(saved?.stretch);
-  const radio=document.querySelector(`input[name="fitnessPointMachines"][value="${Math.min(3,Math.max(0,Number(saved?.machines)||0))}"]`);
-  if(radio)radio.checked=true;
-  const q=gymQuestById(gymQuestFor(selectedKey,currentUser));
-  fitnessPointQuestRow.classList.toggle("hidden",!q);
-  if(q){fitnessPointQuestName.textContent=`${q.icon} ${q.name}｜${q.text}`;fitnessPointQuestClear.checked=Boolean(saved?.questClear)}
-  else fitnessPointQuestClear.checked=false;
-  fitnessPointSavedSnapshot=saved?{cardio:Number(saved.cardio)||0,stretch:Number(saved.stretch)||0,machines:Math.min(3,Math.max(0,Number(saved.machines)||0)),questId:saved.questId||"",questClear:Boolean(saved.questClear),questPoint:Number(saved.questPoint)||0,total:Number(saved.total)||0,test:Boolean(saved.test)}:null;
-  refreshFitnessPointSaveState();
-  show(fitnessPointRecordModal);
-}
-async function saveFitnessPointRecord(){
-  const id=eventId("gym",fitnessPointTargetKey);
-  if(!getNames("gym",fitnessPointTargetKey).includes(currentUser)){alert("参加登録が確認できないため、POINTを保存できません。");return}
-  const snapshot=currentFitnessPointSnapshot();
-  if(fitnessPointSavedSnapshot&&sameFitnessPointSnapshot(snapshot,fitnessPointSavedSnapshot)){
-    saveFitnessPointButton.disabled=true;
-    saveFitnessPointButton.textContent="✓ 記録済み";
-    return;
-  }
-  const record={date:fitnessPointTargetKey,attendance:1,...snapshot,updatedAt:new Date().toISOString()};
-  saveFitnessPointButton.disabled=true;
-  saveFitnessPointButton.textContent="保存中…";
-  try{
-    await setDoc(eventPath("gym",fitnessPointTargetKey),{pointRecords:{[currentUser]:record},updatedAt:serverTimestamp()},{merge:true});
-    attendancePointRecords[id]={...(attendancePointRecords[id]||{}),[currentUser]:record};
-    fitnessPointSavedSnapshot={...snapshot};
-    hide(fitnessPointRecordModal);
-    renderFitnessPointRecordAction();
-    renderFitnessPointSummary();
-  }catch(e){
-    console.error(e);
-    alert("POINTの保存に失敗しました。Firestoreのルールを確認してください。");
-    refreshFitnessPointSaveState();
-  }
-}
-fitnessPointRecordButton&&(fitnessPointRecordButton.onclick=openFitnessPointRecord);
-closeFitnessPointRecordModalButton&&(closeFitnessPointRecordModalButton.onclick=()=>hide(fitnessPointRecordModal));
-fitnessPointRecordModal&&(fitnessPointRecordModal.onclick=e=>{if(e.target===fitnessPointRecordModal)hide(fitnessPointRecordModal)});
-[fitnessPointCardio,fitnessPointStretch,fitnessPointQuestClear].forEach(el=>el&&(el.onchange=refreshFitnessPointSaveState));
-document.querySelectorAll('input[name="fitnessPointMachines"]').forEach(el=>el.onchange=refreshFitnessPointSaveState);
-saveFitnessPointButton&&(saveFitnessPointButton.onclick=saveFitnessPointRecord);
+function renderFitnessPointRecordAction(){if(!fitnessPointRecordButton)return;const joined=currentUser&&selectedKey&&getNames("gym",selectedKey).includes(currentUser),ok=currentType==="gym"&&joined&&gymStartReached(selectedKey);fitnessPointRecordButton.classList.toggle("hidden",!ok);if(ok)fitnessPointRecordButton.textContent=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser]?"🏆 今日のPOINTを修正 ＞":"🏆 今日のPOINTを記録 ＞"}
+function machinePoint(){return Math.min(3,Math.max(0,Number(document.querySelector('input[name="fitnessPointMachines"]:checked')?.value||0)))}function questPoint(){return gymQuestFor(fitnessPointTargetKey,currentUser)&&fitnessPointQuestClear?.checked?1:0}function fitnessPointTotal(){return 1+(fitnessPointCardio?.checked?1:0)+(fitnessPointStretch?.checked?1:0)+machinePoint()+questPoint()}function refreshFitnessPointTotal(){fitnessPointTodayTotal.textContent=`${fitnessPointTotal()} pt`}
+function openFitnessPointRecord(){fitnessPointTargetKey=selectedKey;fitnessPointRecordDate.textContent=fmt(selectedKey);const saved=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser]||null;fitnessPointCardio.checked=Boolean(saved?.cardio);fitnessPointStretch.checked=Boolean(saved?.stretch);document.querySelector(`input[name="fitnessPointMachines"][value="${Math.min(3,Math.max(0,Number(saved?.machines)||0))}"]`)?.click();const q=gymQuestById(gymQuestFor(selectedKey,currentUser));fitnessPointQuestRow.classList.toggle("hidden",!q);if(q){fitnessPointQuestName.textContent=`${q.icon} ${q.name}｜${q.text}`;fitnessPointQuestClear.checked=Boolean(saved?.questClear)}else fitnessPointQuestClear.checked=false;refreshFitnessPointTotal();show(fitnessPointRecordModal)}
+async function saveFitnessPointRecord(){const id=eventId("gym",fitnessPointTargetKey);if(!getNames("gym",fitnessPointTargetKey).includes(currentUser)){alert("参加登録が確認できないため、POINTを保存できません。");return}const q=gymQuestFor(fitnessPointTargetKey,currentUser),record={date:fitnessPointTargetKey,attendance:1,cardio:fitnessPointCardio.checked?1:0,stretch:fitnessPointStretch.checked?1:0,machines:machinePoint(),questId:q||"",questClear:Boolean(q&&fitnessPointQuestClear.checked),questPoint:questPoint(),total:fitnessPointTotal(),updatedAt:new Date().toISOString()};saveFitnessPointButton.disabled=true;try{await setDoc(eventPath("gym",fitnessPointTargetKey),{pointRecords:{[currentUser]:record},updatedAt:serverTimestamp()},{merge:true});attendancePointRecords[id]={...(attendancePointRecords[id]||{}),[currentUser]:record};hide(fitnessPointRecordModal);renderFitnessPointRecordAction()}catch(e){console.error(e);alert("POINTの保存に失敗しました。Firestoreのルールを確認してください。")}finally{saveFitnessPointButton.disabled=false}}
+fitnessPointRecordButton&&(fitnessPointRecordButton.onclick=openFitnessPointRecord);closeFitnessPointRecordModalButton&&(closeFitnessPointRecordModalButton.onclick=()=>hide(fitnessPointRecordModal));fitnessPointRecordModal&&(fitnessPointRecordModal.onclick=e=>{if(e.target===fitnessPointRecordModal)hide(fitnessPointRecordModal)});[fitnessPointCardio,fitnessPointStretch,fitnessPointQuestClear].forEach(el=>el&&(el.onchange=refreshFitnessPointTotal));document.querySelectorAll('input[name="fitnessPointMachines"]').forEach(el=>el.onchange=refreshFitnessPointTotal);saveFitnessPointButton&&(saveFitnessPointButton.onclick=saveFitnessPointRecord);
 
-function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;if(currentType==="gym"&&!joined)joinButton.textContent=names.length===0?"🏋️ フィットネス行きたい！":"🏋️ 参加する";else if(currentType==="run")joinButton.textContent="参加する";joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined);if(joined){cancelButton.disabled=false;cancelButton.textContent="参加取消"}}
+function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;if(currentType==="gym"&&!joined)joinButton.textContent=names.length===0?"🏋️ フィットネス行きたい！":"🏋️ 参加する";else if(currentType==="run")joinButton.textContent="参加する";joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
 joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{const returnType=currentType;hide(detailView);show(homeView);setType(returnType);requestAnimationFrame(()=>{document.querySelector(".calendar-card")?.scrollIntoView({behavior:"smooth",block:"start"})})};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};
 nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};
 calendarTitle.onclick=openMonthJump;
@@ -3295,16 +2950,10 @@ function showEventDetail(ev){
     ? `<div class="training-results-admin"><label class="admin-form-label" for="eventTrainingResultsInput">🏃 今日の練習（管理者編集）</label><textarea id="eventTrainingResultsInput" class="admin-input admin-textarea" placeholder="1グループ1行で入力\n例：A 1.5km×5周 5:30/km\nB 1.5km×4周 7:15/km">${escapeHtml(results.join("\n"))}</textarea><p class="training-results-note">過去のイベントにも入力・修正できます。空欄で保存すると表示されません。</p><button class="event-small-button primary" id="saveEventTrainingResultsButton" type="button">練習実績を保存</button></div>`
     : "";
 
-  const attendanceNames=getNames(ev.type==="run"?"run":"gym",ev.date);
-  const attendanceSummary=ev.type==="run"
-    ? `<div class="event-detail-attendance-summary">👥 参加者 ${attendanceNames.length}名</div>`
-    : "";
-
   eventDetailContent.innerHTML=`
     <div class="event-detail-card">
       <div class="event-detail-title">${statusIcon} ${typeIcon} ${escapeHtml(displayTitle)} ${statusText}</div>
       <div class="event-detail-sub">📅 ${fmt(ev.date)}<br>🕖 ${ev.time||"19:00"}<br>📍 ${ev.place||"-"}</div>
-      ${attendanceSummary}
       ${ev.memo?`<div class="event-detail-memo">📝 ${linkifyEventMemo(ev.memo)}</div>`:""}
     </div>
     ${resultsHtml}
@@ -3337,16 +2986,12 @@ async function saveSelectedEventTrainingResults(){
   }
 }
 
-async function openSelectedEventAttendance(){
+function openSelectedEventAttendance(){
   if(!selectedEvent)return;
+  currentType=selectedEvent.type==="run"?"run":"gym";
+  selectedKey=selectedEvent.date;
 
-  const targetType=selectedEvent.type==="run"?"run":"gym";
-  const targetKey=selectedEvent.date;
-
-  currentType=targetType;
-  selectedKey=targetKey;
-
-  const [y,m]=targetKey.split("-").map(Number);
+  const [y,m]=selectedEvent.date.split("-").map(Number);
   currentYear=y;
   currentMonth=m-1;
 
@@ -3355,21 +3000,8 @@ async function openSelectedEventAttendance(){
   show(detailView);
   setType(currentType);
   renderCalendar();
-
-  // ラン＆ウォークは「イベント詳細 → このイベントを開く」という別経路なので、
-  // ここでも対象日のattendanceをFirestoreサーバーから直接同期する。
-  renderDetailLoading();
+  renderDetail();
   window.scrollTo({top:0,behavior:"smooth"});
-
-  const synced=await syncSelectedAttendanceFromServer(targetType,targetKey);
-
-  if(currentType===targetType&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
-    if(!synced){
-      console.warn("ラン＆ウォーク参加者のサーバー直接同期に失敗。現在のsnapshotデータで表示します。");
-    }
-    renderCalendar();
-    renderDetail();
-  }
 }
 
 function eventTypeLabel(type){
