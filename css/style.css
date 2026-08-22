@@ -3497,3 +3497,6 @@ body{
 
 /* Ver.1.9.0zyh: 管理者POINTテスト */
 .fitness-point-test-notice{margin:8px 0 10px;padding:9px 11px;border-radius:10px;background:#fff5dd;border:1px solid #f1d18a;color:#8a5a00;font-size:11px;font-weight:850;line-height:1.45}
+
+/* Ver.1.9.0zyj: POINTの無駄な再書き込み防止 */
+#saveFitnessPointButton:disabled{opacity:.72;cursor:default}
