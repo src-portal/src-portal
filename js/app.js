@@ -317,7 +317,14 @@ function refreshAfterAppResume(){
   // iPhoneホーム画面PWAの復帰時は、日付が同じでも現在のメモリ状態から再描画する。
   renderAll();
   if(selectedKey&&!detailView.classList.contains("hidden")){
+    const targetType=currentType;
+    const targetKey=selectedKey;
     renderDetail();
+    syncSelectedAttendanceFromServer(targetType,targetKey).then(()=>{
+      if(currentType===targetType&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
+        renderDetail();
+      }
+    });
   }
   if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
   if(eventManageModal&&!eventManageModal.classList.contains("hidden"))renderAdminEvents();
@@ -2009,6 +2016,33 @@ async function saveSameDayStatus(status){
   hide(sameDayStatusModal);
 }
 
+async function syncSelectedAttendanceFromServer(type,key){
+  if(!type||!key)return false;
+  const id=eventId(type,key);
+
+  try{
+    const snap=await getDocFromServer(eventPath(type,key));
+
+    if(snap.exists()){
+      const data=snap.data()||{};
+      attendance[id]=Array.isArray(data.participants)?data.participants:[];
+      attendanceStatuses[id]=data.statuses||{};
+      attendanceQuestSelections[id]=data.questSelections||{};
+      attendancePointRecords[id]=data.pointRecords||{};
+    }else{
+      attendance[id]=[];
+      attendanceStatuses[id]={};
+      attendanceQuestSelections[id]={};
+      attendancePointRecords[id]={};
+    }
+
+    return true;
+  }catch(error){
+    console.error("event attendance direct sync error",error);
+    return false;
+  }
+}
+
 function renderDetailLoading(){
   detailDate.textContent=selectedKey?fmt(selectedKey):"";
   detailEvent.textContent="読み込み中...";
@@ -2028,10 +2062,27 @@ function openDetail(key){
   selectedKey=key;
   hide(homeView);
   show(detailView);
-  const ready=attendanceSnapshotReady&&(currentType!=="run"||eventsSnapshotReady);
+
+  const targetType=currentType;
+  const targetKey=key;
+  const ready=attendanceSnapshotReady&&(targetType!=="run"||eventsSnapshotReady);
+
   if(ready)renderDetail();
   else renderDetailLoading();
+
   window.scrollTo({top:0,behavior:"smooth"});
+
+  // iPhone PWAではcollection snapshotだけで過去attendanceが揃わない場合があるため、
+  // 開いたイベント1件だけサーバーから直接同期して最終表示する。
+  syncSelectedAttendanceFromServer(targetType,targetKey).then(()=>{
+    if(currentType===targetType&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
+      renderCalendar();
+      renderGymQuestCard();
+      renderNextPlan();
+      renderFitnessPointSummary();
+      renderDetail();
+    }
+  });
 }
 function renderDetail(){
   const ready=attendanceSnapshotReady&&(currentType!=="run"||eventsSnapshotReady);
