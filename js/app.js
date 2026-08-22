@@ -675,6 +675,17 @@ async function cancelEvent(){
       renderDashboard();
       renderFitnessPointSummary();
       if(currentType===targetType&&selectedKey===targetKey)renderDetail();
+
+      // renderDetail内のボタン表示切替をDOMへ確実に反映するため、次フレームでも最終再描画。
+      requestAnimationFrame(()=>{
+        try{
+          if(currentType===targetType&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
+            renderDetail();
+          }
+        }catch(finalRenderError){
+          console.error("参加取消後の最終描画に失敗しました:",finalRenderError);
+        }
+      });
     }catch(renderError){
       console.error("参加取消後の画面更新に失敗しました:",renderError);
     }
@@ -684,7 +695,9 @@ async function cancelEvent(){
     alert("参加取消に失敗しました。");
   }finally{
     cancelButton.disabled=false;
-    if(!cancelButton.classList.contains("hidden"))cancelButton.textContent=originalLabel;
+    if(!cancelButton.classList.contains("hidden")){
+      cancelButton.textContent=originalLabel;
+    }
   }
 }
 function openInviteAuthentication(member){
@@ -1640,6 +1653,21 @@ async function saveGymQuestSelection(){
       confirmGymQuestButton.classList.remove("is-success");
       confirmGymQuestButton.textContent=originalLabel;
       confirmGymQuestButton.disabled=false;
+
+      // QUEST画面を閉じた後に、背後のイベント詳細を最終状態で再描画する。
+      // これにより「参加者0名 / あと3名 / フィットネス行きたい！」の古い表示を残さない。
+      requestAnimationFrame(()=>{
+        try{
+          renderCalendar();
+          renderGymQuestCard();
+          renderNextPlan();
+          if(currentType==="gym"&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
+            renderDetail();
+          }
+        }catch(finalRenderError){
+          console.error("QUEST画面終了後の最終描画に失敗しました:",finalRenderError);
+        }
+      });
     },1400);
 
   }catch(err){
