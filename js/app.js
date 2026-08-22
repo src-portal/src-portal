@@ -3295,10 +3295,16 @@ function showEventDetail(ev){
     ? `<div class="training-results-admin"><label class="admin-form-label" for="eventTrainingResultsInput">🏃 今日の練習（管理者編集）</label><textarea id="eventTrainingResultsInput" class="admin-input admin-textarea" placeholder="1グループ1行で入力\n例：A 1.5km×5周 5:30/km\nB 1.5km×4周 7:15/km">${escapeHtml(results.join("\n"))}</textarea><p class="training-results-note">過去のイベントにも入力・修正できます。空欄で保存すると表示されません。</p><button class="event-small-button primary" id="saveEventTrainingResultsButton" type="button">練習実績を保存</button></div>`
     : "";
 
+  const attendanceNames=getNames(ev.type==="run"?"run":"gym",ev.date);
+  const attendanceSummary=ev.type==="run"
+    ? `<div class="event-detail-attendance-summary">👥 参加者 ${attendanceNames.length}名</div>`
+    : "";
+
   eventDetailContent.innerHTML=`
     <div class="event-detail-card">
       <div class="event-detail-title">${statusIcon} ${typeIcon} ${escapeHtml(displayTitle)} ${statusText}</div>
       <div class="event-detail-sub">📅 ${fmt(ev.date)}<br>🕖 ${ev.time||"19:00"}<br>📍 ${ev.place||"-"}</div>
+      ${attendanceSummary}
       ${ev.memo?`<div class="event-detail-memo">📝 ${linkifyEventMemo(ev.memo)}</div>`:""}
     </div>
     ${resultsHtml}
@@ -3331,12 +3337,16 @@ async function saveSelectedEventTrainingResults(){
   }
 }
 
-function openSelectedEventAttendance(){
+async function openSelectedEventAttendance(){
   if(!selectedEvent)return;
-  currentType=selectedEvent.type==="run"?"run":"gym";
-  selectedKey=selectedEvent.date;
 
-  const [y,m]=selectedEvent.date.split("-").map(Number);
+  const targetType=selectedEvent.type==="run"?"run":"gym";
+  const targetKey=selectedEvent.date;
+
+  currentType=targetType;
+  selectedKey=targetKey;
+
+  const [y,m]=targetKey.split("-").map(Number);
   currentYear=y;
   currentMonth=m-1;
 
@@ -3345,8 +3355,21 @@ function openSelectedEventAttendance(){
   show(detailView);
   setType(currentType);
   renderCalendar();
-  renderDetail();
+
+  // ラン＆ウォークは「イベント詳細 → このイベントを開く」という別経路なので、
+  // ここでも対象日のattendanceをFirestoreサーバーから直接同期する。
+  renderDetailLoading();
   window.scrollTo({top:0,behavior:"smooth"});
+
+  const synced=await syncSelectedAttendanceFromServer(targetType,targetKey);
+
+  if(currentType===targetType&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
+    if(!synced){
+      console.warn("ラン＆ウォーク参加者のサーバー直接同期に失敗。現在のsnapshotデータで表示します。");
+    }
+    renderCalendar();
+    renderDetail();
+  }
 }
 
 function eventTypeLabel(type){
