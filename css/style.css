@@ -3500,3 +3500,27 @@ body{
 
 /* Ver.1.9.0zyj: POINTの無駄な再書き込み防止 */
 #saveFitnessPointButton:disabled{opacity:.72;cursor:default}
+
+
+/* Ver.1.9.0zyk: FITNESS POINT Phase 3 実データ集計 */
+.fitness-point-ranking-list{display:grid;gap:7px}
+.fitness-point-ranking-row{
+  display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:9px;align-items:center;
+  padding:10px 11px;border:1px solid #e2e9f2;border-radius:12px;background:#fff;
+}
+.fitness-point-ranking-row.is-me{border-color:#9ec7fa;background:#eef6ff}
+.fitness-point-ranking-position{font-size:12px;font-weight:950;color:#5c6c80}
+.fitness-point-ranking-position.rank-1{color:#9b7600}.fitness-point-ranking-position.rank-2{color:#657080}.fitness-point-ranking-position.rank-3{color:#9b622b}
+.fitness-point-ranking-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:900;color:#27394d}
+.fitness-point-ranking-score{font-size:14px;font-weight:950;color:#0f63c9;white-space:nowrap}
+.fitness-point-ranking-empty{padding:18px 12px;text-align:center;color:#718198;font-size:12px}
+.fitness-point-history-list{display:grid;gap:7px}
+.fitness-point-history-row{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;
+  padding:10px 11px;border:1px solid #e2e9f2;border-radius:12px;background:#fff;
+}
+.fitness-point-history-date{font-size:11px;font-weight:900;color:#617287;white-space:nowrap}
+.fitness-point-history-main{min-width:0}
+.fitness-point-history-main strong{display:block;font-size:12px;color:#34475d}
+.fitness-point-history-main small{display:block;margin-top:2px;font-size:10px;color:#78889b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fitness-point-history-score{font-size:14px;font-weight:950;color:#0f63c9;white-space:nowrap}
