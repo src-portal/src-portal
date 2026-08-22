@@ -637,6 +637,46 @@ async function joinEvent(){
   }
 }
 
+function renderGymDetailAfterCancel(){
+  if(currentType!=="gym"||!selectedKey)return;
+
+  const names=getNames("gym",selectedKey);
+  const count=names.length;
+  const remain=Math.max(requiredMembers-count,0);
+  const rate=Math.min(count/requiredMembers,1)*100;
+
+  participantTitle.textContent=`参加者（${count}名）`;
+  participantList.innerHTML="";
+  if(count===0){
+    const li=document.createElement("li");
+    li.className="empty-message";
+    li.textContent="まだ参加者はいません。";
+    participantList.appendChild(li);
+  }else{
+    names.forEach(name=>{
+      const li=document.createElement("li");
+      li.innerHTML=`<span class="participant-name">${name===currentUser?"⭐":"😊"} ${escapeHtml(name)}</span>`;
+      participantList.appendChild(li);
+    });
+  }
+
+  progressBox.classList.remove("confirmed","cancelled");
+  progressBar.style.display="block";
+  progressFill.style.width=`${rate}%`;
+  if(count>=requiredMembers){
+    progressBox.classList.add("confirmed");
+    progressText.innerHTML=`🟢 補助対象です（${count}名参加）<div class="progress-subtext">💰 利用料300円/人補助</div>`;
+  }else{
+    progressText.innerHTML=`🟡 あと${remain}名で補助<div class="progress-subtext">💰 ${requiredMembers}人集まれば利用料300円/人補助</div>`;
+  }
+
+  myStatus.textContent=`${currentUser||"未設定"}さんはまだ参加していません。`;
+  cancelButton.classList.add("hidden");
+  joinButton.classList.remove("hidden");
+  joinButton.textContent=names.length===0?"🏋️ フィットネス行きたい！":"🏋️ 参加する";
+  fitnessPointRecordButton?.classList.add("hidden");
+}
+
 async function cancelEvent(){
   if(isPastKey(selectedKey)){
     alert("過去の日付の参加取消はできません。");
@@ -665,39 +705,39 @@ async function cancelEvent(){
       expiresAt:Date.now()+10000
     });
 
-    // Firestoreの通知待ちにせず、その場で参加者一覧・残人数を更新。
     attendance[id]=(attendance[id]||[]).filter(name=>name!==currentUser);
 
+    // 取消成功をその場で見せる。
+    cancelButton.textContent="✓ 取消しました";
+
+    // フィットネス詳細はrenderDetailに依存せず、必要な表示を直接確定させる。
+    if(targetType==="gym"&&currentType===targetType&&selectedKey===targetKey){
+      setTimeout(()=>{
+        try{
+          renderGymDetailAfterCancel();
+        }catch(uiError){
+          console.error("参加取消後の直接表示更新に失敗しました:",uiError);
+        }
+      },650);
+    }
+
+    // TOP・カレンダー側も即時更新。
     try{
       renderCalendar();
       renderGymQuestCard();
       renderNextPlan();
       renderDashboard();
       renderFitnessPointSummary();
-      if(currentType===targetType&&selectedKey===targetKey)renderDetail();
-
-      // renderDetail内のボタン表示切替をDOMへ確実に反映するため、次フレームでも最終再描画。
-      requestAnimationFrame(()=>{
-        try{
-          if(currentType===targetType&&selectedKey===targetKey&&!detailView.classList.contains("hidden")){
-            renderDetail();
-          }
-        }catch(finalRenderError){
-          console.error("参加取消後の最終描画に失敗しました:",finalRenderError);
-        }
-      });
     }catch(renderError){
-      console.error("参加取消後の画面更新に失敗しました:",renderError);
+      console.error("参加取消後の周辺画面更新に失敗しました:",renderError);
     }
 
   }catch(err){
     console.error(err);
     alert("参加取消に失敗しました。");
+    cancelButton.textContent=originalLabel;
   }finally{
     cancelButton.disabled=false;
-    if(!cancelButton.classList.contains("hidden")){
-      cancelButton.textContent=originalLabel;
-    }
   }
 }
 function openInviteAuthentication(member){
