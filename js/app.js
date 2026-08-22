@@ -1673,6 +1673,10 @@ async function saveGymQuestSelection(){
       [currentUser]:selectedQuestId
     };
 
+    // 再参加時に前回の取消完了表示を残さない。
+    cancelButton.disabled=false;
+    cancelButton.textContent="参加取消";
+
     try{
       renderCalendar();
       renderGymQuestCard();
@@ -2293,7 +2297,7 @@ fitnessPointRecordModal&&(fitnessPointRecordModal.onclick=e=>{if(e.target===fitn
 document.querySelectorAll('input[name="fitnessPointMachines"]').forEach(el=>el.onchange=refreshFitnessPointSaveState);
 saveFitnessPointButton&&(saveFitnessPointButton.onclick=saveFitnessPointRecord);
 
-function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;if(currentType==="gym"&&!joined)joinButton.textContent=names.length===0?"🏋️ フィットネス行きたい！":"🏋️ 参加する";else if(currentType==="run")joinButton.textContent="参加する";joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
+function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;if(currentType==="gym"&&!joined)joinButton.textContent=names.length===0?"🏋️ フィットネス行きたい！":"🏋️ 参加する";else if(currentType==="run")joinButton.textContent="参加する";joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined);if(joined){cancelButton.disabled=false;cancelButton.textContent="参加取消"}}
 joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{const returnType=currentType;hide(detailView);show(homeView);setType(returnType);requestAnimationFrame(()=>{document.querySelector(".calendar-card")?.scrollIntoView({behavior:"smooth",block:"start"})})};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};
 nextMonthButton.onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++}renderAll()};
 calendarTitle.onclick=openMonthJump;
