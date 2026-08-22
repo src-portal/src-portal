@@ -245,6 +245,7 @@ let returnToAdminMenuAfterSetup=false;
 let pendingInviteMember=null;
 let setupAdminLongPressTimer=null;
 let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},attendanceQuestSelections={},attendancePointRecords={},selectedSameDayUser="",gymQuestTargetKey="",gymQuestSelectedId="";
+const pendingAttendanceUi=new Map();
 let memberInvitationMigrationStarted=false;
 let memberProfileDateMigrationStarted=false;
 let lastActiveUpdatedMemberId="";
@@ -445,6 +446,40 @@ onSnapshot(collection(db,"attendance"),snap=>{
     attendanceQuestSelections[d.id]=data.questSelections||{};
     attendancePointRecords[d.id]=data.pointRecords||{};
   });
+
+  // 保存直後に古いsnapshotが届いても、画面を元に戻さない。
+  const now=Date.now();
+  [...pendingAttendanceUi.entries()].forEach(([id,pending])=>{
+    if(pending.expiresAt<=now){
+      pendingAttendanceUi.delete(id);
+      return;
+    }
+    const names=Array.isArray(attendance[id])?[...attendance[id]]:[];
+    const serverHas=names.includes(pending.name);
+
+    // サーバー状態が意図した状態まで追いついたらoverride終了。
+    if(serverHas===pending.joined){
+      pendingAttendanceUi.delete(id);
+      return;
+    }
+
+    if(pending.joined){
+      if(!names.includes(pending.name))names.push(pending.name);
+    }else{
+      const filtered=names.filter(name=>name!==pending.name);
+      names.length=0;
+      names.push(...filtered);
+    }
+    attendance[id]=names;
+
+    if(pending.joined&&pending.questId){
+      attendanceQuestSelections[id]={
+        ...(attendanceQuestSelections[id]||{}),
+        [pending.name]:pending.questId
+      };
+    }
+  });
+
   setOnline("🟢 Firebase 接続中");
   renderAll();
   if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
@@ -623,6 +658,13 @@ async function cancelEvent(){
       updatedAt:serverTimestamp()
     });
 
+    pendingAttendanceUi.set(id,{
+      name:currentUser,
+      joined:false,
+      questId:"",
+      expiresAt:Date.now()+10000
+    });
+
     // Firestoreの通知待ちにせず、その場で参加者一覧・残人数を更新。
     attendance[id]=(attendance[id]||[]).filter(name=>name!==currentUser);
 
@@ -642,7 +684,7 @@ async function cancelEvent(){
     alert("参加取消に失敗しました。");
   }finally{
     cancelButton.disabled=false;
-    cancelButton.textContent=originalLabel;
+    if(!cancelButton.classList.contains("hidden"))cancelButton.textContent=originalLabel;
   }
 }
 function openInviteAuthentication(member){
@@ -1563,6 +1605,13 @@ async function saveGymQuestSelection(){
     },{merge:true});
 
     // 保存成功直後にローカル参加者数を更新して、残人数・カレンダーを即時反映。
+    pendingAttendanceUi.set(attendanceId,{
+      name:currentUser,
+      joined:true,
+      questId:selectedQuestId,
+      expiresAt:Date.now()+10000
+    });
+
     const localParticipants=Array.isArray(attendance[attendanceId])?[...attendance[attendanceId]]:[];
     if(!localParticipants.includes(currentUser))localParticipants.push(currentUser);
     attendance[attendanceId]=localParticipants;
