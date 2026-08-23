@@ -1710,6 +1710,12 @@ const fitnessPointRankingTab=document.getElementById("fitnessPointRankingTab");
 const fitnessPointMyTab=document.getElementById("fitnessPointMyTab");
 const fitnessPointRankingPanel=document.getElementById("fitnessPointRankingPanel");
 const fitnessPointMyPanel=document.getElementById("fitnessPointMyPanel");
+const fitnessPointMyQuestCount=document.getElementById("fitnessPointMyQuestCount");
+const fitnessPointActivityVisits=document.getElementById("fitnessPointActivityVisits");
+const fitnessPointActivityCardio=document.getElementById("fitnessPointActivityCardio");
+const fitnessPointActivityStretch=document.getElementById("fitnessPointActivityStretch");
+const fitnessPointActivityMachines=document.getElementById("fitnessPointActivityMachines");
+const fitnessPointActivityQuest=document.getElementById("fitnessPointActivityQuest");
 const fitnessPointAdminTestBox=document.getElementById("fitnessPointAdminTestBox");
 const fitnessPointIncludeTestButton=document.getElementById("fitnessPointIncludeTestButton");
 let fitnessPointIncludeTestRecords=false;
@@ -1845,6 +1851,16 @@ function renderFitnessPointSummary(){
   const visits=me?.visits||history.length||0;
   const average=visits?total/visits:0;
 
+  const activity=history.reduce((summary,row)=>{
+    const record=row.record||{};
+    summary.visits+=1;
+    if(record.cardio)summary.cardio+=1;
+    if(record.stretch)summary.stretch+=1;
+    summary.machines+=Math.max(0,Number(record.machines)||0);
+    if(record.questClear)summary.quest+=1;
+    return summary;
+  },{visits:0,cardio:0,stretch:0,machines:0,quest:0});
+
   if(ui.seasonLabel)ui.seasonLabel.textContent=season?.label||"--";
   if(ui.topTotal)ui.topTotal.textContent=currentUser?`${total}pt`:"--pt";
   if(ui.topRank)ui.topRank.textContent=currentUser&&me?`${me.rank}位`:"--位";
@@ -1852,6 +1868,12 @@ function renderFitnessPointSummary(){
   if(ui.myRank)ui.myRank.textContent=currentUser&&me?`${me.rank} 位`:"-- 位";
   if(ui.myVisits)ui.myVisits.textContent=currentUser?`${visits} 回`:"-- 回";
   if(ui.myAverage)ui.myAverage.textContent=currentUser&&visits?`${average.toFixed(1)} pt`:"-- pt";
+  if(fitnessPointMyQuestCount)fitnessPointMyQuestCount.textContent=currentUser?`${activity.quest} 回`:"-- 回";
+  if(fitnessPointActivityVisits)fitnessPointActivityVisits.textContent=currentUser?`${activity.visits} 回`:"-- 回";
+  if(fitnessPointActivityCardio)fitnessPointActivityCardio.textContent=currentUser?`${activity.cardio} 回`:"-- 回";
+  if(fitnessPointActivityStretch)fitnessPointActivityStretch.textContent=currentUser?`${activity.stretch} 回`:"-- 回";
+  if(fitnessPointActivityMachines)fitnessPointActivityMachines.textContent=currentUser?`${activity.machines} 台`:"-- 台";
+  if(fitnessPointActivityQuest)fitnessPointActivityQuest.textContent=currentUser?`${activity.quest} 回`:"-- 回";
 
   if(ui.rankingList){
     if(!ranking.length){
