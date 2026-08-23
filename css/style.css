@@ -3576,3 +3576,47 @@ body{
   color:#536176;font-size:12px;font-weight:900;line-height:1.5;
 }
 .event-detail-memo{margin-top:8px}
+
+/* Ver.1.9.0zzm: FITNESS POINT「自分の記録」を活動記録として強化 */
+.fitness-point-activity-card{
+  margin:12px 0 10px;
+  padding:14px;
+  border:1px solid #dbe5ef;
+  border-radius:14px;
+  background:#f8fbfe;
+}
+.fitness-point-activity-card h3{
+  margin:0 0 10px;
+  color:#34465a;
+  font-size:14px;
+  font-weight:950;
+}
+.fitness-point-activity-list{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.fitness-point-activity-list div{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:9px 10px;
+  border-radius:10px;
+  background:#fff;
+  font-size:12px;
+}
+.fitness-point-activity-list strong{
+  white-space:nowrap;
+  color:#214c78;
+  font-size:14px;
+}
+.fitness-point-activity-list div:last-child:nth-child(odd){
+  grid-column:1 / -1;
+}
+.fitness-point-history-heading{
+  margin:14px 2px 8px;
+  color:#42566d;
+  font-size:13px;
+  font-weight:950;
+}
