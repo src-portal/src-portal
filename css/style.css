@@ -3510,3 +3510,25 @@ body{
   font-weight:800;
   line-height:1.5;
 }
+
+/* Ver.1.9.0zzd: FITNESS POINT season aggregation */
+.fitness-point-ranking-list{display:grid;gap:7px}
+.fitness-point-ranking-row{
+  display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:9px;align-items:center;
+  padding:10px 11px;border:1px solid #e2e9f2;border-radius:12px;background:#fff;
+}
+.fitness-point-ranking-row.is-me{border-color:#9ec7fa;background:#eef6ff}
+.fitness-point-ranking-position{font-size:12px;font-weight:950;color:#5c6c80}
+.fitness-point-ranking-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:900;color:#27394d}
+.fitness-point-ranking-score{font-size:14px;font-weight:950;color:#0f63c9;white-space:nowrap}
+.fitness-point-ranking-empty{padding:18px 12px;text-align:center;color:#718198;font-size:12px}
+.fitness-point-history-list{display:grid;gap:7px}
+.fitness-point-history-row{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;
+  padding:10px 11px;border:1px solid #e2e9f2;border-radius:12px;background:#fff;
+}
+.fitness-point-history-date{font-size:11px;font-weight:900;color:#617287;white-space:nowrap}
+.fitness-point-history-main{min-width:0}
+.fitness-point-history-main strong{display:block;font-size:12px;color:#34475d}
+.fitness-point-history-main small{display:block;margin-top:2px;font-size:10px;color:#78889b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fitness-point-history-score{font-size:14px;font-weight:950;color:#0f63c9;white-space:nowrap}
