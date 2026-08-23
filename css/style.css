@@ -3569,3 +3569,10 @@ body{
 .announcement-card .announcement-more-indicator,
 .announcement-card .announcement-card-chevron{color:#c77700;}
 .announcement-card:hover{border-color:#e5b347;}
+
+/* Ver.1.9.0zzj: イベント詳細の自動ステータス欄 */
+.event-detail-status-notice{
+  margin-top:10px;padding:10px 12px;border-radius:10px;background:#fff;
+  color:#536176;font-size:12px;font-weight:900;line-height:1.5;
+}
+.event-detail-memo{margin-top:8px}
