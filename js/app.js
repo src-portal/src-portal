@@ -1952,13 +1952,153 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
   updateButtons();
 }
 
-const fitnessPointRecordButton=document.getElementById("fitnessPointRecordButton"),fitnessPointRecordModal=document.getElementById("fitnessPointRecordModal"),closeFitnessPointRecordModalButton=document.getElementById("closeFitnessPointRecordModalButton"),fitnessPointRecordDate=document.getElementById("fitnessPointRecordDate"),fitnessPointCardio=document.getElementById("fitnessPointCardio"),fitnessPointStretch=document.getElementById("fitnessPointStretch"),fitnessPointQuestRow=document.getElementById("fitnessPointQuestRow"),fitnessPointQuestClear=document.getElementById("fitnessPointQuestClear"),fitnessPointQuestName=document.getElementById("fitnessPointQuestName"),fitnessPointTodayTotal=document.getElementById("fitnessPointTodayTotal"),saveFitnessPointButton=document.getElementById("saveFitnessPointButton");let fitnessPointTargetKey="";
-function gymStartReached(key){if(!key)return false;const t=todayKeyJST();if(key<t)return true;if(key>t)return false;const[h,m]=String(systemSettings.gym.time||"19:00").split(":").map(Number),parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Tokyo",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date()),v=Object.fromEntries(parts.map(p=>[p.type,p.value]));return Number(v.hour)*60+Number(v.minute)>=h*60+m}
-function renderFitnessPointRecordAction(){if(!fitnessPointRecordButton)return;const joined=currentUser&&selectedKey&&getNames("gym",selectedKey).includes(currentUser),ok=currentType==="gym"&&joined&&gymStartReached(selectedKey);fitnessPointRecordButton.classList.toggle("hidden",!ok);if(ok)fitnessPointRecordButton.textContent=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser]?"🏆 今日のPOINTを修正 ＞":"🏆 今日のPOINTを記録 ＞"}
-function machinePoint(){return Math.min(3,Math.max(0,Number(document.querySelector('input[name="fitnessPointMachines"]:checked')?.value||0)))}function questPoint(){return gymQuestFor(fitnessPointTargetKey,currentUser)&&fitnessPointQuestClear?.checked?1:0}function fitnessPointTotal(){return 1+(fitnessPointCardio?.checked?1:0)+(fitnessPointStretch?.checked?1:0)+machinePoint()+questPoint()}function refreshFitnessPointTotal(){fitnessPointTodayTotal.textContent=`${fitnessPointTotal()} pt`}
-function openFitnessPointRecord(){fitnessPointTargetKey=selectedKey;fitnessPointRecordDate.textContent=fmt(selectedKey);const saved=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser]||null;fitnessPointCardio.checked=Boolean(saved?.cardio);fitnessPointStretch.checked=Boolean(saved?.stretch);document.querySelector(`input[name="fitnessPointMachines"][value="${Math.min(3,Math.max(0,Number(saved?.machines)||0))}"]`)?.click();const q=gymQuestById(gymQuestFor(selectedKey,currentUser));fitnessPointQuestRow.classList.toggle("hidden",!q);if(q){fitnessPointQuestName.textContent=`${q.icon} ${q.name}｜${q.text}`;fitnessPointQuestClear.checked=Boolean(saved?.questClear)}else fitnessPointQuestClear.checked=false;refreshFitnessPointTotal();show(fitnessPointRecordModal)}
-async function saveFitnessPointRecord(){const id=eventId("gym",fitnessPointTargetKey);if(!getNames("gym",fitnessPointTargetKey).includes(currentUser)){alert("参加登録が確認できないため、POINTを保存できません。");return}const q=gymQuestFor(fitnessPointTargetKey,currentUser),record={date:fitnessPointTargetKey,attendance:1,cardio:fitnessPointCardio.checked?1:0,stretch:fitnessPointStretch.checked?1:0,machines:machinePoint(),questId:q||"",questClear:Boolean(q&&fitnessPointQuestClear.checked),questPoint:questPoint(),total:fitnessPointTotal(),updatedAt:new Date().toISOString()};saveFitnessPointButton.disabled=true;try{await setDoc(eventPath("gym",fitnessPointTargetKey),{pointRecords:{[currentUser]:record},updatedAt:serverTimestamp()},{merge:true});attendancePointRecords[id]={...(attendancePointRecords[id]||{}),[currentUser]:record};hide(fitnessPointRecordModal);renderFitnessPointRecordAction()}catch(e){console.error(e);alert("POINTの保存に失敗しました。Firestoreのルールを確認してください。")}finally{saveFitnessPointButton.disabled=false}}
-fitnessPointRecordButton&&(fitnessPointRecordButton.onclick=openFitnessPointRecord);closeFitnessPointRecordModalButton&&(closeFitnessPointRecordModalButton.onclick=()=>hide(fitnessPointRecordModal));fitnessPointRecordModal&&(fitnessPointRecordModal.onclick=e=>{if(e.target===fitnessPointRecordModal)hide(fitnessPointRecordModal)});[fitnessPointCardio,fitnessPointStretch,fitnessPointQuestClear].forEach(el=>el&&(el.onchange=refreshFitnessPointTotal));document.querySelectorAll('input[name="fitnessPointMachines"]').forEach(el=>el.onchange=refreshFitnessPointTotal);saveFitnessPointButton&&(saveFitnessPointButton.onclick=saveFitnessPointRecord);
+const fitnessPointRecordButton=document.getElementById("fitnessPointRecordButton");
+const fitnessPointRecordModal=document.getElementById("fitnessPointRecordModal");
+const closeFitnessPointRecordModalButton=document.getElementById("closeFitnessPointRecordModalButton");
+const fitnessPointRecordDate=document.getElementById("fitnessPointRecordDate");
+const fitnessPointCardio=document.getElementById("fitnessPointCardio");
+const fitnessPointStretch=document.getElementById("fitnessPointStretch");
+const fitnessPointQuestRow=document.getElementById("fitnessPointQuestRow");
+const fitnessPointQuestClear=document.getElementById("fitnessPointQuestClear");
+const fitnessPointQuestName=document.getElementById("fitnessPointQuestName");
+const fitnessPointTodayTotal=document.getElementById("fitnessPointTodayTotal");
+const saveFitnessPointButton=document.getElementById("saveFitnessPointButton");
+
+let fitnessPointTargetKey="";
+let fitnessPointSavedSnapshot=null;
+
+function gymStartReached(key){
+  if(!key)return false;
+  const todayKey=todayKeyJST();
+  if(key<todayKey)return true;
+  if(key>todayKey)return false;
+  const [h,m]=String(systemSettings.gym.time||"19:00").split(":").map(Number);
+  const parts=new Intl.DateTimeFormat("en-GB",{
+    timeZone:"Asia/Tokyo",hour:"2-digit",minute:"2-digit",hour12:false
+  }).formatToParts(new Date());
+  const values=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+  return Number(values.hour)*60+Number(values.minute)>=h*60+m;
+}
+
+function renderFitnessPointRecordAction(){
+  if(!fitnessPointRecordButton)return;
+  const joined=currentUser&&selectedKey&&getNames("gym",selectedKey).includes(currentUser);
+  const available=currentType==="gym"&&joined&&gymStartReached(selectedKey);
+  fitnessPointRecordButton.classList.toggle("hidden",!available);
+  if(available){
+    const saved=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser];
+    fitnessPointRecordButton.textContent=saved?"🏆 今日のPOINTを修正 ＞":"🏆 今日のPOINTを記録 ＞";
+  }
+}
+
+function fitnessMachinePoint(){
+  return Math.min(3,Math.max(0,Number(document.querySelector('input[name="fitnessPointMachines"]:checked')?.value||0)));
+}
+function fitnessQuestPoint(){
+  return gymQuestFor(fitnessPointTargetKey,currentUser)&&fitnessPointQuestClear?.checked?1:0;
+}
+function fitnessPointTotal(){
+  return 1+(fitnessPointCardio?.checked?1:0)+(fitnessPointStretch?.checked?1:0)+fitnessMachinePoint()+fitnessQuestPoint();
+}
+function currentFitnessPointSnapshot(){
+  const questId=gymQuestFor(fitnessPointTargetKey,currentUser)||"";
+  return {
+    cardio:fitnessPointCardio.checked?1:0,
+    stretch:fitnessPointStretch.checked?1:0,
+    machines:fitnessMachinePoint(),
+    questId,
+    questClear:Boolean(questId&&fitnessPointQuestClear.checked),
+    questPoint:fitnessQuestPoint(),
+    total:fitnessPointTotal()
+  };
+}
+function normalizeSavedFitnessPoint(record){
+  if(!record)return null;
+  return {
+    cardio:Number(record.cardio)||0,
+    stretch:Number(record.stretch)||0,
+    machines:Math.min(3,Math.max(0,Number(record.machines)||0)),
+    questId:record.questId||"",
+    questClear:Boolean(record.questClear),
+    questPoint:Number(record.questPoint)||0,
+    total:Number(record.total)||0
+  };
+}
+function sameFitnessPointSnapshot(a,b){
+  if(!a||!b)return false;
+  return ["cardio","stretch","machines","questId","questClear","questPoint","total"].every(key=>a[key]===b[key]);
+}
+function refreshFitnessPointSaveState(){
+  if(fitnessPointTodayTotal)fitnessPointTodayTotal.textContent=`${fitnessPointTotal()} pt`;
+  if(!saveFitnessPointButton)return;
+  if(!fitnessPointSavedSnapshot){
+    saveFitnessPointButton.disabled=false;
+    saveFitnessPointButton.textContent="この内容で記録する";
+    return;
+  }
+  const unchanged=sameFitnessPointSnapshot(currentFitnessPointSnapshot(),fitnessPointSavedSnapshot);
+  saveFitnessPointButton.disabled=unchanged;
+  saveFitnessPointButton.textContent=unchanged?"✓ 記録済み":"変更内容を保存する";
+}
+function openFitnessPointRecord(){
+  if(!selectedKey||currentType!=="gym"||!currentUser)return;
+  fitnessPointTargetKey=selectedKey;
+  fitnessPointRecordDate.textContent=fmt(selectedKey);
+  const saved=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser]||null;
+  fitnessPointCardio.checked=Boolean(saved?.cardio);
+  fitnessPointStretch.checked=Boolean(saved?.stretch);
+  const machineValue=Math.min(3,Math.max(0,Number(saved?.machines)||0));
+  const radio=document.querySelector(`input[name="fitnessPointMachines"][value="${machineValue}"]`);
+  if(radio)radio.checked=true;
+  const quest=gymQuestById(gymQuestFor(selectedKey,currentUser));
+  fitnessPointQuestRow.classList.toggle("hidden",!quest);
+  if(quest){
+    fitnessPointQuestName.textContent=`${quest.icon} ${quest.name}｜${quest.text}`;
+    fitnessPointQuestClear.checked=Boolean(saved?.questClear);
+  }else{
+    fitnessPointQuestClear.checked=false;
+  }
+  fitnessPointSavedSnapshot=normalizeSavedFitnessPoint(saved);
+  refreshFitnessPointSaveState();
+  show(fitnessPointRecordModal);
+}
+async function saveFitnessPointRecord(){
+  if(!fitnessPointTargetKey||!currentUser)return;
+  const id=eventId("gym",fitnessPointTargetKey);
+  if(!getNames("gym",fitnessPointTargetKey).includes(currentUser)){
+    alert("参加登録が確認できないため、POINTを保存できません。");
+    return;
+  }
+  const snapshot=currentFitnessPointSnapshot();
+  if(fitnessPointSavedSnapshot&&sameFitnessPointSnapshot(snapshot,fitnessPointSavedSnapshot)){
+    saveFitnessPointButton.disabled=true;
+    saveFitnessPointButton.textContent="✓ 記録済み";
+    return;
+  }
+  const record={date:fitnessPointTargetKey,attendance:1,...snapshot,updatedAt:new Date().toISOString()};
+  saveFitnessPointButton.disabled=true;
+  saveFitnessPointButton.textContent="保存中…";
+  try{
+    await setDoc(eventPath("gym",fitnessPointTargetKey),{
+      pointRecords:{[currentUser]:record},
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    attendancePointRecords[id]={...(attendancePointRecords[id]||{}),[currentUser]:record};
+    fitnessPointSavedSnapshot={...snapshot};
+    hide(fitnessPointRecordModal);
+    renderFitnessPointRecordAction();
+  }catch(error){
+    console.error("fitness point save error",error);
+    alert("POINTの保存に失敗しました。通信状態を確認してください。");
+    refreshFitnessPointSaveState();
+  }
+}
+if(fitnessPointRecordButton)fitnessPointRecordButton.onclick=openFitnessPointRecord;
+if(closeFitnessPointRecordModalButton)closeFitnessPointRecordModalButton.onclick=()=>hide(fitnessPointRecordModal);
+if(fitnessPointRecordModal)fitnessPointRecordModal.onclick=event=>{if(event.target===fitnessPointRecordModal)hide(fitnessPointRecordModal);};
+[fitnessPointCardio,fitnessPointStretch,fitnessPointQuestClear].forEach(el=>{if(el)el.onchange=refreshFitnessPointSaveState;});
+document.querySelectorAll('input[name="fitnessPointMachines"]').forEach(el=>el.onchange=refreshFitnessPointSaveState);
+if(saveFitnessPointButton)saveFitnessPointButton.onclick=saveFitnessPointRecord;
 
 function updateButtons(){const names=getNames(currentType,selectedKey),joined=currentUser&&names.includes(currentUser);myStatus.textContent=joined?`✅ ${currentUser}さんは参加予定です。`:`${currentUser||"未設定"}さんはまだ参加していません。`;if(currentType==="gym"&&!joined)joinButton.textContent=names.length===0?"🏋️ フィットネス行きたい！":"🏋️ 参加する";else if(currentType==="run")joinButton.textContent="参加する";joinButton.classList.toggle("hidden",joined);cancelButton.classList.toggle("hidden",!joined)}
 joinButton.onclick=joinEvent;cancelButton.onclick=cancelEvent;backButton.onclick=()=>{const returnType=currentType;hide(detailView);show(homeView);setType(returnType);requestAnimationFrame(()=>{document.querySelector(".calendar-card")?.scrollIntoView({behavior:"smooth",block:"start"})})};prevMonthButton.onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--}renderAll()};
