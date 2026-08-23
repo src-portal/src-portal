@@ -417,6 +417,61 @@ if(grantLegacyGymPointsButton){
   grantLegacyGymPointsButton.onclick=grantLegacyGymAttendancePoints20260806;
 }
 
+function renderFitnessPointHomeSummary(){
+  const totalEl=document.getElementById("fitnessPointTopTotal");
+  const rankEl=document.getElementById("fitnessPointTopRank");
+  if(!totalEl||!rankEl)return;
+
+  if(!currentUser){
+    totalEl.textContent="--pt";
+    rankEl.textContent="--位";
+    return;
+  }
+
+  const todayKey=todayKeyJST();
+  const [year,month]=todayKey.split("-").map(Number);
+  const seasonStart=month>=4&&month<=9
+    ? `${year}-04-01`
+    : `${month>=10?year:year-1}-10-01`;
+  const seasonEnd=month>=4&&month<=9
+    ? `${year}-09-30`
+    : `${month>=10?year+1:year}-03-31`;
+
+  const totals=new Map();
+
+  Object.entries(attendancePointRecords||{}).forEach(([id,records])=>{
+    if(!id.startsWith("gym_"))return;
+    const date=id.slice(4);
+    if(date<seasonStart||date>seasonEnd)return;
+
+    const participants=Array.isArray(attendance[id])?attendance[id]:[];
+
+    Object.entries(records||{}).forEach(([name,record])=>{
+      if(!record||record.test===true)return;
+      if(!participants.includes(name))return;
+      totals.set(name,(totals.get(name)||0)+Math.max(0,Number(record.total)||0));
+    });
+  });
+
+  const ranking=[...totals.entries()]
+    .map(([name,total])=>({name,total}))
+    .sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name,"ja"));
+
+  let previousScore=null;
+  let previousRank=0;
+  ranking.forEach((row,index)=>{
+    if(previousScore===null||row.total!==previousScore){
+      previousScore=row.total;
+      previousRank=index+1;
+    }
+    row.rank=previousRank;
+  });
+
+  const me=ranking.find(row=>row.name===currentUser)||null;
+  totalEl.textContent=`${me?.total||0}pt`;
+  rankEl.textContent=me?`${me.rank}位`:"--位";
+}
+
 async function migrateExistingMemberInvitationFields(records){
   if(memberInvitationMigrationStarted)return;
   const targets=records.filter(record=>record.needsInvitationMigration);
@@ -540,8 +595,8 @@ onSnapshot(collection(db,"attendance"),snap=>{
   });
   setOnline("🟢 Firebase 接続中");
   renderAll();
-  // POINTデータ取得完了時にホームの「今季 / 現在順位」も即時更新する。
-  try{renderFitnessPointSummary();}catch(pointSummaryError){console.error("fitness point startup render error",pointSummaryError);}
+  // POINTデータ取得完了時はホーム表示だけを安全に更新する。
+  renderFitnessPointHomeSummary();
   if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
   if(selectedKey)renderDetail();
 },err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
@@ -601,7 +656,7 @@ onSnapshot(collection(db,"members"),snap=>{
   updateUser();
   renderAll();
   // ユーザー情報取得がPOINTより後になった場合にもホーム集計を確定する。
-  try{renderFitnessPointSummary();}catch(pointSummaryError){console.error("fitness point member render error",pointSummaryError);}
+  renderFitnessPointHomeSummary();
   renderKyroPublic();
   if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
   if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))renderAdminMembers();
@@ -826,6 +881,7 @@ function renderNameButtons(){
         updateCurrentUserLastActive();
         hide(setupModal);
         renderAll();
+        renderFitnessPointHomeSummary();
         if(returnToAdminMenuAfterSetup){
           returnToAdminMenuAfterSetup=false;
           show(adminMenuModal);
@@ -4323,7 +4379,7 @@ window.addEventListener("resize",()=>{
   if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))positionMemberModalBelowHeader(adminMemberModal);
 });
 
-renderNameButtons();updateUser();renderAll();requireName(false)});
+renderNameButtons();updateUser();renderAll();renderFitnessPointHomeSummary();requireName(false)});
 
 /* SRC Portal Ver.1.7.0 - basic-operation multilingual display
    Detects the browser/device language: ja / ko / zh; all others use English.
