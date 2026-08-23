@@ -325,63 +325,96 @@ window.addEventListener("pageshow",refreshAfterAppResume);
 window.addEventListener("focus",refreshAfterAppResume);
 
 async function grantLegacyGymAttendancePoints20260806(){
-  if(!isCurrentAdmin())return;
-
-  const key="2026-08-06";
-  const id=eventId("gym",key);
-  const names=Array.isArray(attendance[id])?[...attendance[id]]:[];
-  if(!names.length)return;
-
-  const existing=attendancePointRecords[id]||{};
-  const additions={};
-
-  names.forEach(name=>{
-    if(existing[name])return;
-    additions[name]={
-      date:key,
-      attendance:1,
-      cardio:0,
-      stretch:0,
-      machines:0,
-      questId:"",
-      questClear:false,
-      questPoint:0,
-      total:1,
-      test:false,
-      legacyGrant:true,
-      updatedAt:new Date().toISOString()
-    };
-  });
-
-  const targets=Object.keys(additions);
-  if(!targets.length){
-    alert("8/6参加者の来館1ptはすでに登録済みです。");
+  if(!isCurrentAdmin()){
+    alert("管理者ユーザーで実行してください。");
     return;
   }
 
-  if(!confirm(`8/6フィットネス参加者 ${targets.length}名に来館1ptを付与します。よろしいですか？`))return;
+  const key="2026-08-06";
+  const id=eventId("gym",key);
 
   try{
+    // 8/6の実データをサーバーから直接確認してから付与する。
+    const serverSnap=await getDocFromServer(eventPath("gym",key));
+    if(!serverSnap.exists()){
+      alert("8/6のフィットネス参加データが見つかりません。");
+      return;
+    }
+
+    const data=serverSnap.data()||{};
+    const names=Array.isArray(data.participants)?data.participants:[];
+    const existing=data.pointRecords||{};
+
+    if(!names.length){
+      alert("8/6の参加者が0名のため、POINTは付与しません。");
+      return;
+    }
+
+    const additions={};
+    names.forEach(name=>{
+      if(existing[name])return;
+      additions[name]={
+        date:key,
+        attendance:1,
+        cardio:0,
+        stretch:0,
+        machines:0,
+        questId:"",
+        questClear:false,
+        questPoint:0,
+        total:1,
+        test:false,
+        legacyGrant:true,
+        updatedAt:new Date().toISOString()
+      };
+    });
+
+    const targets=Object.keys(additions);
+
+    if(!targets.length){
+      attendancePointRecords[id]=existing;
+      try{renderFitnessPointSummary();}catch(e){console.error(e);}
+      alert("8/6参加者の来館1ptはすでに登録済みです。");
+      return;
+    }
+
+    if(!confirm(
+      `8/6フィットネス参加者 ${targets.length}名に来館1ptを付与します。\n`+
+      `${targets.join("、")}\n\nよろしいですか？`
+    ))return;
+
     await setDoc(
       eventPath("gym",key),
       {
-        pointRecords:additions,
+        pointRecords:{
+          ...existing,
+          ...additions
+        },
         updatedAt:serverTimestamp()
       },
       {merge:true}
     );
 
-    attendancePointRecords[id]={
-      ...(attendancePointRecords[id]||{}),
-      ...additions
-    };
+    // サーバー保存後、同じドキュメントを再取得して確定内容を画面へ反映。
+    const confirmedSnap=await getDocFromServer(eventPath("gym",key));
+    const confirmed=confirmedSnap.exists()?confirmedSnap.data()||{}:{};
+    attendancePointRecords[id]=confirmed.pointRecords||{};
 
     try{renderFitnessPointSummary();}catch(e){console.error(e);}
-    alert(`8/6参加者 ${targets.length}名に来館1ptを登録しました。`);
+
+    alert(
+      `8/6参加者 ${targets.length}名に来館1ptを登録しました。\n`+
+      `${targets.join("、")}`
+    );
   }catch(error){
     console.error("legacy gym point grant error",error);
-    alert("8/6の来館POINT登録に失敗しました。");
+    alert("8/6の来館POINT登録に失敗しました。通信状態を確認してください。");
   }
+}
+
+const grantLegacyGymPointsButton=document.getElementById("grantLegacyGymPointsButton");
+if(grantLegacyGymPointsButton){
+  grantLegacyGymPointsButton.onclick=grantLegacyGymAttendancePoints20260806;
 }
 
 async function migrateExistingMemberInvitationFields(records){
@@ -1993,11 +2026,6 @@ function tomorrowKeyJST(){
 
 function reminderDateLabel(key){
   const [year,month,day]=key.split("-").map(Number);
-  const grantLegacyGymPointsButton=document.getElementById("grantLegacyGymPointsButton");
-if(grantLegacyGymPointsButton){
-  grantLegacyGymPointsButton.onclick=grantLegacyGymAttendancePoints20260806;
-}
-
 const language=window.SRC_I18N?.language||"ja";
   const locale=language==="ko"?"ko-KR":language==="zh"?"zh-CN":language==="en"?"en-US":"ja-JP";
   return new Intl.DateTimeFormat(locale,{month:"long",day:"numeric",weekday:"short",timeZone:"Asia/Tokyo"}).format(new Date(Date.UTC(year,month-1,day)));
