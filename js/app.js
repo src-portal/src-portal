@@ -1668,10 +1668,17 @@ function fitnessPointRowsForSeason(season=currentFitnessSeason()){
     const date=id.slice(4);
     if(date<season.start||date>season.end)return;
 
+    const participants=Array.isArray(attendance[id])?attendance[id]:[];
+
     Object.entries(records||{}).forEach(([name,record])=>{
       if(!record)return;
+
+      // POINT記録が残っていても、その日の参加者に本人がいなければ集計しない。
+      if(!participants.includes(name))return;
+
       const includeTest=fitnessPointIncludeTestRecords&&isCurrentAdmin();
       if(record.test===true&&!includeTest)return;
+
       rows.push({
         name,
         date,
