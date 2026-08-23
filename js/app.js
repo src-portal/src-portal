@@ -1259,7 +1259,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="フィットネストレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderGymQuestCard();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="フィットネストレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderGymQuestCard();renderFitnessPointSummary();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -1609,7 +1609,7 @@ if(closeGymQuestModalButton)closeGymQuestModalButton.onclick=()=>hide(gymQuestMo
 if(gymQuestModal)gymQuestModal.onclick=event=>{if(event.target===gymQuestModal)hide(gymQuestModal);};
 if(confirmGymQuestButton)confirmGymQuestButton.onclick=saveGymQuestSelection;
 
-/* FITNESS POINT Phase 1: UI only. Firestore/point records are intentionally untouched. */
+/* FITNESS POINT Phase 3: aggregate existing pointRecords only. */
 const fitnessPointCard=document.getElementById("fitnessPointCard");
 const fitnessPointModal=document.getElementById("fitnessPointModal");
 const closeFitnessPointModalButton=document.getElementById("closeFitnessPointModalButton");
@@ -1617,14 +1617,175 @@ const fitnessPointRankingTab=document.getElementById("fitnessPointRankingTab");
 const fitnessPointMyTab=document.getElementById("fitnessPointMyTab");
 const fitnessPointRankingPanel=document.getElementById("fitnessPointRankingPanel");
 const fitnessPointMyPanel=document.getElementById("fitnessPointMyPanel");
+const fitnessPointTopTotal=document.getElementById("fitnessPointTopTotal");
+const fitnessPointTopRank=document.getElementById("fitnessPointTopRank");
+const fitnessPointSeasonLabel=document.getElementById("fitnessPointSeasonLabel");
+const fitnessPointRankingList=document.getElementById("fitnessPointRankingList");
+const fitnessPointMyTotal=document.getElementById("fitnessPointMyTotal");
+const fitnessPointMyRank=document.getElementById("fitnessPointMyRank");
+const fitnessPointMyVisits=document.getElementById("fitnessPointMyVisits");
+const fitnessPointMyAverage=document.getElementById("fitnessPointMyAverage");
+const fitnessPointHistoryList=document.getElementById("fitnessPointHistoryList");
+
+function fitnessSeasonForKey(key){
+  const [year,month]=String(key||"").split("-").map(Number);
+  if(!year||!month)return null;
+
+  if(month>=4&&month<=9){
+    return {
+      label:`${year}年度 上期（4/1〜9/30）`,
+      start:`${year}-04-01`,
+      end:`${year}-09-30`
+    };
+  }
+
+  const fiscalYear=month>=10?year:year-1;
+  return {
+    label:`${fiscalYear}年度 下期（10/1〜${fiscalYear+1}/3/31）`,
+    start:`${fiscalYear}-10-01`,
+    end:`${fiscalYear+1}-03-31`
+  };
+}
+
+function currentFitnessSeason(){
+  return fitnessSeasonForKey(todayKeyJST());
+}
+
+function fitnessPointRowsForSeason(season=currentFitnessSeason()){
+  if(!season)return [];
+  const rows=[];
+
+  Object.entries(attendancePointRecords||{}).forEach(([id,records])=>{
+    if(!id.startsWith("gym_"))return;
+    const date=id.slice(4);
+    if(date<season.start||date>season.end)return;
+
+    Object.entries(records||{}).forEach(([name,record])=>{
+      if(!record||record.test===true)return;
+      rows.push({
+        name,
+        date,
+        total:Math.max(0,Number(record.total)||0),
+        record
+      });
+    });
+  });
+
+  return rows;
+}
+
+function buildFitnessPointRanking(season=currentFitnessSeason()){
+  const totals=new Map();
+
+  fitnessPointRowsForSeason(season).forEach(row=>{
+    const item=totals.get(row.name)||{name:row.name,total:0,visits:0};
+    item.total+=row.total;
+    item.visits+=1;
+    totals.set(row.name,item);
+  });
+
+  const ranking=[...totals.values()].sort((a,b)=>
+    b.total-a.total||a.name.localeCompare(b.name,"ja")
+  );
+
+  let previousScore=null;
+  let previousRank=0;
+
+  ranking.forEach((row,index)=>{
+    if(previousScore===null||row.total!==previousScore){
+      previousScore=row.total;
+      previousRank=index+1;
+    }
+    row.rank=previousRank;
+  });
+
+  return ranking;
+}
+
+function myFitnessPointHistory(season=currentFitnessSeason()){
+  if(!currentUser)return [];
+  return fitnessPointRowsForSeason(season)
+    .filter(row=>row.name===currentUser)
+    .sort((a,b)=>b.date.localeCompare(a.date));
+}
+
+function renderFitnessPointSummary(){
+  const season=currentFitnessSeason();
+  const ranking=buildFitnessPointRanking(season);
+  const me=ranking.find(row=>row.name===currentUser)||null;
+  const history=myFitnessPointHistory(season);
+
+  const total=me?.total||0;
+  const visits=me?.visits||history.length||0;
+  const average=visits?total/visits:0;
+
+  if(fitnessPointSeasonLabel)fitnessPointSeasonLabel.textContent=season?.label||"--";
+  if(fitnessPointTopTotal)fitnessPointTopTotal.textContent=currentUser?`${total}pt`:"--pt";
+  if(fitnessPointTopRank)fitnessPointTopRank.textContent=currentUser&&me?`${me.rank}位`:"--位";
+  if(fitnessPointMyTotal)fitnessPointMyTotal.textContent=currentUser?`${total} pt`:"-- pt";
+  if(fitnessPointMyRank)fitnessPointMyRank.textContent=currentUser&&me?`${me.rank} 位`:"-- 位";
+  if(fitnessPointMyVisits)fitnessPointMyVisits.textContent=currentUser?`${visits} 回`:"-- 回";
+  if(fitnessPointMyAverage)fitnessPointMyAverage.textContent=currentUser&&visits?`${average.toFixed(1)} pt`:"-- pt";
+
+  if(fitnessPointRankingList){
+    if(!ranking.length){
+      fitnessPointRankingList.innerHTML='<div class="fitness-point-ranking-empty">今季の本番POINT記録はまだありません。</div>';
+    }else{
+      fitnessPointRankingList.innerHTML=ranking.map(row=>{
+        const rankLabel=row.rank===1?"🥇 1位":row.rank===2?"🥈 2位":row.rank===3?"🥉 3位":`${row.rank}位`;
+        return `<div class="fitness-point-ranking-row ${row.name===currentUser?"is-me":""}">
+          <span class="fitness-point-ranking-position">${rankLabel}</span>
+          <span class="fitness-point-ranking-name">${escapeHtml(row.name)}${row.name===currentUser?"（あなた）":""}</span>
+          <strong class="fitness-point-ranking-score">${row.total} pt</strong>
+        </div>`;
+      }).join("");
+    }
+  }
+
+  if(fitnessPointHistoryList){
+    if(!currentUser){
+      fitnessPointHistoryList.innerHTML='<div class="fitness-point-ranking-empty">名前を選択すると自分の記録を表示します。</div>';
+    }else if(!history.length){
+      fitnessPointHistoryList.innerHTML='<div class="fitness-point-ranking-empty">今季の本番POINT記録はまだありません。</div>';
+    }else{
+      fitnessPointHistoryList.innerHTML=history.map(row=>{
+        const quest=gymQuestById(row.record.questId||"");
+        const details=[
+          row.record.cardio?"有酸素":"",
+          row.record.stretch?"柔軟":"",
+          Number(row.record.machines)>0?`マシン${row.record.machines}台`:"",
+          row.record.questClear&&quest?`QUEST ${quest.name}`:""
+        ].filter(Boolean).join(" / ")||"来館";
+
+        return `<div class="fitness-point-history-row">
+          <span class="fitness-point-history-date">${escapeHtml(fmt(row.date))}</span>
+          <span class="fitness-point-history-main">
+            <strong>フィットネス</strong>
+            <small>${escapeHtml(details)}</small>
+          </span>
+          <strong class="fitness-point-history-score">+${row.total}pt</strong>
+        </div>`;
+      }).join("");
+    }
+  }
+}
+
 function setFitnessPointTab(mode){
   const ranking=mode!=="my";
   fitnessPointRankingTab?.classList.toggle("active",ranking);
   fitnessPointMyTab?.classList.toggle("active",!ranking);
   fitnessPointRankingPanel?.classList.toggle("hidden",!ranking);
   fitnessPointMyPanel?.classList.toggle("hidden",ranking);
+  renderFitnessPointSummary();
 }
-if(fitnessPointCard)fitnessPointCard.onclick=()=>{setFitnessPointTab("ranking");show(fitnessPointModal);};
+
+if(fitnessPointCard){
+  fitnessPointCard.onclick=()=>{
+    renderFitnessPointSummary();
+    setFitnessPointTab("ranking");
+    show(fitnessPointModal);
+  };
+}
 if(closeFitnessPointModalButton)closeFitnessPointModalButton.onclick=()=>hide(fitnessPointModal);
 if(fitnessPointModal)fitnessPointModal.onclick=event=>{if(event.target===fitnessPointModal)hide(fitnessPointModal);};
 if(fitnessPointRankingTab)fitnessPointRankingTab.onclick=()=>setFitnessPointTab("ranking");
@@ -2130,6 +2291,7 @@ async function saveFitnessPointRecord(){
     fitnessPointSavedSnapshot={...snapshot};
     hide(fitnessPointRecordModal);
     renderFitnessPointRecordAction();
+    renderFitnessPointSummary();
   }catch(error){
     console.error("fitness point save error",error);
     alert("POINTの保存に失敗しました。通信状態を確認してください。");
