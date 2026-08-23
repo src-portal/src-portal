@@ -540,6 +540,8 @@ onSnapshot(collection(db,"attendance"),snap=>{
   });
   setOnline("🟢 Firebase 接続中");
   renderAll();
+  // POINTデータ取得完了時にホームの「今季 / 現在順位」も即時更新する。
+  try{renderFitnessPointSummary();}catch(pointSummaryError){console.error("fitness point startup render error",pointSummaryError);}
   if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
   if(selectedKey)renderDetail();
 },err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
@@ -598,6 +600,8 @@ onSnapshot(collection(db,"members"),snap=>{
   renderNameButtons();
   updateUser();
   renderAll();
+  // ユーザー情報取得がPOINTより後になった場合にもホーム集計を確定する。
+  try{renderFitnessPointSummary();}catch(pointSummaryError){console.error("fitness point member render error",pointSummaryError);}
   renderKyroPublic();
   if(memberOverviewModal&&!memberOverviewModal.classList.contains("hidden"))renderMemberOverview();
   if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))renderAdminMembers();
