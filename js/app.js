@@ -1617,6 +1617,9 @@ const fitnessPointRankingTab=document.getElementById("fitnessPointRankingTab");
 const fitnessPointMyTab=document.getElementById("fitnessPointMyTab");
 const fitnessPointRankingPanel=document.getElementById("fitnessPointRankingPanel");
 const fitnessPointMyPanel=document.getElementById("fitnessPointMyPanel");
+const fitnessPointAdminTestBox=document.getElementById("fitnessPointAdminTestBox");
+const fitnessPointIncludeTestButton=document.getElementById("fitnessPointIncludeTestButton");
+let fitnessPointIncludeTestRecords=false;
 
 function getFitnessPointUi(){
   return {
@@ -1666,7 +1669,9 @@ function fitnessPointRowsForSeason(season=currentFitnessSeason()){
     if(date<season.start||date>season.end)return;
 
     Object.entries(records||{}).forEach(([name,record])=>{
-      if(!record||record.test===true)return;
+      if(!record)return;
+      const includeTest=fitnessPointIncludeTestRecords&&isCurrentAdmin();
+      if(record.test===true&&!includeTest)return;
       rows.push({
         name,
         date,
@@ -1716,6 +1721,21 @@ function myFitnessPointHistory(season=currentFitnessSeason()){
 
 function renderFitnessPointSummary(){
   const ui=getFitnessPointUi();
+  const admin=isCurrentAdmin();
+
+  if(fitnessPointAdminTestBox){
+    fitnessPointAdminTestBox.classList.toggle("hidden",!admin);
+  }
+  if(fitnessPointIncludeTestButton){
+    fitnessPointIncludeTestButton.classList.toggle("is-active",admin&&fitnessPointIncludeTestRecords);
+    fitnessPointIncludeTestButton.setAttribute("aria-pressed",admin&&fitnessPointIncludeTestRecords?"true":"false");
+    fitnessPointIncludeTestButton.textContent=admin&&fitnessPointIncludeTestRecords
+      ? "✓ テスト記録を含めています"
+      : "テスト記録を含める";
+  }
+
+  if(!admin)fitnessPointIncludeTestRecords=false;
+
   const season=currentFitnessSeason();
   const ranking=buildFitnessPointRanking(season);
   const me=ranking.find(row=>row.name===currentUser)||null;
@@ -1735,7 +1755,7 @@ function renderFitnessPointSummary(){
 
   if(ui.rankingList){
     if(!ranking.length){
-      ui.rankingList.innerHTML='<div class="fitness-point-ranking-empty">今季の本番POINT記録はまだありません。</div>';
+      ui.rankingList.innerHTML=`<div class="fitness-point-ranking-empty">${fitnessPointIncludeTestRecords&&isCurrentAdmin()?"今季のPOINT記録はまだありません。":"今季の本番POINT記録はまだありません。"}</div>`;
     }else{
       ui.rankingList.innerHTML=ranking.map(row=>{
         const rankLabel=row.rank===1?"🥇 1位":row.rank===2?"🥈 2位":row.rank===3?"🥉 3位":`${row.rank}位`;
@@ -1752,7 +1772,7 @@ function renderFitnessPointSummary(){
     if(!currentUser){
       ui.historyList.innerHTML='<div class="fitness-point-ranking-empty">名前を選択すると自分の記録を表示します。</div>';
     }else if(!history.length){
-      ui.historyList.innerHTML='<div class="fitness-point-ranking-empty">今季の本番POINT記録はまだありません。</div>';
+      ui.historyList.innerHTML=`<div class="fitness-point-ranking-empty">${fitnessPointIncludeTestRecords&&isCurrentAdmin()?"今季のPOINT記録はまだありません。":"今季の本番POINT記録はまだありません。"}</div>`;
     }else{
       ui.historyList.innerHTML=history.map(row=>{
         const quest=gymQuestById(row.record.questId||"");
@@ -1792,10 +1812,25 @@ if(fitnessPointCard){
     show(fitnessPointModal);
   };
 }
-if(closeFitnessPointModalButton)closeFitnessPointModalButton.onclick=()=>hide(fitnessPointModal);
-if(fitnessPointModal)fitnessPointModal.onclick=event=>{if(event.target===fitnessPointModal)hide(fitnessPointModal);};
+if(closeFitnessPointModalButton)closeFitnessPointModalButton.onclick=()=>{
+  fitnessPointIncludeTestRecords=false;
+  hide(fitnessPointModal);
+};
+if(fitnessPointModal)fitnessPointModal.onclick=event=>{
+  if(event.target===fitnessPointModal){
+    fitnessPointIncludeTestRecords=false;
+    hide(fitnessPointModal);
+  }
+};
 if(fitnessPointRankingTab)fitnessPointRankingTab.onclick=()=>setFitnessPointTab("ranking");
 if(fitnessPointMyTab)fitnessPointMyTab.onclick=()=>setFitnessPointTab("my");
+if(fitnessPointIncludeTestButton){
+  fitnessPointIncludeTestButton.onclick=()=>{
+    if(!isCurrentAdmin())return;
+    fitnessPointIncludeTestRecords=!fitnessPointIncludeTestRecords;
+    renderFitnessPointSummary();
+  };
+}
 
 const nextPlanCard=document.getElementById("nextPlanCard");
   const nextPlanLabel=nextPlanCard?.querySelector(".section-label");
