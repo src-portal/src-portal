@@ -3511,7 +3511,7 @@ body{
   line-height:1.5;
 }
 
-/* Ver.1.9.0zzd: FITNESS POINT season aggregation */
+/* Ver.1.9.0zze: isolated FITNESS POINT season aggregation */
 .fitness-point-ranking-list{display:grid;gap:7px}
 .fitness-point-ranking-row{
   display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:9px;align-items:center;
