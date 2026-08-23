@@ -324,6 +324,66 @@ document.addEventListener("visibilitychange",()=>{
 window.addEventListener("pageshow",refreshAfterAppResume);
 window.addEventListener("focus",refreshAfterAppResume);
 
+async function grantLegacyGymAttendancePoints20260806(){
+  if(!isCurrentAdmin())return;
+
+  const key="2026-08-06";
+  const id=eventId("gym",key);
+  const names=Array.isArray(attendance[id])?[...attendance[id]]:[];
+  if(!names.length)return;
+
+  const existing=attendancePointRecords[id]||{};
+  const additions={};
+
+  names.forEach(name=>{
+    if(existing[name])return;
+    additions[name]={
+      date:key,
+      attendance:1,
+      cardio:0,
+      stretch:0,
+      machines:0,
+      questId:"",
+      questClear:false,
+      questPoint:0,
+      total:1,
+      test:false,
+      legacyGrant:true,
+      updatedAt:new Date().toISOString()
+    };
+  });
+
+  const targets=Object.keys(additions);
+  if(!targets.length){
+    alert("8/6参加者の来館1ptはすでに登録済みです。");
+    return;
+  }
+
+  if(!confirm(`8/6フィットネス参加者 ${targets.length}名に来館1ptを付与します。よろしいですか？`))return;
+
+  try{
+    await setDoc(
+      eventPath("gym",key),
+      {
+        pointRecords:additions,
+        updatedAt:serverTimestamp()
+      },
+      {merge:true}
+    );
+
+    attendancePointRecords[id]={
+      ...(attendancePointRecords[id]||{}),
+      ...additions
+    };
+
+    try{renderFitnessPointSummary();}catch(e){console.error(e);}
+    alert(`8/6参加者 ${targets.length}名に来館1ptを登録しました。`);
+  }catch(error){
+    console.error("legacy gym point grant error",error);
+    alert("8/6の来館POINT登録に失敗しました。");
+  }
+}
+
 async function migrateExistingMemberInvitationFields(records){
   if(memberInvitationMigrationStarted)return;
   const targets=records.filter(record=>record.needsInvitationMigration);
@@ -1933,7 +1993,12 @@ function tomorrowKeyJST(){
 
 function reminderDateLabel(key){
   const [year,month,day]=key.split("-").map(Number);
-  const language=window.SRC_I18N?.language||"ja";
+  const grantLegacyGymPointsButton=document.getElementById("grantLegacyGymPointsButton");
+if(grantLegacyGymPointsButton){
+  grantLegacyGymPointsButton.onclick=grantLegacyGymAttendancePoints20260806;
+}
+
+const language=window.SRC_I18N?.language||"ja";
   const locale=language==="ko"?"ko-KR":language==="zh"?"zh-CN":language==="en"?"en-US":"ja-JP";
   return new Intl.DateTimeFormat(locale,{month:"long",day:"numeric",weekday:"short",timeZone:"Asia/Tokyo"}).format(new Date(Date.UTC(year,month-1,day)));
 }
