@@ -1956,6 +1956,7 @@ const fitnessPointRecordButton=document.getElementById("fitnessPointRecordButton
 const fitnessPointRecordModal=document.getElementById("fitnessPointRecordModal");
 const closeFitnessPointRecordModalButton=document.getElementById("closeFitnessPointRecordModalButton");
 const fitnessPointRecordDate=document.getElementById("fitnessPointRecordDate");
+const fitnessPointTestNotice=document.getElementById("fitnessPointTestNotice");
 const fitnessPointCardio=document.getElementById("fitnessPointCardio");
 const fitnessPointStretch=document.getElementById("fitnessPointStretch");
 const fitnessPointQuestRow=document.getElementById("fitnessPointQuestRow");
@@ -1982,12 +1983,25 @@ function gymStartReached(key){
 
 function renderFitnessPointRecordAction(){
   if(!fitnessPointRecordButton)return;
+
   const joined=currentUser&&selectedKey&&getNames("gym",selectedKey).includes(currentUser);
-  const available=currentType==="gym"&&joined&&gymStartReached(selectedKey);
+  const started=gymStartReached(selectedKey);
+  const adminTest=currentType==="gym"&&joined&&!started&&isCurrentAdmin();
+  const available=currentType==="gym"&&joined&&(started||adminTest);
+
   fitnessPointRecordButton.classList.toggle("hidden",!available);
+
   if(available){
     const saved=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser];
-    fitnessPointRecordButton.textContent=saved?"🏆 今日のPOINTを修正 ＞":"🏆 今日のPOINTを記録 ＞";
+    if(adminTest){
+      fitnessPointRecordButton.textContent=saved
+        ? "🧪 POINTテストを修正 ＞"
+        : "🧪 POINT登録をテスト ＞";
+    }else{
+      fitnessPointRecordButton.textContent=saved
+        ? "🏆 今日のPOINTを修正 ＞"
+        : "🏆 今日のPOINTを記録 ＞";
+    }
   }
 }
 
@@ -2002,6 +2016,7 @@ function fitnessPointTotal(){
 }
 function currentFitnessPointSnapshot(){
   const questId=gymQuestFor(fitnessPointTargetKey,currentUser)||"";
+  const test=!gymStartReached(fitnessPointTargetKey)&&isCurrentAdmin();
   return {
     cardio:fitnessPointCardio.checked?1:0,
     stretch:fitnessPointStretch.checked?1:0,
@@ -2009,7 +2024,8 @@ function currentFitnessPointSnapshot(){
     questId,
     questClear:Boolean(questId&&fitnessPointQuestClear.checked),
     questPoint:fitnessQuestPoint(),
-    total:fitnessPointTotal()
+    total:fitnessPointTotal(),
+    test
   };
 }
 function normalizeSavedFitnessPoint(record){
@@ -2021,12 +2037,13 @@ function normalizeSavedFitnessPoint(record){
     questId:record.questId||"",
     questClear:Boolean(record.questClear),
     questPoint:Number(record.questPoint)||0,
-    total:Number(record.total)||0
+    total:Number(record.total)||0,
+    test:Boolean(record.test)
   };
 }
 function sameFitnessPointSnapshot(a,b){
   if(!a||!b)return false;
-  return ["cardio","stretch","machines","questId","questClear","questPoint","total"].every(key=>a[key]===b[key]);
+  return ["cardio","stretch","machines","questId","questClear","questPoint","total","test"].every(key=>a[key]===b[key]);
 }
 function refreshFitnessPointSaveState(){
   if(fitnessPointTodayTotal)fitnessPointTodayTotal.textContent=`${fitnessPointTotal()} pt`;
@@ -2044,6 +2061,10 @@ function openFitnessPointRecord(){
   if(!selectedKey||currentType!=="gym"||!currentUser)return;
   fitnessPointTargetKey=selectedKey;
   fitnessPointRecordDate.textContent=fmt(selectedKey);
+
+  const testMode=!gymStartReached(selectedKey)&&isCurrentAdmin();
+  fitnessPointTestNotice?.classList.toggle("hidden",!testMode);
+
   const saved=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser]||null;
   fitnessPointCardio.checked=Boolean(saved?.cardio);
   fitnessPointStretch.checked=Boolean(saved?.stretch);
