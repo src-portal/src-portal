@@ -443,6 +443,7 @@ onSnapshot(collection(db,"attendance"),snap=>{
     attendance[d.id]=data.participants||[];
     attendanceStatuses[d.id]=data.statuses||{};
     attendanceQuestSelections[d.id]=data.questSelections||{};
+    attendancePointRecords[d.id]=data.pointRecords||{};
   });
   setOnline("🟢 Firebase 接続中");
   renderAll();
@@ -2057,28 +2058,49 @@ function refreshFitnessPointSaveState(){
   saveFitnessPointButton.disabled=unchanged;
   saveFitnessPointButton.textContent=unchanged?"✓ 記録済み":"変更内容を保存する";
 }
-function openFitnessPointRecord(){
+async function openFitnessPointRecord(){
   if(!selectedKey||currentType!=="gym"||!currentUser)return;
+
   fitnessPointTargetKey=selectedKey;
   fitnessPointRecordDate.textContent=fmt(selectedKey);
 
   const testMode=!gymStartReached(selectedKey)&&isCurrentAdmin();
   fitnessPointTestNotice?.classList.toggle("hidden",!testMode);
 
-  const saved=attendancePointRecords[eventId("gym",selectedKey)]?.[currentUser]||null;
+  const id=eventId("gym",selectedKey);
+
+  // POINT画面だけは対象日のgymドキュメントをサーバーから1件読み直す。
+  // ラン＆ウォークの参加表示ロジックには一切触れない。
+  try{
+    const serverSnap=await getDocFromServer(eventPath("gym",selectedKey));
+    if(serverSnap.exists()){
+      const data=serverSnap.data()||{};
+      attendancePointRecords[id]=data.pointRecords||{};
+      attendanceQuestSelections[id]=data.questSelections||attendanceQuestSelections[id]||{};
+    }
+  }catch(error){
+    console.warn("fitness point server read failed; use snapshot cache",error);
+  }
+
+  const saved=attendancePointRecords[id]?.[currentUser]||null;
+
   fitnessPointCardio.checked=Boolean(saved?.cardio);
   fitnessPointStretch.checked=Boolean(saved?.stretch);
+
   const machineValue=Math.min(3,Math.max(0,Number(saved?.machines)||0));
   const radio=document.querySelector(`input[name="fitnessPointMachines"][value="${machineValue}"]`);
   if(radio)radio.checked=true;
+
   const quest=gymQuestById(gymQuestFor(selectedKey,currentUser));
   fitnessPointQuestRow.classList.toggle("hidden",!quest);
+
   if(quest){
     fitnessPointQuestName.textContent=`${quest.icon} ${quest.name}｜${quest.text}`;
     fitnessPointQuestClear.checked=Boolean(saved?.questClear);
   }else{
     fitnessPointQuestClear.checked=false;
   }
+
   fitnessPointSavedSnapshot=normalizeSavedFitnessPoint(saved);
   refreshFitnessPointSaveState();
   show(fitnessPointRecordModal);
