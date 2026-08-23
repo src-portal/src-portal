@@ -2145,7 +2145,8 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
     progressFill.style.width="100%";
     progressBar.style.display="none";
     progressBox.classList.add("confirmed");
-    progressText.textContent="🟢 開催予定";
+    const displayStatus=eventDisplayStatus(ev);
+    progressText.textContent=`${displayStatus.icon} ${displayStatus.text}`;
     eventMessage.innerHTML=linkifyEventMemo(ev.memo||"");
     if(ev.memo)eventMessage.classList.remove("hidden");
   }
@@ -3327,12 +3328,37 @@ async function toggleAnnouncement(id,enabled){try{await updateDoc(doc(db,"announ
 
 async function deleteAnnouncement(id){if(!confirm("このお知らせを削除します。よろしいですか？"))return;try{await deleteDoc(doc(db,"announcements",id));alert("お知らせを削除しました。");}catch(e){console.error(e);alert("お知らせの削除に失敗しました。");}}
 
+function eventDisplayStatus(ev){
+  if(ev?.status==="cancelled")return {text:"中止",icon:"🔴"};
+
+  const date=String(ev?.date||"").trim();
+  const time=String(ev?.time||"19:00").trim()||"19:00";
+  const match=time.match(/^(\d{1,2}):(\d{2})/);
+
+  if(!date||!match)return {text:"開催予定",icon:"🟢"};
+
+  const [year,month,day]=date.split("-").map(Number);
+  const hour=Number(match[1]);
+  const minute=Number(match[2]);
+
+  if(!year||!month||!day||!Number.isFinite(hour)||!Number.isFinite(minute)){
+    return {text:"開催予定",icon:"🟢"};
+  }
+
+  // イベント日時はJSTとして比較。Firestoreのstatus自体は変更しない。
+  const eventAt=new Date(Date.UTC(year,month-1,day,hour-9,minute,0,0));
+  return Date.now()>=eventAt.getTime()
+    ? {text:"開催済み",icon:"⚫"}
+    : {text:"開催予定",icon:"🟢"};
+}
+
 function showEventDetail(ev){
   selectedEvent=ev;
   if(!eventDetailContent)return;
 
-  const statusText=ev.status==="cancelled"?"中止":"開催予定";
-  const statusIcon=ev.status==="cancelled"?"🔴":"🟢";
+  const displayStatus=eventDisplayStatus(ev);
+  const statusText=displayStatus.text;
+  const statusIcon=displayStatus.icon;
   const typeIcon=ev.type==="run"?"🏃":"🏋️";
   const displayTitle=(ev.title||eventTypeLabel(ev.type)).trim();
   const results=Array.isArray(ev.trainingResults)?ev.trainingResults.filter(Boolean):[];
