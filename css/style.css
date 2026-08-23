@@ -3494,3 +3494,6 @@ body{
   opacity:0;transition:opacity .18s ease,transform .18s ease;pointer-events:none
 }
 .app-toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* Ver.1.9.0zza: FITNESS POINT registration */
+#saveFitnessPointButton:disabled{opacity:.72;cursor:default}
