@@ -3369,11 +3369,23 @@ function showEventDetail(ev){
     ? `<div class="training-results-admin"><label class="admin-form-label" for="eventTrainingResultsInput">🏃 今日の練習（管理者編集）</label><textarea id="eventTrainingResultsInput" class="admin-input admin-textarea" placeholder="1グループ1行で入力\n例：A 1.5km×5周 5:30/km\nB 1.5km×4周 7:15/km">${escapeHtml(results.join("\n"))}</textarea><p class="training-results-note">過去のイベントにも入力・修正できます。空欄で保存すると表示されません。</p><button class="event-small-button primary" id="saveEventTrainingResultsButton" type="button">練習実績を保存</button></div>`
     : "";
 
+  const automaticStatusNotice=ev.status==="cancelled"
+    ? "🔴 開催中止です。"
+    : statusText==="開催済み"
+      ? "✅ 開催済みです。"
+      : "📝 いまのところ開催予定です。";
+
+  const rawMemo=String(ev.memo||"").trim();
+  const legacyStatusMemo=/^(いまの処開催予定|いまのところ開催予定|開催予定です?。?)$/.test(rawMemo)
+    ? ""
+    : rawMemo;
+
   eventDetailContent.innerHTML=`
     <div class="event-detail-card">
       <div class="event-detail-title">${statusIcon} ${typeIcon} ${escapeHtml(displayTitle)} ${statusText}</div>
       <div class="event-detail-sub">📅 ${fmt(ev.date)}<br>🕖 ${ev.time||"19:00"}<br>📍 ${ev.place||"-"}</div>
-      ${ev.memo?`<div class="event-detail-memo">📝 ${linkifyEventMemo(ev.memo)}</div>`:""}
+      <div class="event-detail-status-notice">${automaticStatusNotice}</div>
+      ${legacyStatusMemo?`<div class="event-detail-memo">📝 ${linkifyEventMemo(legacyStatusMemo)}</div>`:""}
     </div>
     ${resultsHtml}
     ${adminEditHtml}
