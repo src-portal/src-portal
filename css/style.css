@@ -3620,3 +3620,51 @@ body{
   font-size:13px;
   font-weight:950;
 }
+
+/* Ver.1.9.0zzr: ヘルプ内のフォント・文字ウェイト統一 */
+#helpModal,
+#helpModal .help-content,
+#helpModal .help-content *{
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Segoe UI",sans-serif;
+}
+
+#helpModal .help-section p,
+#helpModal .help-section li{
+  color:var(--muted);
+  font-size:13px;
+  font-weight:700;
+  line-height:1.75;
+}
+
+#helpModal .help-section h3{
+  margin:18px 0 10px;
+  color:var(--charcoal);
+  font-size:15px;
+  font-weight:900;
+  line-height:1.5;
+}
+
+#helpModal .help-section h4{
+  margin:16px 0 8px;
+  color:var(--charcoal);
+  font-size:13px;
+  font-weight:900;
+  line-height:1.5;
+}
+
+#helpModal .help-steps{
+  color:var(--muted);
+  font-size:13px;
+  font-weight:700;
+  line-height:1.75;
+}
+
+#helpModal .help-steps li{
+  margin-bottom:9px;
+}
+
+#helpModal .help-section strong{
+  font-family:inherit;
+  font-weight:900;
+  color:inherit;
+}
