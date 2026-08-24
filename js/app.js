@@ -3397,6 +3397,45 @@ async function deleteMessageBoardPost(item){
   try{await deleteDoc(doc(db,"messageBoard",item.id));}catch(e){console.error(e);alert(uiT("messageDeleteFailed","伝言の削除に失敗しました。"));}
 }
 
+function announcementReadStorageKey(){
+  const user=String(currentUser||"guest").trim()||"guest";
+  return `srcPortalReadAnnouncements:${user}`;
+}
+
+function getReadAnnouncementIds(){
+  try{
+    const value=JSON.parse(localStorage.getItem(announcementReadStorageKey())||"[]");
+    return Array.isArray(value)?value.filter(id=>typeof id==="string"):[];
+  }catch{
+    return [];
+  }
+}
+
+function saveReadAnnouncementIds(ids){
+  try{
+    localStorage.setItem(announcementReadStorageKey(),JSON.stringify([...new Set(ids)]));
+  }catch(error){
+    console.warn("announcement read state save failed",error);
+  }
+}
+
+function cleanupReadAnnouncementIds(active){
+  const valid=new Set((active||[]).map(a=>a.id));
+  const cleaned=getReadAnnouncementIds().filter(id=>valid.has(id));
+  saveReadAnnouncementIds(cleaned);
+  return cleaned;
+}
+
+function markAnnouncementRead(id){
+  if(!id)return;
+  const ids=getReadAnnouncementIds();
+  if(!ids.includes(id)){
+    ids.push(id);
+    saveReadAnnouncementIds(ids);
+  }
+  renderAnnouncementsPublic();
+}
+
 function formatAnnouncementDate(timestamp){
   if(!timestamp)return "";
   const date=timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -3412,45 +3451,46 @@ function renderAnnouncementsPublic(){
 
   const active=announcementRecords.filter(a=>a.enabled);
   const heading=document.getElementById("announcementHeading");
-  const moreIndicator=document.getElementById("announcementMoreIndicator");
-  if(heading)heading.textContent=`📢 ${uiT("announcements","お知らせ")}（${active.length}${uiT("itemsSuffix","件")}）`;
-  if(moreIndicator)moreIndicator.classList.toggle("hidden",active.length<=3);
+  const readIds=cleanupReadAnnouncementIds(active);
+  const readSet=new Set(readIds);
+  const unreadCount=active.filter(a=>!readSet.has(a.id)).length;
 
+  if(heading)heading.textContent=`📢 ${uiT("announcements","お知らせ")}`;
+
+  announcementList.className="announcement-card-status";
   if(active.length===0){
-    announcementList.className="announcement-empty";
     announcementList.textContent=uiT("noAnnouncements","現在のお知らせはありません。");
-    if(announcementCard)announcementCard.setAttribute("aria-label",uiT("announcements","お知らせ"));
+    announcementCard?.classList.remove("has-unread");
+    announcementCard?.classList.add("all-read");
+    announcementCard?.setAttribute("aria-label",uiT("announcements","お知らせ"));
     return;
   }
 
-  announcementList.className="announcement-preview-list";
-  announcementList.innerHTML="";
+  if(unreadCount>0){
+    announcementList.innerHTML=`${active.length}${uiT("itemsSuffix","件")}　<span class="announcement-unread-count">🟠 未読 ${unreadCount}${uiT("itemsSuffix","件")}</span>`;
+    announcementCard?.classList.add("has-unread");
+    announcementCard?.classList.remove("all-read");
+  }else{
+    announcementList.innerHTML=`${active.length}${uiT("itemsSuffix","件")}　<span class="announcement-read-complete">✓ 未読なし</span>`;
+    announcementCard?.classList.remove("has-unread");
+    announcementCard?.classList.add("all-read");
+  }
 
-  active.slice(0,3).forEach(a=>{
-    const item=document.createElement("span");
-    item.className="announcement-preview-item";
-
-    const title=document.createElement("span");
-    title.className="announcement-preview-title";
-    title.textContent=a.title||"お知らせ";
-
-    const date=document.createElement("span");
-    date.className="announcement-preview-date";
-    date.textContent=formatAnnouncementDate(a.updatedAt||a.createdAt);
-
-    item.appendChild(title);
-    if(date.textContent)item.appendChild(date);
-    announcementList.appendChild(item);
-  });
-
-  if(announcementCard)announcementCard.setAttribute("aria-label",`${uiT("announcements","お知らせ")} ${active.length}${uiT("itemsSuffix","件")}を開く`);
+  announcementCard?.setAttribute(
+    "aria-label",
+    `${uiT("announcements","お知らせ")} ${active.length}${uiT("itemsSuffix","件")}、${unreadCount?`未読${unreadCount}${uiT("itemsSuffix","件")}`:"未読なし"}`
+  );
 }
 
 function renderAnnouncementsModal(){
   if(!announcementPublicList)return;
+
   const active=announcementRecords.filter(a=>a.enabled);
+  const readSet=new Set(cleanupReadAnnouncementIds(active));
+  const unreadCount=active.filter(a=>!readSet.has(a.id)).length;
+
   if(announcementPublicModalTitle){
-    announcementPublicModalTitle.textContent=`📢 ${uiT("announcements","お知らせ")}（${active.length}${uiT("itemsSuffix","件")}）`;
+    announcementPublicModalTitle.textContent=`📢 ${uiT("announcements","お知らせ")}（${active.length}${uiT("itemsSuffix","件")} / 未読${unreadCount}${uiT("itemsSuffix","件")}）`;
   }
   announcementPublicList.innerHTML="";
 
@@ -3463,28 +3503,69 @@ function renderAnnouncementsModal(){
   }
 
   active.forEach(a=>{
+    const isRead=readSet.has(a.id);
     const item=document.createElement("article");
-    item.className="announcement-public-item";
+    item.className=`announcement-public-item announcement-read-item ${isRead?"is-read":"is-unread"}`;
+    item.dataset.announcementId=a.id;
 
-    const head=document.createElement("div");
+    const button=document.createElement("button");
+    button.type="button";
+    button.className="announcement-public-item-toggle";
+    button.setAttribute("aria-expanded","false");
+
+    const head=document.createElement("span");
     head.className="announcement-public-item-head";
 
-    const title=document.createElement("h3");
+    const titleWrap=document.createElement("span");
+    titleWrap.className="announcement-public-title-wrap";
+
+    const badge=document.createElement("span");
+    badge.className="announcement-read-badge";
+    badge.textContent=isRead?"✓ 既読":"● 未読";
+
+    const title=document.createElement("span");
     title.className="announcement-public-item-title";
     title.textContent=a.title||"お知らせ";
 
-    const date=document.createElement("div");
+    const date=document.createElement("span");
     date.className="announcement-public-item-date";
     date.textContent=formatAnnouncementDate(a.updatedAt||a.createdAt);
 
+    const chevron=document.createElement("span");
+    chevron.className="announcement-item-chevron";
+    chevron.textContent="›";
+
     const body=document.createElement("div");
-    body.className="announcement-public-item-body";
+    body.className="announcement-public-item-body announcement-item-body-collapsed hidden";
     body.textContent=a.body||"";
 
-    head.appendChild(title);
+    titleWrap.appendChild(badge);
+    titleWrap.appendChild(title);
+    head.appendChild(titleWrap);
     if(date.textContent)head.appendChild(date);
-    item.appendChild(head);
+    button.appendChild(head);
+    button.appendChild(chevron);
+    item.appendChild(button);
     if(a.body)item.appendChild(body);
+
+    button.onclick=()=>{
+      const opening=button.getAttribute("aria-expanded")!=="true";
+      button.setAttribute("aria-expanded",opening?"true":"false");
+      chevron.textContent=opening?"⌄":"›";
+      if(a.body)body.classList.toggle("hidden",!opening);
+
+      if(opening&&!item.classList.contains("is-read")){
+        markAnnouncementRead(a.id);
+        item.classList.remove("is-unread");
+        item.classList.add("is-read");
+        badge.textContent="✓ 既読";
+        const latestUnread=active.filter(record=>!new Set(getReadAnnouncementIds()).has(record.id)).length;
+        if(announcementPublicModalTitle){
+          announcementPublicModalTitle.textContent=`📢 ${uiT("announcements","お知らせ")}（${active.length}${uiT("itemsSuffix","件")} / 未読${latestUnread}${uiT("itemsSuffix","件")}）`;
+        }
+      }
+    };
+
     announcementPublicList.appendChild(item);
   });
 }
