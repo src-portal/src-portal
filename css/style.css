@@ -3720,3 +3720,21 @@ body{
   padding:0 13px 13px;font-size:12px;font-weight:700;line-height:1.75;color:#536479;white-space:pre-wrap;
 }
 .announcement-public-item-body.hidden{display:none}
+
+/* Ver.1.9.0zzt: お知らせは未読なしでも淡い専用色を維持 */
+.announcement-card,
+.announcement-summary-card{
+  background:linear-gradient(180deg,#fffaf1 0%,#fff7e6 100%);
+  border-color:#efd18d;
+}
+.announcement-card.has-unread,
+.announcement-summary-card.has-unread{
+  background:linear-gradient(180deg,#fff4d8 0%,#ffedc2 100%);
+  border-color:#e7b949;
+  box-shadow:0 8px 22px rgba(161,112,0,.12);
+}
+.announcement-card.no-unread,
+.announcement-summary-card.no-unread{
+  background:linear-gradient(180deg,#fffaf1 0%,#fff7e6 100%);
+  border-color:#efd18d;
+}
