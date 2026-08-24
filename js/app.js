@@ -761,8 +761,49 @@ async function cancelEvent(){
     return;
   }
   if(!currentUser||!selectedKey)return;
+
   try{
-    await updateDoc(eventPath(currentType,selectedKey),{
+    const ref=eventPath(currentType,selectedKey);
+
+    // GYMは参加取消時に、本人に紐づくQUEST/POINTも同時に整理する。
+    // 他の参加者のデータには触れない。
+    if(currentType==="gym"){
+      const snap=await getDocFromServer(ref);
+      if(!snap.exists())return;
+
+      const data=snap.data()||{};
+      const participants=Array.isArray(data.participants)
+        ? data.participants.filter(name=>name!==currentUser)
+        : [];
+
+      const questSelections={...(data.questSelections||{})};
+      const pointRecords={...(data.pointRecords||{})};
+      delete questSelections[currentUser];
+      delete pointRecords[currentUser];
+
+      // 最後の参加者が取消し、QUEST/POINTも空ならattendanceドキュメント自体を削除。
+      // date/type/updatedAtだけの空ドキュメントを残さない。
+      if(
+        participants.length===0 &&
+        Object.keys(questSelections).length===0 &&
+        Object.keys(pointRecords).length===0
+      ){
+        await deleteDoc(ref);
+        return;
+      }
+
+      await setDoc(ref,{
+        ...data,
+        participants,
+        questSelections,
+        pointRecords,
+        updatedAt:serverTimestamp()
+      });
+      return;
+    }
+
+    // ラン＆ウォークは従来どおり参加者だけを外す。
+    await updateDoc(ref,{
       participants:arrayRemove(currentUser),
       updatedAt:serverTimestamp()
     });
