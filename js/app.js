@@ -667,6 +667,7 @@ onSnapshot(collection(db,"announcements"),snap=>{
   const loaded=[];
   snap.forEach(d=>{const data=d.data();loaded.push({id:d.id,title:data.title||"",body:data.body||"",enabled:data.enabled!==false,createdAt:data.createdAt||null,updatedAt:data.updatedAt||null});});
   announcementRecords=loaded.sort((a,b)=>{const ta=a.updatedAt?.seconds||a.createdAt?.seconds||0;const tb=b.updatedAt?.seconds||b.createdAt?.seconds||0;return tb-ta;});
+  cleanupAnnouncementReadState();
   renderAnnouncementsPublic();
   renderDashboard();
   if(announcementManageModal&&!announcementManageModal.classList.contains("hidden"))renderAdminAnnouncements();
@@ -3398,8 +3399,71 @@ async function deleteMessageBoardPost(item){
 }
 
 function announcementReadStorageKey(){
-  const user=String(currentUser||"guest").trim()||"guest";
-  return `srcPortalReadAnnouncements:${user}`;
+  return `srcAnnouncementReads:${currentUser||"guest"}`;
+}
+
+function announcementVersionKey(record){
+  const value=record?.updatedAt||record?.createdAt||null;
+  if(value&&typeof value.toMillis==="function")return String(value.toMillis());
+  if(value&&typeof value.seconds==="number")return `${value.seconds}:${value.nanoseconds||0}`;
+  if(value instanceof Date)return String(value.getTime());
+  if(typeof value==="string"||typeof value==="number")return String(value);
+  return "0";
+}
+
+function loadAnnouncementReadState(){
+  try{
+    const raw=localStorage.getItem(announcementReadStorageKey());
+    if(!raw)return {};
+    const parsed=JSON.parse(raw);
+    if(Array.isArray(parsed)){
+      // 旧形式（ID配列）は現在版を読んだ扱いに移行。
+      const migrated={};
+      parsed.forEach(id=>{
+        const record=announcementRecords.find(item=>item.id===id);
+        if(record)migrated[id]=announcementVersionKey(record);
+      });
+      return migrated;
+    }
+    return parsed&&typeof parsed==="object"?parsed:{};
+  }catch(error){
+    console.warn("announcement read state load error",error);
+    return {};
+  }
+}
+
+function saveAnnouncementReadState(state){
+  try{
+    localStorage.setItem(announcementReadStorageKey(),JSON.stringify(state||{}));
+  }catch(error){
+    console.warn("announcement read state save error",error);
+  }
+}
+
+function cleanupAnnouncementReadState(){
+  const state=loadAnnouncementReadState();
+  const activeIds=new Set(announcementRecords.map(record=>record.id));
+  let changed=false;
+  Object.keys(state).forEach(id=>{
+    if(!activeIds.has(id)){
+      delete state[id];
+      changed=true;
+    }
+  });
+  if(changed)saveAnnouncementReadState(state);
+}
+
+function isAnnouncementRead(record){
+  if(!record?.id)return true;
+  const state=loadAnnouncementReadState();
+  return state[record.id]===announcementVersionKey(record);
+}
+
+function markAnnouncementRead(record){
+  if(!record?.id||!currentUser)return;
+  const state=loadAnnouncementReadState();
+  state[record.id]=announcementVersionKey(record);
+  saveAnnouncementReadState(state);
 }
 
 function getReadAnnouncementIds(){
