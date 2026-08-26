@@ -870,7 +870,7 @@ async function authenticateInvitedMember(){
     closeInviteAuthentication();
     hide(setupModal);
     renderAll();
-    alert(`🎉 登録が完了しました！\n\nSRCへようこそ、${member.name}さん！\n次回から招待コードの入力は不要です。`);
+    alert(`🎉 本人確認が完了しました！\n\n${member.name}さんとしてこの端末を設定しました。\n通常利用では招待コードの再入力は不要です。別の端末で設定する場合は、同じ招待コードを入力してください。`);
   }catch(e){
     console.error("invite authentication error",e);
     inviteAuthError.textContent="登録に失敗しました。通信状態を確認して、もう一度お試しください。";
@@ -919,7 +919,14 @@ function renderNameButtons(){
       b.className="name-choice-button";
       b.textContent=`😊 ${member.name}`;
       b.onclick=()=>{
-        if(member.inviteStatus==="pending"){
+        // Ver.1.9.0zzx:
+        // 招待コードは登録後も本人確認コードとして保持する。
+        // 別端末、または別ユーザーからこのメンバーへ変更する場合は、
+        // inviteStatusに関係なく、inviteCodeがあるメンバーはコード確認を行う。
+        // この端末ですでに同じmemberIdが選択済みなら再入力は不要。
+        const verifiedMemberId=localStorage.getItem(storageMemberIdKey)||"";
+        const needsInviteVerification=Boolean(member.inviteCode) && verifiedMemberId!==member.id;
+        if(needsInviteVerification || member.inviteStatus==="pending"){
           openInviteAuthentication(member);
           return;
         }
@@ -4108,17 +4115,21 @@ async function reissueInviteCode(member){
   const inviteCode=generateInviteCode();
   try{
     const ref=doc(db,"members",member.id);
-    await updateDoc(ref,{
+    const nextInviteStatus=member.inviteStatus==="pending"?"pending":"registered";
+    const updateFields={
       inviteCode,
-      inviteStatus:"pending",
-      registeredAt:null,
+      inviteStatus:nextInviteStatus,
       updatedAt:serverTimestamp()
-    });
+    };
+    // 新規招待待ちだけはregisteredAt未確定のまま維持。
+    // 既存登録済みメンバーへのコード発行・再発行では登録済み状態を壊さない。
+    if(nextInviteStatus==="pending")updateFields.registeredAt=null;
+    await updateDoc(ref,updateFields);
 
     // 書込み完了後、サーバーから直接読み直して保存を確認する。
     const confirmedSnap=await getDocFromServer(ref);
     const confirmed=confirmedSnap.exists()?confirmedSnap.data()||{}:{};
-    if(normalizeInviteCode(confirmed.inviteCode)!==normalizeInviteCode(inviteCode) || confirmed.inviteStatus!=="pending"){
+    if(normalizeInviteCode(confirmed.inviteCode)!==normalizeInviteCode(inviteCode) || confirmed.inviteStatus!==nextInviteStatus){
       throw new Error("invite code verification failed");
     }
 
