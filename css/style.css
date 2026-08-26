@@ -3738,3 +3738,22 @@ body{
   background:linear-gradient(180deg,#fffaf1 0%,#fff7e6 100%);
   border-color:#efd18d;
 }
+
+/* Ver.1.9.0zzv: TOPカードの「>」表示を統一 */
+.announcement-card-chevron,
+.fitness-point-card-chevron,
+.season-activity-chevron,
+.kyro-mini-chevron,
+.message-board-chevron,
+.recommendation-mini-chevron,
+.dashboard-next-arrow{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif !important;
+  font-size:28px !important;
+  font-weight:800 !important;
+  line-height:1 !important;
+  width:24px;
+  min-width:24px;
+  text-align:center;
+  letter-spacing:0;
+  font-style:normal;
+}
