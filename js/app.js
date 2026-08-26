@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, getDoc, getDocsFromServer, getDocFromServer, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, getDoc, getDocsFromServer, getDocFromServer, deleteDoc, writeBatch, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAd4Uv89V4hZQyjYaR7MfalE8Oyp8ioAbc",authDomain:"src-portal-a2c98.firebaseapp.com",projectId:"src-portal-a2c98",storageBucket:"src-portal-a2c98.firebasestorage.app",messagingSenderId:"817996931127",appId:"1:817996931127:web:80ae813bf8803ddf2a1fb2"};
 
@@ -481,19 +481,27 @@ async function migrateExistingMemberInvitationFields(records){
   }
   memberInvitationMigrationStarted=true;
   try{
-    const batch=writeBatch(db);
-    targets.forEach(record=>{
-      const fields={};
-      if(record.inviteCodeMissing)fields.inviteCode="";
-      if(record.inviteStatusMissing)fields.inviteStatus="registered";
-      if(record.registeredAtMissing)fields.registeredAt=serverTimestamp();
-      if(record.lastActiveAtMissing)fields.lastActiveAt=null;
-      if(Object.keys(fields).length>0){
-        fields.updatedAt=serverTimestamp();
-        batch.set(doc(db,"members",record.id),fields,{merge:true});
-      }
-    });
-    await batch.commit();
+    // 旧ベータ版メンバーの不足フィールドは、必ず最新のFirestore状態を確認して補完する。
+    // コード発行と同時に動いても、発行済みinviteCode/inviteStatusを上書きしない。
+    for(const record of targets){
+      await runTransaction(db,async transaction=>{
+        const ref=doc(db,"members",record.id);
+        const snap=await transaction.get(ref);
+        if(!snap.exists())return;
+        const data=snap.data()||{};
+        const fields={};
+
+        // inviteCodeは未設定のままでも正常。コード発行時に初めて保存する。
+        if(!("inviteStatus" in data))fields.inviteStatus="registered";
+        if(!("registeredAt" in data))fields.registeredAt=serverTimestamp();
+        if(!("lastActiveAt" in data))fields.lastActiveAt=null;
+
+        if(Object.keys(fields).length>0){
+          fields.updatedAt=serverTimestamp();
+          transaction.set(ref,fields,{merge:true});
+        }
+      });
+    }
   }catch(e){
     memberInvitationMigrationStarted=false;
     console.error("member invitation migration error",e);
@@ -4094,21 +4102,33 @@ async function copyInviteInformation(member){
 
 async function reissueInviteCode(member){
   if(!member.id)return;
-  if(!confirm(`${member.name}さんの招待コードを再発行します。以前のコードは使えなくなります。よろしいですか？`))return;
+  const actionLabel=member.inviteCode?"再発行":"発行";
+  if(!confirm(`${member.name}さんの招待コードを${actionLabel}します。${member.inviteCode?"以前のコードは使えなくなります。":""}よろしいですか？`))return;
+
   const inviteCode=generateInviteCode();
   try{
-    await updateDoc(doc(db,"members",member.id),{
+    const ref=doc(db,"members",member.id);
+    await updateDoc(ref,{
       inviteCode,
       inviteStatus:"pending",
       registeredAt:null,
       updatedAt:serverTimestamp()
     });
-    alert(`招待コードを再発行しました。\n${inviteCode}`);
+
+    // 書込み完了後、サーバーから直接読み直して保存を確認する。
+    const confirmedSnap=await getDocFromServer(ref);
+    const confirmed=confirmedSnap.exists()?confirmedSnap.data()||{}:{};
+    if(normalizeInviteCode(confirmed.inviteCode)!==normalizeInviteCode(inviteCode) || confirmed.inviteStatus!=="pending"){
+      throw new Error("invite code verification failed");
+    }
+
+    alert(`招待コードを${actionLabel}しました。\n${inviteCode}\n\nFirestoreへの保存も確認しました。`);
   }catch(e){
     console.error(e);
-    alert("招待コードの再発行に失敗しました。Firestoreルールを確認してください。");
+    alert(`招待コードの${actionLabel}に失敗しました。Firestoreへ保存できていません。`);
   }
 }
+
 
 function renderAdminMembers(){
   memberAdminList.innerHTML="";
