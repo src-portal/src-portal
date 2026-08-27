@@ -3759,7 +3759,7 @@ body{
 }
 
 
-/* Ver.1.9.0zzy: TOP current-user card refresh row */
+/* Ver.1.9.0zzz: TOP current-user card refresh row */
 .user-menu-card{
   padding-bottom:12px;
 }
@@ -3775,33 +3775,35 @@ body{
   width:100%;
   margin-top:11px;
   padding:7px 8px 7px 10px;
-  border:1px solid #d9e8fb;
+  border:1px solid #cfe3fb;
   border-radius:14px;
-  background:#f2f7fd;
+  background:#eef6ff;
 }
 .portal-last-updated{
   min-width:0;
-  color:#536b86;
+  color:#274f7f;
   font-size:11px;
-  font-weight:800;
+  font-weight:850;
   white-space:nowrap;
+  letter-spacing:-.15px;
 }
 .portal-refresh-button{
   flex:0 0 auto;
   border:0;
   border-radius:999px;
-  padding:7px 10px;
-  background:#e4effd;
-  color:#0f5fc8;
+  padding:8px 13px;
+  background:#1677ed;
+  color:#fff;
   font-size:11px;
   font-weight:900;
   line-height:1.2;
+  box-shadow:0 2px 7px rgba(22,119,237,.22);
   cursor:pointer;
 }
-.portal-refresh-button:active{opacity:.72}
-.portal-refresh-button:disabled{opacity:.62;cursor:default}
-@media(max-width:360px){
+.portal-refresh-button:active{opacity:.76;transform:translateY(1px)}
+.portal-refresh-button:disabled{opacity:.62;cursor:default;transform:none}
+@media(max-width:390px){
   .portal-refresh-row{gap:5px;padding-left:8px}
-  .portal-last-updated{font-size:10px}
-  .portal-refresh-button{padding:7px 8px;font-size:10px}
+  .portal-last-updated{font-size:10px;letter-spacing:-.3px}
+  .portal-refresh-button{padding:8px 10px;font-size:10px}
 }
