@@ -61,7 +61,9 @@ const portalLastUpdated=$("portalLastUpdated"),refreshPortalTopButton=$("refresh
 const portalSnapshotSources=new Set();
 const portalSnapshotSourceCount=8;
 function portalUpdateTimeText(date=new Date()){
-  return new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",hour:"2-digit",minute:"2-digit",hour12:false}).format(date);
+  const parts=new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(date);
+  const value=type=>parts.find(part=>part.type===type)?.value||"";
+  return `${value("year")}/${value("month")}/${value("day")} ${value("hour")}:${value("minute")}`;
 }
 function setPortalLastUpdatedNow(){
   if(portalLastUpdated)portalLastUpdated.textContent=`🕒 ${uiT("lastUpdated","最終更新")} ${portalUpdateTimeText()}`;
