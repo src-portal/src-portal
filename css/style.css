@@ -3757,3 +3757,51 @@ body{
   letter-spacing:0;
   font-style:normal;
 }
+
+
+/* Ver.1.9.0zzy: TOP current-user card refresh row */
+.user-menu-card{
+  padding-bottom:12px;
+}
+.user-card-menu-button{
+  top:31px;
+  transform:none;
+}
+.portal-refresh-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  width:100%;
+  margin-top:11px;
+  padding:7px 8px 7px 10px;
+  border:1px solid #d9e8fb;
+  border-radius:14px;
+  background:#f2f7fd;
+}
+.portal-last-updated{
+  min-width:0;
+  color:#536b86;
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.portal-refresh-button{
+  flex:0 0 auto;
+  border:0;
+  border-radius:999px;
+  padding:7px 10px;
+  background:#e4effd;
+  color:#0f5fc8;
+  font-size:11px;
+  font-weight:900;
+  line-height:1.2;
+  cursor:pointer;
+}
+.portal-refresh-button:active{opacity:.72}
+.portal-refresh-button:disabled{opacity:.62;cursor:default}
+@media(max-width:360px){
+  .portal-refresh-row{gap:5px;padding-left:8px}
+  .portal-last-updated{font-size:10px}
+  .portal-refresh-button{padding:7px 8px;font-size:10px}
+}
