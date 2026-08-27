@@ -57,6 +57,19 @@ inviteAuthCodeInput=$("inviteAuthCodeInput"),
 inviteAuthError=$("inviteAuthError"),
 confirmInviteAuthButton=$("confirmInviteAuthButton");
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);try{await auth.authStateReady();if(!auth.currentUser){await signInAnonymously(auth);}}catch(error){console.error("Firebase anonymous authentication failed",error);alert("Firebaseへの認証に失敗しました。\n"+(error?.code||"")+"\n"+(error?.message||String(error)));return;}const db=getFirestore(app);
+const portalLastUpdated=$("portalLastUpdated"),refreshPortalTopButton=$("refreshPortalTopButton");
+const portalSnapshotSources=new Set();
+const portalSnapshotSourceCount=8;
+function portalUpdateTimeText(date=new Date()){
+  return new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",hour:"2-digit",minute:"2-digit",hour12:false}).format(date);
+}
+function setPortalLastUpdatedNow(){
+  if(portalLastUpdated)portalLastUpdated.textContent=`🕒 ${uiT("lastUpdated","最終更新")} ${portalUpdateTimeText()}`;
+}
+function markPortalSnapshotReceived(source){
+  portalSnapshotSources.add(source);
+  if(portalSnapshotSources.size>=portalSnapshotSourceCount)setPortalLastUpdatedNow();
+}
 async function refreshPortalDataFromServer(){
   // Ver.1.9.0zxa: メニューの「最新版に更新」から、サーバー最新値を画面用データへ直接反映する。
   // 保存・認証・現在ユーザー(localStorage)には触れない。
@@ -215,6 +228,7 @@ async function refreshPortalDataFromServer(){
   if(adminMemberModal&&!adminMemberModal.classList.contains("hidden"))renderAdminMembers();
   if(announcementManageModal&&!announcementManageModal.classList.contains("hidden"))renderAdminAnnouncements();
   if(eventManageModal&&!eventManageModal.classList.contains("hidden"))renderAdminEvents();
+  setPortalLastUpdatedNow();
 }
 
 let today=new Date();let currentYear=today.getFullYear(),currentMonth=today.getMonth(),selectedKey=null,currentType="run";const defaultMembers=["堀部","日高","北辻","朱","近藤(夕)","ZHU Jie","竹村","岩下","野々村","藤吉","池田","伊東(大)","酒井(琴)","滝"];
@@ -547,6 +561,7 @@ async function updateCurrentUserLastActive(){
 }
 
 onSnapshot(doc(db,"settings","system"),snap=>{
+  markPortalSnapshotReceived("system");
   const data=snap.exists()?snap.data():{};
   systemSettings={
     run:{
@@ -574,6 +589,7 @@ onSnapshot(doc(db,"settings","system"),snap=>{
 });
 
 onSnapshot(doc(db,"settings","kyro"),snap=>{
+  markPortalSnapshotReceived("kyro");
   const data=snap.exists()?snap.data():{};
   kyroInfo={
     area:data.area||"",
@@ -590,6 +606,7 @@ onSnapshot(doc(db,"settings","kyro"),snap=>{
 },err=>console.error("KYRO settings read error",err));
 
 onSnapshot(collection(db,"attendance"),snap=>{
+  markPortalSnapshotReceived("attendance");
   attendance={};
   attendanceStatuses={};
   attendanceQuestSelections={};
@@ -609,6 +626,7 @@ onSnapshot(collection(db,"attendance"),snap=>{
   if(selectedKey)renderDetail();
 },err=>{console.error(err);setOffline("🔴 Firebase 接続エラー")});
 onSnapshot(collection(db,"members"),snap=>{
+  markPortalSnapshotReceived("members");
   const loaded=[];
   snap.forEach(d=>{
     const data=d.data();
@@ -672,6 +690,7 @@ onSnapshot(collection(db,"members"),snap=>{
   console.error("members read error",err);
 });
 onSnapshot(collection(db,"announcements"),snap=>{
+  markPortalSnapshotReceived("announcements");
   const loaded=[];
   snap.forEach(d=>{const data=d.data();loaded.push({id:d.id,title:data.title||"",body:data.body||"",enabled:data.enabled!==false,createdAt:data.createdAt||null,updatedAt:data.updatedAt||null});});
   announcementRecords=loaded.sort((a,b)=>{const ta=a.updatedAt?.seconds||a.createdAt?.seconds||0;const tb=b.updatedAt?.seconds||b.createdAt?.seconds||0;return tb-ta;});
@@ -682,6 +701,7 @@ onSnapshot(collection(db,"announcements"),snap=>{
 },err=>{console.error("announcements read error",err);});
 
 onSnapshot(collection(db,"messageBoard"),snap=>{
+  markPortalSnapshotReceived("messageBoard");
   const loaded=[];
   snap.forEach(d=>loaded.push({id:d.id,...d.data()}));
   messageBoardRecords=loaded.sort((a,b)=>messageBoardDateValue(b.createdAt)-messageBoardDateValue(a.createdAt));
@@ -689,6 +709,7 @@ onSnapshot(collection(db,"messageBoard"),snap=>{
 },err=>{console.error("messageBoard read error",err);});
 
 onSnapshot(collection(db,"recommendations"),snap=>{
+  markPortalSnapshotReceived("recommendations");
   recommendationRecords=snap.docs.map(item=>{
     const data=item.data()||{};
     return {id:item.id,...data,likes:Array.isArray(data.likes)?data.likes:[]};
@@ -698,6 +719,7 @@ onSnapshot(collection(db,"recommendations"),snap=>{
 },error=>console.error("Recommendations snapshot error",error));
 
 onSnapshot(collection(db,"events"),snap=>{
+  markPortalSnapshotReceived("events");
   const loaded=[];
   snap.forEach(d=>{
     const data=d.data();
@@ -3023,24 +3045,28 @@ if(openRecommendationsButton)openRecommendationsButton.onclick=openRecommendatio
 const recommendationMiniCard=document.getElementById("recommendationMiniCard");
 if(recommendationMiniCard)recommendationMiniCard.onclick=openRecommendations;
 if(openMessageBoardFromMenuButton)openMessageBoardFromMenuButton.onclick=()=>{hide(mainMenuModal);renderMessageBoard();show(messageBoardModal);};
-if(refreshPortalFromMenuButton)refreshPortalFromMenuButton.onclick=async()=>{
-  if(refreshPortalFromMenuButton.disabled)return;
+let portalRefreshInProgress=false;
+async function runPortalRefresh(){
+  if(portalRefreshInProgress)return;
+  portalRefreshInProgress=true;
+  const buttons=[refreshPortalTopButton,refreshPortalFromMenuButton].filter(Boolean);
   const defaultLabel=uiT("refreshLatest","最新版に更新");
-  refreshPortalFromMenuButton.disabled=true;
-  refreshPortalFromMenuButton.textContent=`🔄 ${uiT("refreshing","最新情報を取得中...")}`;
+  buttons.forEach(button=>{button.disabled=true;button.textContent=`🔄 ${uiT("refreshing","最新情報を取得中...")}`;});
   try{
     await refreshPortalDataFromServer();
-    refreshPortalFromMenuButton.textContent=`✅ ${uiT("refreshDone","最新情報に更新しました")}`;
+    buttons.forEach(button=>button.textContent=`✅ ${uiT("refreshDone","最新情報に更新しました")}`);
   }catch(error){
     console.error("manual refresh error",error);
-    refreshPortalFromMenuButton.textContent=`⚠️ ${uiT("refreshFailed","更新できませんでした")}`;
+    buttons.forEach(button=>button.textContent=`⚠️ ${uiT("refreshFailed","更新できませんでした")}`);
   }finally{
     window.setTimeout(()=>{
-      refreshPortalFromMenuButton.disabled=false;
-      refreshPortalFromMenuButton.textContent=`🔄 ${defaultLabel}`;
+      buttons.forEach(button=>{button.disabled=false;button.textContent=`🔄 ${defaultLabel}`;});
+      portalRefreshInProgress=false;
     },900);
   }
-};
+}
+if(refreshPortalFromMenuButton)refreshPortalFromMenuButton.onclick=runPortalRefresh;
+if(refreshPortalTopButton)refreshPortalTopButton.onclick=runPortalRefresh;
 if(openAdminFromMainMenuButton)openAdminFromMainMenuButton.onclick=()=>{hide(mainMenuModal);openAdminPin();};
 if(closeRecommendationsButton)closeRecommendationsButton.onclick=()=>{closeRecommendationForm();hide(recommendationsModal);};
 if(openRecommendationFormButton)openRecommendationFormButton.onclick=()=>openRecommendationForm();
@@ -4611,7 +4637,7 @@ renderNameButtons();updateUser();renderAll();renderFitnessPointHomeSummary();req
 
   const messages = {
     ja: {
-      help:"ヘルプ", refreshLatest:"最新版に更新", refreshing:"最新情報を取得中...", refreshDone:"最新情報に更新しました", refreshFailed:"更新できませんでした", currentUser:"現在のユーザー", unset:"未設定", change:"変更", menu:"メニュー", recommendations:"みんなのおすすめ", adminMenu:"管理者メニュー",
+      help:"ヘルプ", refreshLatest:"最新版に更新", lastUpdated:"最終更新", refreshing:"最新情報を取得中...", refreshDone:"最新情報に更新しました", refreshFailed:"更新できませんでした", currentUser:"現在のユーザー", unset:"未設定", change:"変更", menu:"メニュー", recommendations:"みんなのおすすめ", adminMenu:"管理者メニュー",
       members:"登録メンバー", monthlyRun:"今月ラン参加", monthlyGym:"今月フィットネス参加", announcements:"お知らせ",
       noAnnouncements:"現在のお知らせはありません。", nextPlan:"あなたの次回参加予定", noNextPlan:"参加予定はまだありません。",
       nextEvent:"次回イベント", noNextEvent:"今後のイベントは登録されていません。", openEvent:"このイベントを開く",
@@ -4634,7 +4660,7 @@ renderNameButtons();updateUser();renderAll();renderFitnessPointHomeSummary();req
       weekdays:["月","火","水","木","金","土","日"]
     },
     en: {
-      help:"Help", refreshLatest:"Refresh latest information", refreshing:"Getting latest information...", refreshDone:"Updated to latest information", refreshFailed:"Could not refresh", currentUser:"Current user", unset:"Not selected", change:"Change", menu:"Menu", recommendations:"Recommendations", adminMenu:"Admin menu",
+      help:"Help", refreshLatest:"Refresh latest information", lastUpdated:"Last updated", refreshing:"Getting latest information...", refreshDone:"Updated to latest information", refreshFailed:"Could not refresh", currentUser:"Current user", unset:"Not selected", change:"Change", menu:"Menu", recommendations:"Recommendations", adminMenu:"Admin menu",
       members:"Members", monthlyRun:"Run this month", monthlyGym:"Gym this month", announcements:"Announcements",
       noAnnouncements:"There are no announcements.", nextPlan:"Your next plan", noNextPlan:"You have no upcoming plans.",
       nextEvent:"Next event", noNextEvent:"There are no upcoming events.", openEvent:"Open this event",
@@ -4657,7 +4683,7 @@ renderNameButtons();updateUser();renderAll();renderFitnessPointHomeSummary();req
       weekdays:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
     },
     ko: {
-      help:"도움말", refreshLatest:"최신 정보로 업데이트", refreshing:"최신 정보를 가져오는 중...", refreshDone:"최신 정보로 업데이트했습니다", refreshFailed:"업데이트하지 못했습니다", currentUser:"현재 사용자", unset:"미설정", change:"변경", menu:"메뉴", recommendations:"모두의 추천", adminMenu:"관리자 메뉴",
+      help:"도움말", refreshLatest:"최신 정보로 업데이트", lastUpdated:"마지막 업데이트", refreshing:"최신 정보를 가져오는 중...", refreshDone:"최신 정보로 업데이트했습니다", refreshFailed:"업데이트하지 못했습니다", currentUser:"현재 사용자", unset:"미설정", change:"변경", menu:"메뉴", recommendations:"모두의 추천", adminMenu:"관리자 메뉴",
       members:"등록 멤버", monthlyRun:"이번 달 러닝", monthlyGym:"이번 달 체육관", announcements:"공지사항",
       noAnnouncements:"현재 공지사항이 없습니다.", nextPlan:"다음 참가 예정", noNextPlan:"참가 예정이 없습니다.",
       nextEvent:"다음 이벤트", noNextEvent:"예정된 이벤트가 없습니다.", openEvent:"이 이벤트 열기",
@@ -4680,7 +4706,7 @@ renderNameButtons();updateUser();renderAll();renderFitnessPointHomeSummary();req
       weekdays:["월","화","수","목","금","토","일"]
     },
     zh: {
-      help:"帮助", refreshLatest:"更新最新信息", refreshing:"正在获取最新信息...", refreshDone:"已更新为最新信息", refreshFailed:"更新失败", currentUser:"当前用户", unset:"未设置", change:"更改", menu:"菜单", recommendations:"大家的推荐", adminMenu:"管理员菜单",
+      help:"帮助", refreshLatest:"更新最新信息", lastUpdated:"最后更新", refreshing:"正在获取最新信息...", refreshDone:"已更新为最新信息", refreshFailed:"更新失败", currentUser:"当前用户", unset:"未设置", change:"更改", menu:"菜单", recommendations:"大家的推荐", adminMenu:"管理员菜单",
       members:"注册成员", monthlyRun:"本月跑步", monthlyGym:"本月健身", announcements:"通知",
       noAnnouncements:"目前没有通知。", nextPlan:"您的下次参加计划", noNextPlan:"目前没有参加计划。",
       nextEvent:"下次活动", noNextEvent:"目前没有即将举行的活动。", openEvent:"打开此活动",
@@ -4725,6 +4751,8 @@ renderNameButtons();updateUser();renderAll();renderFitnessPointHomeSummary();req
     setText("#openRecommendationsButton", `⭐ ${m.recommendations}`);
     setText("#openMessageBoardFromMenuButton", `💬 ${m.messageBoard}`);
     setText("#refreshPortalFromMenuButton", `🔄 ${m.refreshLatest}`);
+    setText("#refreshPortalTopButton", `🔄 ${m.refreshLatest}`);
+    if(document.querySelector("#portalLastUpdated")) document.querySelector("#portalLastUpdated").textContent=`🕒 ${m.lastUpdated} --:--`;
     setText("#openAdminFromMainMenuButton", `⚙️ ${m.adminMenu}`);
     setText("#changeUserButton", m.change);
     const dashboardLabels = document.querySelectorAll("#dashboardCard .dashboard-label");
