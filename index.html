@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0zzx">
+<link rel="stylesheet" href="css/style.css?v=1.9.0zzy">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -67,6 +67,10 @@
       </div>
       <button class="user-card-menu-button" id="mainMenuButton" type="button" aria-label="メニューを開く">☰ メニュー</button>
       <button class="hidden" id="changeUserButton" type="button" tabindex="-1">変更</button>
+      <div class="portal-refresh-row" aria-label="SRC Portal全体の最新情報を取得">
+        <span class="portal-last-updated" id="portalLastUpdated">🕒 最終更新 --:--</span>
+        <button class="portal-refresh-button" id="refreshPortalTopButton" type="button">🔄 最新版に更新</button>
+      </div>
     </section>
 
     <section class="dashboard-card dashboard-card-smart" id="dashboardCard">
@@ -160,10 +164,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zzx</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zzy</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/08/14 1.9.0zzx JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/08/27 1.9.0zzy JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -493,6 +497,7 @@
         <div class="help-document">
           <h4>Version 1.9.x</h4>
           <ul>
+            <li>TOPの現在ユーザーカードに「最終更新」と「最新版に更新」を追加し、Portal全体の最新情報をすぐ取得できるようにしました</li>
             <li>Firebase匿名認証を追加し、認証完了後にFirestoreへ接続する方式へ変更</li>
             <li>Firebase認証とデータアクセスの安全性を改善</li>
             <li>自己紹介に今月のラン＆ウォーク回数・ジム回数を表示</li>
@@ -560,13 +565,13 @@
             <li>Help、利用規約、プライバシーポリシー、リリースノートを整備</li>
             <li>招待コードによる初回登録に対応</li>
           </ul>
-          <p class="help-document-date">更新日：2026年8月5日</p>
+          <p class="help-document-date">更新日：2026年8月27日</p>
         </div>
       </details>
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0zzx<br>Official Release<br>2026.08.14</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0zzy<br>Official Release<br>2026.08.27</strong></p>
       </section>
     </div>
 </div></div>
@@ -1100,7 +1105,7 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0zzx"></script>
+<script type="module" src="js/app.js?v=1.9.0zzy"></script>
   <div class="app-toast hidden" id="appToast" role="status" aria-live="polite"></div>
 </body>
 </html>
