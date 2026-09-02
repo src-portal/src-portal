@@ -189,6 +189,7 @@ async function refreshPortalDataFromServer(){
     const tb=b.updatedAt?.seconds||b.createdAt?.seconds||0;
     return tb-ta;
   });
+  announcementsLoaded=true;
 
   const loadedMessages=[];
   messageBoardSnap.forEach(d=>loadedMessages.push({id:d.id,...d.data()}));
@@ -238,6 +239,7 @@ let members=[...defaultMembers];
 let memberRecords=[];
 let eventRecords=[];
 let announcementRecords=[];
+let announcementsLoaded=false;
 let messageBoardRecords=[];
 let kyroInfo={area:"",japanRank:"",aichiRank:"",previousArea:"",previousJapanRank:"",previousAichiRank:"",news:"",goal:"",updatedAt:null};
 let recommendationRecords=[];
@@ -696,6 +698,7 @@ onSnapshot(collection(db,"announcements"),snap=>{
   const loaded=[];
   snap.forEach(d=>{const data=d.data();loaded.push({id:d.id,title:data.title||"",body:data.body||"",enabled:data.enabled!==false,createdAt:data.createdAt||null,updatedAt:data.updatedAt||null});});
   announcementRecords=loaded.sort((a,b)=>{const ta=a.updatedAt?.seconds||a.createdAt?.seconds||0;const tb=b.updatedAt?.seconds||b.createdAt?.seconds||0;return tb-ta;});
+  announcementsLoaded=true;
   cleanupAnnouncementReadState();
   renderAnnouncementsPublic();
   renderDashboard();
@@ -3526,6 +3529,8 @@ function saveAnnouncementReadState(state){
 
 function cleanupAnnouncementReadState(){
   const state=loadAnnouncementReadState();
+  // Firestoreのお知らせ取得前は、空配列を「全件削除」と誤認して既読情報を消さない。
+  if(!announcementsLoaded)return state;
   const activeIds=new Set(announcementRecords.map(record=>record.id));
   let changed=false;
   Object.keys(state).forEach(id=>{
