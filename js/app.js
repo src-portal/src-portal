@@ -3535,12 +3535,13 @@ function cleanupAnnouncementReadState(){
     }
   });
   if(changed)saveAnnouncementReadState(state);
+  return state;
 }
 
-function isAnnouncementRead(record){
+function isAnnouncementRead(record,state=null){
   if(!record?.id)return true;
-  const state=loadAnnouncementReadState();
-  return state[record.id]===announcementVersionKey(record);
+  const readState=state||loadAnnouncementReadState();
+  return readState[record.id]===announcementVersionKey(record);
 }
 
 function markAnnouncementRead(record){
@@ -3548,39 +3549,6 @@ function markAnnouncementRead(record){
   const state=loadAnnouncementReadState();
   state[record.id]=announcementVersionKey(record);
   saveAnnouncementReadState(state);
-}
-
-function getReadAnnouncementIds(){
-  try{
-    const value=JSON.parse(localStorage.getItem(announcementReadStorageKey())||"[]");
-    return Array.isArray(value)?value.filter(id=>typeof id==="string"):[];
-  }catch{
-    return [];
-  }
-}
-
-function saveReadAnnouncementIds(ids){
-  try{
-    localStorage.setItem(announcementReadStorageKey(),JSON.stringify([...new Set(ids)]));
-  }catch(error){
-    console.warn("announcement read state save failed",error);
-  }
-}
-
-function cleanupReadAnnouncementIds(active){
-  const valid=new Set((active||[]).map(a=>a.id));
-  const cleaned=getReadAnnouncementIds().filter(id=>valid.has(id));
-  saveReadAnnouncementIds(cleaned);
-  return cleaned;
-}
-
-function markAnnouncementRead(id){
-  if(!id)return;
-  const ids=getReadAnnouncementIds();
-  if(!ids.includes(id)){
-    ids.push(id);
-    saveReadAnnouncementIds(ids);
-  }
   renderAnnouncementsPublic();
 }
 
@@ -3599,9 +3567,8 @@ function renderAnnouncementsPublic(){
 
   const active=announcementRecords.filter(a=>a.enabled);
   const heading=document.getElementById("announcementHeading");
-  const readIds=cleanupReadAnnouncementIds(active);
-  const readSet=new Set(readIds);
-  const unreadCount=active.filter(a=>!readSet.has(a.id)).length;
+  const readState=cleanupAnnouncementReadState();
+  const unreadCount=active.filter(a=>!isAnnouncementRead(a,readState)).length;
 
   if(heading)heading.textContent=`📢 ${uiT("announcements","お知らせ")}`;
 
@@ -3634,8 +3601,8 @@ function renderAnnouncementsModal(){
   if(!announcementPublicList)return;
 
   const active=announcementRecords.filter(a=>a.enabled);
-  const readSet=new Set(cleanupReadAnnouncementIds(active));
-  const unreadCount=active.filter(a=>!readSet.has(a.id)).length;
+  const readState=cleanupAnnouncementReadState();
+  const unreadCount=active.filter(a=>!isAnnouncementRead(a,readState)).length;
 
   if(announcementPublicModalTitle){
     announcementPublicModalTitle.textContent=`📢 ${uiT("announcements","お知らせ")}（${active.length}${uiT("itemsSuffix","件")} / 未読${unreadCount}${uiT("itemsSuffix","件")}）`;
@@ -3651,7 +3618,7 @@ function renderAnnouncementsModal(){
   }
 
   active.forEach(a=>{
-    const isRead=readSet.has(a.id);
+    const isRead=isAnnouncementRead(a,readState);
     const item=document.createElement("article");
     item.className=`announcement-public-item announcement-read-item ${isRead?"is-read":"is-unread"}`;
     item.dataset.announcementId=a.id;
@@ -3703,11 +3670,12 @@ function renderAnnouncementsModal(){
       if(a.body)body.classList.toggle("hidden",!opening);
 
       if(opening&&!item.classList.contains("is-read")){
-        markAnnouncementRead(a.id);
+        markAnnouncementRead(a);
         item.classList.remove("is-unread");
         item.classList.add("is-read");
         badge.textContent="✓ 既読";
-        const latestUnread=active.filter(record=>!new Set(getReadAnnouncementIds()).has(record.id)).length;
+        const latestReadState=loadAnnouncementReadState();
+        const latestUnread=active.filter(record=>!isAnnouncementRead(record,latestReadState)).length;
         if(announcementPublicModalTitle){
           announcementPublicModalTitle.textContent=`📢 ${uiT("announcements","お知らせ")}（${active.length}${uiT("itemsSuffix","件")} / 未読${latestUnread}${uiT("itemsSuffix","件")}）`;
         }
