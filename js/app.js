@@ -1060,7 +1060,10 @@ function memberMonthlyAttendance(name,type,monthOffset=0){
 
 function memberIsJoiningToday(name){
   const todayKey=todayKeyJST();
-  return getNames("run",todayKey).includes(name)||getNames("gym",todayKey).includes(name);
+  const runEvent=eventsByDate(todayKey,"run").find(ev=>ev.status!=="cancelled")||null;
+  const joiningRun=Boolean(runEvent)&&getNames("run",todayKey).includes(name);
+  const joiningGym=getNames("gym",todayKey).includes(name);
+  return joiningRun||joiningGym;
 }
 
 let memberOverviewMonthOffset=0;
