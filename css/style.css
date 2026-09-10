@@ -3807,3 +3807,14 @@ body{
   .portal-last-updated{font-size:10px;letter-spacing:-.3px}
   .portal-refresh-button{padding:8px 10px;font-size:10px}
 }
+
+
+/* Ver.1.9.0zzzd: 管理者向け活動実績CSV */
+.activity-csv-box{margin-top:16px}
+.activity-csv-note{margin:8px 0 12px}
+.activity-csv-period{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.activity-csv-period .admin-form-label{margin:0}
+.activity-csv-period .admin-input{margin-top:6px}
+.activity-csv-actions{display:grid;grid-template-columns:1fr 1.35fr;gap:10px;margin-top:10px}
+.activity-csv-actions .secondary-button,.activity-csv-actions .primary-button{margin-top:0}
+@media(max-width:420px){.activity-csv-period,.activity-csv-actions{grid-template-columns:1fr}}
