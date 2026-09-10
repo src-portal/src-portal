@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.0zzzc">
+<link rel="stylesheet" href="css/style.css?v=1.9.0zzzd">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -164,10 +164,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zzzc</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.0zzzd</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/09/09 1.9.0zzzc JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/09/10 1.9.0zzzd JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -497,6 +497,7 @@
         <div class="help-document">
           <h4>Version 1.9.x</h4>
           <ul>
+            <li>管理者のイベント管理に「活動実績CSV」を追加。期間を指定して、開催日・種別・イベント名・参加人数・参加者をPCへ書き出せるようにしました</li>
             <li>TOPの現在ユーザーカードに「最終更新」と「最新版に更新」を追加し、Portal全体の最新情報をすぐ取得できるようにしました</li>
             <li>Firebase匿名認証を追加し、認証完了後にFirestoreへ接続する方式へ変更</li>
             <li>Firebase認証とデータアクセスの安全性を改善</li>
@@ -571,7 +572,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.0zzzc<br>Official Release<br>2026.09.09</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.0zzzd<br>Official Release<br>2026.09.10</strong></p>
       </section>
     </div>
 </div></div>
@@ -994,6 +995,24 @@ Gear,100.86"></textarea>
       <p class="admin-error hidden" id="addEventError">種別・開催日は必須です。</p>
     </div>
 
+    <div class="event-admin-box activity-csv-box">
+      <div class="member-add-title">📥 活動実績CSV</div>
+      <p class="setup-text activity-csv-note">会社への活動報告用に、開催済みで参加者がいる活動をCSVに書き出します。中止イベントは除外します。</p>
+      <div class="activity-csv-period">
+        <label class="admin-form-label">開始日
+          <input id="activityCsvStartDate" class="admin-input" type="date">
+        </label>
+        <label class="admin-form-label">終了日
+          <input id="activityCsvEndDate" class="admin-input" type="date">
+        </label>
+      </div>
+      <div class="activity-csv-actions">
+        <button class="secondary-button activity-csv-season-button" id="activityCsvSeasonButton" type="button">今シーズン</button>
+        <button class="primary-button activity-csv-export-button" id="activityCsvExportButton" type="button">CSVを書き出す</button>
+      </div>
+      <p class="admin-error hidden" id="activityCsvError">期間を確認してください。</p>
+    </div>
+
     <div class="event-section-title">📅 今後のイベント</div>
     <div class="event-admin-list" id="eventAdminList"></div>
     <details class="past-events-details" id="pastEventsDetails">
@@ -1105,7 +1124,7 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.0zzzc"></script>
+<script type="module" src="js/app.js?v=1.9.0zzzd"></script>
   <div class="app-toast hidden" id="appToast" role="status" aria-live="polite"></div>
 </body>
 </html>
