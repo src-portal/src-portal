@@ -3171,6 +3171,11 @@ const eventStatusInput=document.getElementById("eventStatusInput");
 const eventMemoInput=document.getElementById("eventMemoInput");
 const addEventButton=document.getElementById("addEventButton");
 const addEventError=document.getElementById("addEventError");
+const activityCsvStartDate=document.getElementById("activityCsvStartDate");
+const activityCsvEndDate=document.getElementById("activityCsvEndDate");
+const activityCsvSeasonButton=document.getElementById("activityCsvSeasonButton");
+const activityCsvExportButton=document.getElementById("activityCsvExportButton");
+const activityCsvError=document.getElementById("activityCsvError");
 
 
 
@@ -3994,6 +3999,126 @@ async function deleteEvent(ev){
   }
 }
 
+// Ver.1.9.0zzzd: 会社活動報告用CSV（既存のevents/attendanceを端末内で集計。Firestore追加read/writeなし）
+function activityCsvJstTodayKey(){
+  const parts=new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+  const value=type=>parts.find(part=>part.type===type)?.value||"";
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
+function activityCsvSetCurrentSeason(){
+  if(!activityCsvStartDate||!activityCsvEndDate)return;
+  const todayKey=activityCsvJstTodayKey();
+  const [year,month]=todayKey.split("-").map(Number);
+  if(month>=4&&month<=9){
+    activityCsvStartDate.value=`${year}-04-01`;
+    activityCsvEndDate.value=`${year}-09-30`;
+  }else if(month>=10){
+    activityCsvStartDate.value=`${year}-10-01`;
+    activityCsvEndDate.value=`${year+1}-03-31`;
+  }else{
+    activityCsvStartDate.value=`${year-1}-10-01`;
+    activityCsvEndDate.value=`${year}-03-31`;
+  }
+  activityCsvError?.classList.add("hidden");
+}
+
+function activityCsvHasStarted(dateStr,timeStr){
+  const safeTime=/^\d{2}:\d{2}$/.test(String(timeStr||""))?String(timeStr):"00:00";
+  const startMs=Date.parse(`${dateStr}T${safeTime}:00+09:00`);
+  return Number.isFinite(startMs)&&startMs<=Date.now();
+}
+
+function activityCsvParticipants(names){
+  const unique=[...new Set((Array.isArray(names)?names:[]).map(v=>String(v||"").trim()).filter(Boolean))];
+  const orderMap=new Map(memberRecords.map((m,index)=>[m.name,index]));
+  return unique.sort((a,b)=>{
+    const ai=orderMap.has(a)?orderMap.get(a):99999;
+    const bi=orderMap.has(b)?orderMap.get(b):99999;
+    return ai-bi||a.localeCompare(b,"ja");
+  });
+}
+
+function activityCsvRows(startDate,endDate){
+  const rows=[];
+
+  eventRecords.forEach(ev=>{
+    if(!ev?.date||ev.date<startDate||ev.date>endDate)return;
+    if(ev.status==="cancelled")return;
+    if(!activityCsvHasStarted(ev.date,ev.time||systemSettings.run.time))return;
+    const participants=activityCsvParticipants(attendance[eventId(ev.type||"run",ev.date)]||[]);
+    if(participants.length===0)return;
+    const title=String(ev.title||"").trim()||eventTypeLabel(ev.type||"run");
+    const isRegularRun=title==="落合公園";
+    rows.push({
+      date:ev.date,
+      type:isRegularRun?"ラン＆ウォーク":"その他イベント",
+      title,
+      count:participants.length,
+      participants
+    });
+  });
+
+  Object.keys(attendance).forEach(id=>{
+    if(!id.startsWith("gym_"))return;
+    const date=id.slice(4);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date<startDate||date>endDate)return;
+    if(!activityCsvHasStarted(date,systemSettings.gym.time))return;
+    const participants=activityCsvParticipants(attendance[id]||[]);
+    if(participants.length===0)return;
+    rows.push({
+      date,
+      type:"ジム",
+      title:"フィットネストレーニング",
+      count:participants.length,
+      participants
+    });
+  });
+
+  return rows.sort((a,b)=>a.date.localeCompare(b.date)||a.type.localeCompare(b.type,"ja")||a.title.localeCompare(b.title,"ja"));
+}
+
+function activityCsvEscape(value){
+  const text=String(value??"");
+  return `"${text.replaceAll('"','""')}"`;
+}
+
+function exportActivityCsv(){
+  if(!activityCsvStartDate||!activityCsvEndDate)return;
+  const startDate=activityCsvStartDate.value;
+  const endDate=activityCsvEndDate.value;
+  if(!startDate||!endDate||startDate>endDate){
+    activityCsvError?.classList.remove("hidden");
+    return;
+  }
+  activityCsvError?.classList.add("hidden");
+  const rows=activityCsvRows(startDate,endDate);
+  if(rows.length===0){
+    alert("指定期間に書き出せる活動実績がありません。\n（開催済み・参加者1名以上・中止以外が対象です）");
+    return;
+  }
+  const lines=[
+    ["開催日","種別","イベント名","参加人数","参加者"].map(activityCsvEscape).join(","),
+    ...rows.map(row=>[
+      row.date.replaceAll("-","/"),
+      row.type,
+      row.title,
+      row.count,
+      row.participants.join("、")
+    ].map(activityCsvEscape).join(","))
+  ];
+  // Excelで日本語が文字化けしにくいUTF-8 BOM付きCSV
+  const blob=new Blob(["\uFEFF",lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url;
+  link.download=`SRC活動実績_${startDate.replaceAll("-","")}_${endDate.replaceAll("-","")}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
 function fillEventDefaults(){
   if(!eventTitleInput.value)eventTitleInput.value="落合公園";
   if(!eventPlaceInput.value)eventPlaceInput.value=systemSettings.run.place;
@@ -4514,12 +4639,15 @@ adminEventManageButton.onclick=()=>{
   eventTimeInput.value=systemSettings.run.time;
   eventPlaceInput.value=systemSettings.run.place;
   if(!eventTitleInput.value)eventTitleInput.value="落合公園";
+  if(activityCsvStartDate&&activityCsvEndDate&&(!activityCsvStartDate.value||!activityCsvEndDate.value))activityCsvSetCurrentSeason();
   renderAdminEvents();
   openAdminChildModal(eventManageModal);
 };
 closeEventManageButton.onclick=()=>closeAdminChildModal(eventManageModal);
 eventTypeInput.onchange=fillEventDefaults;
 addEventButton.onclick=addEvent;
+if(activityCsvSeasonButton)activityCsvSeasonButton.onclick=activityCsvSetCurrentSeason;
+if(activityCsvExportButton)activityCsvExportButton.onclick=exportActivityCsv;
 
 adminInvitePreviewButton.onclick=()=>openAdminChildModal(invitePreviewModal);
 if(adminSeedMembersButton)adminSeedMembersButton.onclick=seedMembers;
