@@ -1,3 +1,11 @@
+[Ver.1.9.4a]
+2026/09/11
+
+■ FITNESS POINT 閉じるボタン位置修正
+- FITNESS POINTウィンドウの「×」ボタンを、他のウィンドウと同じ右上位置へ統一しました。
+- 表示位置のみの修正で、FITNESS POINT集計・参加・Firestore処理は変更していません。
+- Firebaseの追加read/write・保存容量増加はありません。
+
 [Ver.1.9.0zzzd]
 2026/09/10
 
