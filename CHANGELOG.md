@@ -1,3 +1,4 @@
+- Ver.1.9.5a: 管理者メニュー「メンバー管理」に shortName（短縮名）の入力・保存を追加。既存nameは変更せず、shortName/fullNameを編集可能。新規メンバーはshortName/fullNameを登録し、nameにはfullNameと同じ値を保存。表示側の氏名切替は未実施。Firebase追加readなし、保存時のみ対象member document 1 write。
 - Ver.1.9.5: 管理者メニュー「メンバー管理」に fullName 登録・更新機能を追加。既存nameは内部識別用として変更不可のまま保持し、新規メンバーはname/fullNameへ同一フルネームを保存。表示側の氏名切替は未実施。Firebase追加readなし、fullName保存時のみ1 member document write。
 - Ver.1.9.4a: FITNESS POINTウィンドウの閉じる「×」ボタンを、他のウィンドウと同じ右上位置へ統一。CSS表示位置のみの修正で、FITNESS POINT集計・参加・Firestore処理は変更なし。Firebase追加read/write・保存容量増加なし。
 - Ver.1.9.0zzzd: 管理者「イベント管理」に会社活動報告用の活動実績CSV出力を追加。期間指定／今シーズン入力に対応し、「開催日・種別・イベント名・参加人数・参加者」の5列で出力。開催済みかつ参加者1名以上のみ対象、中止イベントは除外。通常ランはタイトル「落合公園」をラン＆ウォーク、それ以外のrunイベントはその他イベント、gym attendanceはジムとして分類。既存events/attendanceの端末内データのみを利用するためFirebase追加read/write・保存容量増加なし。

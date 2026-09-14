@@ -1,3 +1,13 @@
+[Ver.1.9.5a]
+2026/09/14
+
+■ shortName入力機能追加
+- 管理者メニュー「メンバー管理」に shortName（短縮名）の登録・更新欄を追加。
+- 既存メンバーは name を変更せず、shortName / fullName を管理者が登録・更新できます。
+- 新規メンバーは shortName / fullName を入力し、内部用 name には fullName と同じ値を保存します。
+- 今回は通常画面の表示名切替は行っていません。
+- Firebase追加readは0。保存時は従来どおり対象membersドキュメント1件のwriteです。
+
 [Ver.1.9.5]
 - 管理者メニュー「メンバー管理」に fullName（フルネーム）の登録・更新機能を追加。
 - 既存メンバーは name を内部識別用として変更不可のまま維持し、fullName を追加入力できます。
