@@ -139,6 +139,7 @@ async function refreshPortalDataFromServer(){
       loadedMembers.push({
         id:d.id,
         name:data.name,
+        shortName:data.shortName||"",
         fullName:data.fullName||"",
         admin:data.admin===true,
         kyroMember:data.kyroMember===true,
@@ -639,6 +640,7 @@ onSnapshot(collection(db,"members"),snap=>{
       loaded.push({
         id:d.id,
         name:data.name,
+        shortName:data.shortName||"",
         fullName:data.fullName||"",
         admin:data.admin===true,
         kyroMember:data.kyroMember===true,
@@ -2771,7 +2773,8 @@ const adminSeedMembersButton=document.getElementById("adminSeedMembersButton");
 const closeAdminMemberButton=document.getElementById("closeAdminMemberButton");
 const closeInvitePreviewButton=document.getElementById("closeInvitePreviewButton");
 const memberAdminList=document.getElementById("memberAdminList");
-const newMemberNameInput=document.getElementById("newMemberNameInput");
+const newMemberShortNameInput=document.getElementById("newMemberShortNameInput");
+const newMemberFullNameInput=document.getElementById("newMemberFullNameInput");
 const newMemberAdminCheck=document.getElementById("newMemberAdminCheck");
 const newMemberKyroCheck=document.getElementById("newMemberKyroCheck");
 const newMemberKyroNameRow=document.getElementById("newMemberKyroNameRow");
@@ -4326,6 +4329,7 @@ function renderAdminMembers(){
     meta.className="member-admin-meta-grid";
     meta.innerHTML=`
       <div><span>区分</span><strong>${m.admin?"管理者":"一般"}</strong></div>
+      <div><span>短縮名</span><strong>${m.shortName?escapeHtml(m.shortName):"未登録"}</strong></div>
       <div><span>フルネーム</span><strong>${m.fullName?escapeHtml(m.fullName):"未登録"}</strong></div>
       <div><span>KYRO</span><strong>${m.kyroMember?"メンバー":"未参加"}</strong></div>
       <div><span>KYROネーム</span><strong>${m.kyroUserName?escapeHtml(m.kyroUserName):"未登録"}</strong></div>
@@ -4367,14 +4371,22 @@ function renderAdminMembers(){
     nameInput.readOnly=true;
     nameInput.setAttribute("aria-label","登録名（name・変更不可）");
 
+    const shortNameInput=document.createElement("input");
+    shortNameInput.type="text";
+    shortNameInput.value=m.shortName||"";
+    shortNameInput.placeholder="短縮名（例：堀部(博)）";
+
     const fullNameInput=document.createElement("input");
     fullNameInput.type="text";
     fullNameInput.value=m.fullName||"";
-    fullNameInput.placeholder="フルネーム（例：山田 太郎）";
+    fullNameInput.placeholder="フルネーム（例：堀部博文）";
 
     const nameLabel=document.createElement("div");
     nameLabel.className="admin-form-label";
     nameLabel.textContent="登録名（name・変更不可）";
+    const shortNameLabel=document.createElement("div");
+    shortNameLabel.className="admin-form-label";
+    shortNameLabel.textContent="短縮名（shortName）";
     const fullNameLabel=document.createElement("div");
     fullNameLabel.className="admin-form-label";
     fullNameLabel.textContent="フルネーム（fullName）";
@@ -4419,7 +4431,7 @@ function renderAdminMembers(){
     saveBtn.type="button";
     saveBtn.className="member-small-button primary";
     saveBtn.textContent="保存";
-    saveBtn.onclick=()=>saveMemberEdit(m.id,nameInput.value,fullNameInput.value,adminCheck.checked,activeCheck.checked,kyroCheck.checked,kyroNameInput.value);
+    saveBtn.onclick=()=>saveMemberEdit(m.id,nameInput.value,shortNameInput.value,fullNameInput.value,adminCheck.checked,activeCheck.checked,kyroCheck.checked,kyroNameInput.value);
 
     const cancelBtn=document.createElement("button");
     cancelBtn.type="button";
@@ -4429,6 +4441,8 @@ function renderAdminMembers(){
 
     editRow.appendChild(nameLabel);
     editRow.appendChild(nameInput);
+    editRow.appendChild(shortNameLabel);
+    editRow.appendChild(shortNameInput);
     editRow.appendChild(fullNameLabel);
     editRow.appendChild(fullNameInput);
     editRow.appendChild(checks);
@@ -4516,8 +4530,9 @@ async function toggleMemberFlag(memberId,field,value){
   }
 }
 
-async function saveMemberEdit(memberId,name,fullName,admin,active,kyroMember,kyroUserName=""){
+async function saveMemberEdit(memberId,name,shortName,fullName,admin,active,kyroMember,kyroUserName=""){
   const cleanName=name.trim();
+  const cleanShortName=String(shortName||"").trim();
   const cleanFullName=String(fullName||"").trim();
   const cleanKyroName=String(kyroUserName||"").trim();
   if(kyroMember&&!cleanKyroName){alert("KYROメンバーはKYROネームを入力してください。");return;}
@@ -4531,6 +4546,7 @@ async function saveMemberEdit(memberId,name,fullName,admin,active,kyroMember,kyr
   }
   try{
     await updateDoc(doc(db,"members",memberId),{
+      shortName:cleanShortName,
       fullName:cleanFullName,
       admin,
       active,
@@ -4588,7 +4604,9 @@ async function getNextMemberOrder(){
 
 if(newMemberKyroCheck)newMemberKyroCheck.onchange=()=>{newMemberKyroNameRow?.classList.toggle("hidden",!newMemberKyroCheck.checked);if(!newMemberKyroCheck.checked&&newMemberKyroNameInput)newMemberKyroNameInput.value="";};
 async function addMember(){
-  const name=newMemberNameInput.value.trim();
+  const shortName=newMemberShortNameInput.value.trim();
+  const fullName=newMemberFullNameInput.value.trim();
+  const name=fullName;
   let inviteCode=normalizeInviteCode(newMemberInviteCodeInput.value);
   if(!inviteCode){
     inviteCode=generateInviteCode();
@@ -4598,7 +4616,7 @@ async function addMember(){
     inviteCode=generateInviteCode();
     newMemberInviteCodeInput.value=inviteCode;
   }
-  if(!name){
+  if(!shortName||!fullName){
     addMemberError.classList.remove("hidden");
     return;
   }
@@ -4612,7 +4630,8 @@ async function addMember(){
   try{
     await setDoc(doc(db,"members",id),{
       name,
-      fullName:name,
+      shortName,
+      fullName,
       admin:newMemberAdminCheck.checked,
       kyroMember:newMemberKyroCheck.checked,
       kyroUserName:newMemberKyroCheck.checked?newMemberKyroNameInput.value.trim():"",
@@ -4625,8 +4644,9 @@ async function addMember(){
       invitedAt:serverTimestamp(),
       updatedAt:serverTimestamp()
     },{merge:true});
-    const addedMember={id,name,fullName:name,inviteCode,inviteStatus:"pending",active:true};
-    newMemberNameInput.value="";
+    const addedMember={id,name,shortName,fullName,inviteCode,inviteStatus:"pending",active:true};
+    newMemberShortNameInput.value="";
+    newMemberFullNameInput.value="";
     newMemberAdminCheck.checked=false;
     newMemberKyroCheck.checked=false;
     newMemberKyroNameInput.value="";
@@ -4676,7 +4696,7 @@ if(adminSeedMembersButton)adminSeedMembersButton.onclick=seedMembers;
 closeAdminMemberButton.onclick=()=>closeAdminChildModal(adminMemberModal);
 closeInvitePreviewButton.onclick=()=>closeAdminChildModal(invitePreviewModal);
 if(generateInviteCodeButton)generateInviteCodeButton.onclick=()=>{newMemberInviteCodeInput.value=generateInviteCode();addMemberError.classList.add("hidden");};
-newMemberNameInput.addEventListener("input",()=>{if(!newMemberInviteCodeInput.value)newMemberInviteCodeInput.value=generateInviteCode();});
+newMemberFullNameInput.addEventListener("input",()=>{if(!newMemberInviteCodeInput.value)newMemberInviteCodeInput.value=generateInviteCode();});
 addMemberButton.onclick=addMember;
 
 
