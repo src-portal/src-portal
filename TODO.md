@@ -1,3 +1,4 @@
+- Ver.1.9.6: 氏名表示切替を実装。nameは内部識別とTOP/ユーザー変更に維持。shortName/fullNameは表示専用。
 ## Ver.1.9.0zzx 招待コード本人確認 動作確認
 - [ ] 管理者が既存登録済みユーザーへコード発行後、FirestoreのinviteCodeに保存されること
 - [ ] 既存登録済みユーザーのinviteStatusがregisteredのまま維持されること

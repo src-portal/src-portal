@@ -1,4 +1,9 @@
-[Ver.1.9.5a]
+Ver.1.9.6
+- 名前表示を用途別に shortName / fullName へ切替（内部処理はnameを維持）
+- TOPの現在ユーザーとユーザー変更/再設定はname表示のまま
+- Firebaseの追加read/writeなし
+
+[Ver.1.9.6]
 2026/09/14
 
 ■ shortName入力機能追加
