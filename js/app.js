@@ -912,6 +912,19 @@ async function authenticateInvitedMember(){
   }
 }
 
+function memberRecordByName(name){
+  const key=String(name||"").trim();
+  return memberRecords.find(member=>member.name===key)||null;
+}
+function memberShortName(name){
+  const member=memberRecordByName(name);
+  return String(member?.shortName||member?.fullName||name||"").trim();
+}
+function memberFullName(name){
+  const member=memberRecordByName(name);
+  return String(member?.fullName||member?.name||name||"").trim();
+}
+
 function updateUser(){
   const currentUserNameText=currentUserLabel.querySelector("strong");
   if(currentUserNameText)currentUserNameText.textContent=currentUser||"未設定";
@@ -1104,11 +1117,11 @@ function renderMemberOverview(){
     const row=document.createElement("button");
     row.type="button";
     row.className="member-overview-row member-profile-open-row";
-    row.setAttribute("aria-label",`${name} ${uiT("openProfile","プロフィールを開く")}`);
+    row.setAttribute("aria-label",`${memberFullName(name)} ${uiT("openProfile","プロフィールを開く")}`);
     row.innerHTML=`
       <div class="member-today-status ${joiningToday?"joining":"not-joining"}" aria-label="${joiningToday?"今日参加予定":"今日参加予定なし"}">${joiningToday?"●":"○"}</div>
       <div class="member-overview-main">
-        <div class="member-overview-name">${medal}${escapeHtml(name)}${member.kyroMember?'<span class="kyro-badge member-kyro-badge">KYRO</span>':""}</div>
+        <div class="member-overview-name">${medal}${escapeHtml(memberFullName(name))}${member.kyroMember?'<span class="kyro-badge member-kyro-badge">KYRO</span>':""}</div>
         <div class="member-overview-breakdown">
           <span>🏃 ${runCount}${uiT("times","回")}</span>
           <span>🏋️ ${gymCount}${uiT("times","回")}</span>
@@ -1187,9 +1200,9 @@ function renderKyroDistanceList(){
     const previousRank=Number(member.kyroPreviousDistanceRank);
     const rankDelta=Number.isFinite(previousRank)&&previousRank>0&&previousRank!==rank?previousRank-rank:0;
     const rankChange=rankDelta>0?`<small class="kyro-rank-change is-up">↑${rankDelta}</small>`:rankDelta<0?`<small class="kyro-rank-change is-down">↓${Math.abs(rankDelta)}</small>`:"";
-    return `<div class="kyro-distance-row${isCurrent?" is-current":""}"><span class="kyro-distance-rank"><span>${rank}位</span>${rankChange}</span><span class="kyro-distance-member"><strong>${escapeHtml(member.name)}</strong>${member.kyroUserName?`<small>${escapeHtml(member.kyroUserName)}</small>`:""}</span><span class="kyro-distance-value">${distance.toFixed(2)} km</span>${isCurrent?'<span class="kyro-distance-you">あなた</span>':""}</div>`;
+    return `<div class="kyro-distance-row${isCurrent?" is-current":""}"><span class="kyro-distance-rank"><span>${rank}位</span>${rankChange}</span><span class="kyro-distance-member"><strong>${escapeHtml(memberShortName(member.name))}</strong>${member.kyroUserName?`<small>${escapeHtml(member.kyroUserName)}</small>`:""}</span><span class="kyro-distance-value">${distance.toFixed(2)} km</span>${isCurrent?'<span class="kyro-distance-you">あなた</span>':""}</div>`;
   });
-  const pending=withoutData.map(member=>`<div class="kyro-distance-row is-pending"><span class="kyro-distance-rank">―</span><span class="kyro-distance-member"><strong>${escapeHtml(member.name)}</strong>${member.kyroUserName?`<small>${escapeHtml(member.kyroUserName)}</small>`:""}</span><span class="kyro-distance-value">未更新</span></div>`);
+  const pending=withoutData.map(member=>`<div class="kyro-distance-row is-pending"><span class="kyro-distance-rank">―</span><span class="kyro-distance-member"><strong>${escapeHtml(memberShortName(member.name))}</strong>${member.kyroUserName?`<small>${escapeHtml(member.kyroUserName)}</small>`:""}</span><span class="kyro-distance-value">未更新</span></div>`);
   kyroDistanceList.innerHTML=[...rows,...pending].join("")||'<div class="kyro-distance-empty">表示できるKYROデータがありません。</div>';
 }
 function openKyroDistanceList(){
@@ -1214,11 +1227,11 @@ function formatProfileUpdatedDate(timestamp){
 function openMemberProfile(member){
   selectedProfileMember=member;
   const profile=member.profile||{};
-  const nickname=profileValue(profile.nickname)||member.name;
+  const nickname=profileValue(profile.nickname)||memberFullName(member.name);
   const hasProfile=Object.values(profile).some(value=>profileValue(value));
   const profileUpdatedDate=formatProfileUpdatedDate(member.profileUpdatedAt);
   memberProfileContent.innerHTML=`
-    <div class="member-profile-identity"><div class="member-profile-avatar">😊</div><div class="member-profile-identity-main"><div class="member-profile-name">${escapeHtml(member.name)}</div><div class="member-profile-nickname">${escapeHtml(nickname)}</div></div>${profileUpdatedDate?`<div class="member-profile-updated">📝 ${escapeHtml(profileUpdatedDate)}</div>`:""}</div>
+    <div class="member-profile-identity"><div class="member-profile-avatar">😊</div><div class="member-profile-identity-main"><div class="member-profile-name">${escapeHtml(memberFullName(member.name))}</div><div class="member-profile-nickname">${escapeHtml(nickname)}</div></div>${profileUpdatedDate?`<div class="member-profile-updated">📝 ${escapeHtml(profileUpdatedDate)}</div>`:""}</div>
     ${hasProfile?"":`<div class="member-profile-empty">${escapeHtml(uiT("profileNotRegistered","自己紹介はまだ登録されていません。"))}</div>`}
     ${profileDisplayRow("💬",uiT("introduction","ひとこと"),profile.introduction)}
     ${profileDisplayRow("🏢",uiT("department","所属"),profile.department)}
@@ -1309,7 +1322,7 @@ function renderCurrentUserKyroSummary(){
   const previousDateText=kyroDataDateLabel(member.kyroPreviousDataDate);
   const hasPrevious=Number.isFinite(previousDistance)&&!!previousDateText;
   const difference=hasPrevious?kyroDistance-previousDistance:null;
-  if(seasonDetailKyroMemberName)seasonDetailKyroMemberName.textContent=member.name||"--";
+  if(seasonDetailKyroMemberName)seasonDetailKyroMemberName.textContent=memberShortName(member.name)||"--";
   if(seasonDetailKyroUserName)seasonDetailKyroUserName.textContent=member.kyroUserName||"--";
   seasonDetailKyroDistance.textContent=`${kyroDistance.toFixed(2)} km`;
   seasonDetailKyroDifference.textContent=hasPrevious?`${difference>=0?"+":""}${difference.toFixed(2)} km`:"初回データ";
@@ -1431,9 +1444,9 @@ function renderKyroImportPreview(){
   if(result.errors.length){kyroImportError.textContent=result.errors.join("\n");kyroImportError.classList.remove("hidden");}
   kyroImportSummary.textContent=`読込 ${result.rows.length}件／反映可能 ${result.matched.length}件／未登録 ${result.unmatched.length}件／不足 ${result.missing.length}件／形式エラー ${result.errors.length}件`;
   kyroImportSummary.classList.remove("hidden");
-  result.matched.forEach(row=>{const d=document.createElement("div");d.className="kyro-import-row";d.innerHTML=`<strong class="kyro-import-name">${escapeHtml(row.member.name)}</strong><span class="kyro-import-user">${escapeHtml(row.kyroName)}</span><span class="kyro-import-distance">${row.distanceKm.toFixed(2)} km</span><span class="kyro-import-rank">${row.rank}位</span>`;kyroImportPreview.appendChild(d);});
+  result.matched.forEach(row=>{const d=document.createElement("div");d.className="kyro-import-row";d.innerHTML=`<strong class="kyro-import-name">${escapeHtml(memberShortName(row.member.name))}</strong><span class="kyro-import-user">${escapeHtml(row.kyroName)}</span><span class="kyro-import-distance">${row.distanceKm.toFixed(2)} km</span><span class="kyro-import-rank">${row.rank}位</span>`;kyroImportPreview.appendChild(d);});
   result.unmatched.forEach(row=>{const d=document.createElement("div");d.className="kyro-import-row kyro-import-error-row";d.textContent=`未登録KYROネーム：${row.kyroName}`;kyroImportPreview.appendChild(d);});
-  result.missing.forEach(m=>{const d=document.createElement("div");d.className="kyro-import-row kyro-import-warning";d.textContent=`今回のデータにありません：${m.name}（${m.kyroUserName||"KYROネーム未登録"}）`;kyroImportPreview.appendChild(d);});
+  result.missing.forEach(m=>{const d=document.createElement("div");d.className="kyro-import-row kyro-import-warning";d.textContent=`今回のデータにありません：${memberShortName(m.name)}（${m.kyroUserName||"KYROネーム未登録"}）`;kyroImportPreview.appendChild(d);});
   if(!result.rows.length&&!result.errors.length){kyroImportError.textContent="取込データを貼り付けてください。";kyroImportError.classList.remove("hidden");return;}
   if(result.matched.length&&result.unmatched.length===0&&result.missing.length===0&&result.errors.length===0){kyroImportPrepared={snapshotDate,records:result.matched};applyKyroImportButton.disabled=false;}
 }
@@ -2034,7 +2047,7 @@ function renderFitnessPointSummary(){
         const rankLabel=row.rank===1?"🥇 1位":row.rank===2?"🥈 2位":row.rank===3?"🥉 3位":`${row.rank}位`;
         return `<div class="fitness-point-ranking-row ${row.name===currentUser?"is-me":""}">
           <span class="fitness-point-ranking-position">${rankLabel}</span>
-          <span class="fitness-point-ranking-name">${escapeHtml(row.name)}${row.name===currentUser?"（あなた）":""}</span>
+          <span class="fitness-point-ranking-name">${escapeHtml(memberShortName(row.name))}${row.name===currentUser?"（あなた）":""}</span>
           <strong class="fitness-point-ranking-score">${row.total} pt</strong>
         </div>`;
       }).join("");
@@ -2342,7 +2355,7 @@ function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderD
       const status=statuses[name]||"";
       const icon=isMe?"⭐":"😊";
 
-      li.innerHTML=`<span class="participant-name">${icon} ${escapeHtml(name)}</span>${status?`<span class="same-day-status-badge ${status}">${SAME_DAY_STATUS_LABELS[status]}</span>`:""}`;
+      li.innerHTML=`<span class="participant-name">${icon} ${escapeHtml(memberShortName(name))}</span>${status?`<span class="same-day-status-badge ${status}">${SAME_DAY_STATUS_LABELS[status]}</span>`:""}`;
 
       if(isMe){
         li.classList.add("me","same-day-status-clickable");
@@ -3003,7 +3016,7 @@ function renderRecommendations(){
       <div class="recommendation-comment">${escapeHtml(record.comment||"")}</div>
       ${record.location?`<div class="recommendation-location">📍 ${escapeHtml(record.location)}</div>`:""}
       ${url?`<a class="recommendation-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">🔗 リンクを開く</a>`:""}
-      <div class="recommendation-meta">😊 ${escapeHtml(record.authorName||"メンバー")} ・ ${recommendationDateLabel(record.createdAt)}</div>
+      <div class="recommendation-meta">😊 ${escapeHtml(record.authorName?memberShortName(record.authorName):"メンバー")} ・ ${recommendationDateLabel(record.createdAt)}</div>
       <div class="recommendation-card-actions"><button class="recommendation-like-button ${liked?"liked":""}" type="button" data-action="like">👍 いいね ${likes.length}</button>
       ${(own||canDelete)?`<div class="recommendation-owner-actions">${own?'<button type="button" data-action="edit">編集</button>':""}${canDelete?'<button class="danger" type="button" data-action="delete">削除</button>':""}</div>`:""}</div>
     </article>`;
@@ -3341,7 +3354,7 @@ function renderSeasonActivityDetail(){
   const previousStats=seasonActivityStats(previousSeason);
   seasonDetailPeriod.textContent=`${selectedSeason.label}（${selectedSeason.start.replaceAll("-","/")}～${selectedSeason.end.replaceAll("-","/")}）`;
   seasonDetailNavigationLabel.textContent=selectedSeason.label;
-  seasonDetailUserName.textContent=currentUser||"ユーザー未選択";
+  seasonDetailUserName.textContent=currentUser?memberFullName(currentUser):"ユーザー未選択";
   seasonDetailRunCurrent.textContent=`${currentStats.runCount}回`;
   seasonDetailRunPrevious.textContent=`${previousStats.runCount}回`;
   seasonDetailGymCurrent.textContent=`${currentStats.gymCount}回`;
@@ -3444,7 +3457,7 @@ function buildMessageBoardItem(item,allowDelete){
   const head=document.createElement("div");
   head.className="message-board-item-head";
   const author=document.createElement("strong");
-  author.textContent=item.authorName||uiT("memberGeneric","メンバー");
+  author.textContent=item.authorName?memberShortName(item.authorName):uiT("memberGeneric","メンバー");
   const date=document.createElement("span");
   date.textContent=formatMessageBoardPeriod(item.createdAt,item.expiresAt);
   head.append(author,date);
@@ -4109,7 +4122,7 @@ function exportActivityCsv(){
       row.type,
       row.title,
       row.count,
-      row.participants.join("、")
+      row.participants.map(memberShortName).join("、")
     ].map(activityCsvEscape).join(","))
   ];
   // Excelで日本語が文字化けしにくいUTF-8 BOM付きCSV
@@ -4300,7 +4313,7 @@ function renderAdminMembers(){
 
     const title=document.createElement("div");
     title.className="member-admin-main";
-    title.innerHTML=`😊 ${escapeHtml(m.name)}${m.kyroMember?'<span class="kyro-badge admin-kyro-badge">KYRO</span>':""}`;
+    title.innerHTML=`😊 ${escapeHtml(m.shortName||m.fullName||m.name)}${m.kyroMember?'<span class="kyro-badge admin-kyro-badge">KYRO</span>':""}`;
 
     const status=document.createElement("div");
     status.className="member-admin-summary-status";
