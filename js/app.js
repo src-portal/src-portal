@@ -2982,8 +2982,8 @@ function raffleCanView(){const v=systemSettings.features?.upperHalfRaffleVisibil
 function raffleCountdownHtml(){
   let diff=Math.max(0,RAFFLE_START_MS-Date.now());
   if(raffleIsTest())diff=((7*24+12)*60+34)*60*1000;
-  const days=Math.floor(diff/86400000);diff%=86400000;const hours=Math.floor(diff/3600000);diff%=3600000;const mins=Math.floor(diff/60000);const secs=Math.floor((diff%60000)/1000);
-  return `抽選開始まで　<strong>あと ${days}日 ${hours}時間 ${mins}分 ${secs}秒</strong>`;
+  const days=Math.floor(diff/86400000);diff%=86400000;const hours=Math.floor(diff/3600000);diff%=3600000;const mins=Math.floor(diff/60000);
+  return `抽選開始まで　<strong>あと ${days}日 ${hours}時間 ${mins}分</strong>`;
 }
 function raffleEligibleMembers(){return memberRecords.filter(m=>m.active!==false&&m.name!=="堀部");}
 async function loadRaffleResult(){
