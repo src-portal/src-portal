@@ -101,7 +101,8 @@ async function refreshPortalDataFromServer(){
       calendarUrl:systemData.gym?.calendarUrl||defaultSystemSettings.gym.calendarUrl
     },
     features:{
-      seasonActivityVisibility:systemData.features?.seasonActivityVisibility==="public"?"public":"admin"
+      seasonActivityVisibility:systemData.features?.seasonActivityVisibility==="public"?"public":"admin",
+      upperHalfRaffleVisibility:systemData.features?.upperHalfRaffleVisibility==="public"?"public":"admin"
     }
   };
   requiredMembers=systemSettings.gym.minParticipants;
@@ -254,7 +255,7 @@ let selectedEvent=null;
 const defaultSystemSettings={
   run:{time:"19:00",place:"落合公園",mapUrl:"https://www.google.com/maps?q=35.2705363,136.9915385"},
   gym:{time:"19:00",place:"サンフロッグ春日井",minParticipants:3,mapUrl:"https://maps.app.goo.gl/1eCRggPsgc3Z2HMKA",calendarUrl:"https://www.spofure-kasugai.or.jp/sports/pool/calendar/"},
-  features:{seasonActivityVisibility:"admin"}
+  features:{seasonActivityVisibility:"admin",upperHalfRaffleVisibility:"admin"}
 };
 let systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
 let requiredMembers=systemSettings.gym.minParticipants;
@@ -583,12 +584,14 @@ onSnapshot(doc(db,"settings","system"),snap=>{
       calendarUrl:data.gym?.calendarUrl||defaultSystemSettings.gym.calendarUrl
     },
     features:{
-      seasonActivityVisibility:data.features?.seasonActivityVisibility==="public"?"public":"admin"
+      seasonActivityVisibility:data.features?.seasonActivityVisibility==="public"?"public":"admin",
+      upperHalfRaffleVisibility:data.features?.upperHalfRaffleVisibility==="public"?"public":"admin"
     }
   };
   requiredMembers=systemSettings.gym.minParticipants;
   applySystemSettingsToInputs();
   setType(currentType);
+  renderUpperHalfRaffle();
   if(selectedKey)renderDetail();
 },err=>{
   console.error("settings read error",err);
@@ -1516,7 +1519,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="フィットネストレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderGymQuestCard();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="フィットネストレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderGymQuestCard();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity();renderUpperHalfRaffle()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -2817,6 +2820,11 @@ const settingsGymMinParticipants=document.getElementById("settingsGymMinParticip
 const settingsGymMapUrl=document.getElementById("settingsGymMapUrl");
 const settingsGymCalendarUrl=document.getElementById("settingsGymCalendarUrl");
 const settingsSeasonActivityVisibility=document.getElementById("settingsSeasonActivityVisibility");
+const settingsRaffleVisibility=document.getElementById("settingsRaffleVisibility");
+const raffleTestModeCheck=document.getElementById("raffleTestModeCheck");
+const raffleTestStageSelect=document.getElementById("raffleTestStageSelect");
+const raffleTestResultSelect=document.getElementById("raffleTestResultSelect");
+const raffleTestResetButton=document.getElementById("raffleTestResetButton");
 const seasonActivityCard=document.getElementById("seasonActivityCard");
 const seasonActivityAdminBadge=document.getElementById("seasonActivityAdminBadge");
 const seasonActivityPeriod=document.getElementById("seasonActivityPeriod");
@@ -2951,6 +2959,97 @@ function recommendationDateLabel(value){
   if(!date.getTime())return "投稿直後";
   return `${date.getFullYear()}/${String(date.getMonth()+1).padStart(2,"0")}/${String(date.getDate()).padStart(2,"0")}`;
 }
+
+const RAFFLE_START_MS=Date.parse("2026-10-01T12:00:00+09:00");
+const RAFFLE_PUBLISH_MS=Date.parse("2026-10-02T00:00:00+09:00");
+const RAFFLE_DOC=doc(db,"settings","upperHalfRaffle2026");
+const RAFFLE_TEST_KEY="srcUpperHalfRaffle2026Test";
+let raffleResultCache=null;
+let raffleResultLoading=false;
+let raffleResultRevealed=false;
+function raffleTestState(){try{return JSON.parse(localStorage.getItem(RAFFLE_TEST_KEY)||"{}")||{};}catch{return {};}}
+function saveRaffleTestState(next){localStorage.setItem(RAFFLE_TEST_KEY,JSON.stringify(next));renderUpperHalfRaffle();}
+function loadRaffleTestControls(){
+  if(!raffleTestModeCheck)return;
+  const s=raffleTestState();
+  raffleTestModeCheck.checked=s.enabled===true;
+  raffleTestStageSelect.value=s.stage||"before";
+  raffleTestResultSelect.value=s.result||"lose";
+}
+function raffleIsTest(){return isCurrentAdmin()&&raffleTestState().enabled===true;}
+function raffleStage(){if(raffleIsTest())return raffleTestState().stage||"before";const now=Date.now();return now>=RAFFLE_PUBLISH_MS?"published":now>=RAFFLE_START_MS?"draw":"before";}
+function raffleCanView(){const v=systemSettings.features?.upperHalfRaffleVisibility||"admin";return v==="public"||isCurrentAdmin();}
+function raffleCountdownHtml(){
+  let diff=Math.max(0,RAFFLE_START_MS-Date.now());
+  if(raffleIsTest())diff=((7*24+12)*60+34)*60*1000;
+  const days=Math.floor(diff/86400000);diff%=86400000;const hours=Math.floor(diff/3600000);diff%=3600000;const mins=Math.floor(diff/60000);const secs=Math.floor((diff%60000)/1000);
+  return `抽選開始まで　<strong>あと ${days}日 ${hours}時間 ${mins}分 ${secs}秒</strong>`;
+}
+function raffleEligibleMembers(){return memberRecords.filter(m=>m.active!==false&&m.name!=="堀部");}
+async function loadRaffleResult(){
+  if(raffleIsTest())return;
+  if(raffleResultCache||raffleResultLoading)return;
+  raffleResultLoading=true;
+  try{const snap=await getDoc(RAFFLE_DOC);raffleResultCache=snap.exists()?snap.data():null;}catch(e){console.error("raffle result read error",e);}finally{raffleResultLoading=false;renderUpperHalfRaffle();}
+}
+async function ensureRaffleDrawn(){
+  if(raffleIsTest()||Date.now()<RAFFLE_START_MS)return;
+  if(raffleResultCache)return;
+  const eligible=raffleEligibleMembers();
+  if(eligible.length<2){console.error("raffle: eligible members are fewer than 2");return;}
+  try{
+    await runTransaction(db,async tx=>{
+      const snap=await tx.get(RAFFLE_DOC);if(snap.exists())return;
+      const pool=eligible.map(m=>({name:m.name,shortName:memberShortName(m.name)}));
+      const aIndex=Math.floor(Math.random()*pool.length);const roller=pool.splice(aIndex,1)[0];
+      const bIndex=Math.floor(Math.random()*pool.length);const earbuds=pool[bIndex];
+      tx.set(RAFFLE_DOC,{drawn:true,roller,earbuds,eligibleCount:eligible.length,drawnAt:serverTimestamp(),startAt:"2026-10-01T12:00:00+09:00",publishAt:"2026-10-02T00:00:00+09:00"});
+    });
+    const snap=await getDoc(RAFFLE_DOC);raffleResultCache=snap.exists()?snap.data():null;
+  }catch(e){console.error("raffle draw error",e);}
+}
+function testRaffleResult(){
+  const result=raffleTestState().result||"lose";
+  if(result==="roller")return {win:true,prize:"筋膜ローラー"};
+  if(result==="earbuds")return {win:true,prize:"イヤーカフイヤホン"};
+  return {win:false,prize:""};
+}
+function currentRaffleResult(){
+  if(raffleIsTest())return testRaffleResult();
+  if(!raffleResultCache||!currentUser)return {win:false,prize:""};
+  if(raffleResultCache.roller?.name===currentUser)return {win:true,prize:"筋膜ローラー"};
+  if(raffleResultCache.earbuds?.name===currentUser)return {win:true,prize:"イヤーカフイヤホン"};
+  return {win:false,prize:""};
+}
+function raffleInfoHtml(testBadge=""){
+  return `${testBadge}<p class="raffle-lead">日々の活動に、ありがとう。<br>上期の感謝を込めて抽選会を開催します！</p><div class="raffle-prize-grid"><div class="raffle-prize-card"><img src="images/raffle-roller.png" alt="筋膜ローラー">🎁 筋膜ローラー</div><div class="raffle-prize-card"><img src="images/raffle-earbuds.png" alt="イヤーカフイヤホン">🎧 イヤーカフイヤホン</div></div><div class="raffle-date-box"><strong>対象：</strong>2026年9月30日時点のSRC Portal登録メンバー（堀部を除く）<br><strong>当選：</strong>2名・重複当選なし<br><strong>抽選開始：</strong>2026年10月1日 12:00<br><strong>全員発表：</strong>2026年10月2日 0:00～</div>`;
+}
+function raffleResultHtml(result,testBadge=""){
+  if(result.win)return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 おめでとうございます！</div><div class="raffle-result-prize">${escapeHtml(result.prize)} 当選！</div><p class="raffle-message">賞品は後日、SRC管理者よりお渡しします。<br><br><strong>賞品を受け取ったら、伝言板でSRCメンバーに自慢してください（笑）</strong></p><button class="raffle-board-button" id="raffleGoBoardButton" type="button">📣 伝言板へ</button></div>`;
+  return `${testBadge}<div class="raffle-result-panel"><div class="raffle-lose-title">😭 残念！今回はハズレ！</div><p class="raffle-message">今回、景品には追いつけませんでした🏃💨<br><strong>でも、動き続ければ次のチャンスがやってきます（笑）</strong><br><strong>KEEP MOVING FORWARD！</strong></p></div>`;
+}
+function rafflePublishedHtml(testBadge=""){
+  const r=raffleResultCache;
+  if(raffleIsTest())return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 抽選結果発表！</div><div class="raffle-winners"><div class="raffle-winner">🎁 筋膜ローラー<br><strong>テスト当選者A</strong></div><div class="raffle-winner">🎧 イヤーカフイヤホン<br><strong>テスト当選者B</strong></div></div><p>ご当選おめでとうございます！</p></div>`;
+  if(!r)return `<p class="raffle-lead">抽選結果を読み込んでいます…</p>`;
+  return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 抽選結果発表！</div><div class="raffle-winners"><div class="raffle-winner">🎁 筋膜ローラー<br><strong>${escapeHtml(r.roller?.shortName||r.roller?.name||"")}</strong></div><div class="raffle-winner">🎧 イヤーカフイヤホン<br><strong>${escapeHtml(r.earbuds?.shortName||r.earbuds?.name||"")}</strong></div></div><p>ご当選おめでとうございます！</p></div>`;
+}
+function renderUpperHalfRaffle(){
+  const banner=document.getElementById("upperHalfRaffleBanner"),countdown=document.getElementById("upperHalfRaffleCountdown"),content=document.getElementById("upperHalfRaffleContent");if(!banner)return;
+  const canView=raffleCanView();banner.classList.toggle("hidden",!canView);if(!canView)return;
+  const stage=raffleStage();
+  if(stage==="before")countdown.innerHTML=raffleCountdownHtml();else if(stage==="draw")countdown.innerHTML="<strong>🎁 抽選結果を確認できます！</strong>";else countdown.innerHTML="<strong>🎉 抽選結果発表！</strong>";
+  if(stage!=="before"&&!raffleIsTest()&&!raffleResultCache){ensureRaffleDrawn().then(renderUpperHalfRaffle);loadRaffleResult();}
+  if(!content)return;
+  const testBadge=raffleIsTest()?'<div class="raffle-test-badge">🧪 管理者テストモード</div>':"";
+  if(stage==="before"){content.innerHTML=raffleInfoHtml(testBadge)+`<div class="raffle-date-box" style="text-align:center">${raffleCountdownHtml()}</div>`;return;}
+  if(stage==="published"){content.innerHTML=rafflePublishedHtml(testBadge);return;}
+  if(raffleResultRevealed){content.innerHTML=raffleResultHtml(currentRaffleResult(),testBadge);wireRaffleBoardButton();return;}
+  content.innerHTML=raffleInfoHtml(testBadge)+'<button class="raffle-result-button" id="raffleRevealButton" type="button">🎁 抽選結果を見る</button>';
+  document.getElementById("raffleRevealButton")?.addEventListener("click",()=>{raffleResultRevealed=true;renderUpperHalfRaffle();});
+}
+function wireRaffleBoardButton(){document.getElementById("raffleGoBoardButton")?.addEventListener("click",()=>{hide(document.getElementById("upperHalfRaffleModal"));document.getElementById("messageBoardCard")?.click();});}
+
 function currentMemberRecord(){return memberRecords.find(member=>member.name===currentUser&&member.active!==false)||null;}
 function isCurrentAdmin(){const member=currentMemberRecord();return !!(member&&member.admin===true);}
 function safeRecommendationUrl(value){
@@ -3394,6 +3493,8 @@ function applySystemSettingsToInputs(){
   if(settingsSeasonActivityVisibility){
     settingsSeasonActivityVisibility.value=systemSettings.features?.seasonActivityVisibility||"admin";
   }
+  if(settingsRaffleVisibility)settingsRaffleVisibility.value=systemSettings.features?.upperHalfRaffleVisibility||"admin";
+  loadRaffleTestControls();
 }
 
 async function saveSystemSettings(){
@@ -3406,6 +3507,7 @@ async function saveSystemSettings(){
   const gymMapUrl=settingsGymMapUrl.value.trim();
   const calendarUrl=settingsGymCalendarUrl.value.trim();
   const seasonActivityVisibility=settingsSeasonActivityVisibility?.value==="public"?"public":"admin";
+  const upperHalfRaffleVisibility=settingsRaffleVisibility?.value==="public"?"public":"admin";
 
   if(!runPlace||!gymPlace||!Number.isInteger(minParticipants)||minParticipants<1||(runMapUrl&&!/^https?:\/\//i.test(runMapUrl))||(gymMapUrl&&!/^https?:\/\//i.test(gymMapUrl))||(calendarUrl&&!/^https?:\/\//i.test(calendarUrl))){
     systemSettingsError.classList.remove("hidden");
@@ -3417,7 +3519,7 @@ async function saveSystemSettings(){
     await setDoc(doc(db,"settings","system"),{
       run:{time:runTime,place:runPlace,mapUrl:runMapUrl},
       gym:{time:gymTime,place:gymPlace,minParticipants,mapUrl:gymMapUrl,calendarUrl},
-      features:{seasonActivityVisibility},
+      features:{seasonActivityVisibility,upperHalfRaffleVisibility},
       updatedAt:serverTimestamp()
     },{merge:true});
     closeAdminChildModal(systemSettingsModal);
@@ -4695,6 +4797,15 @@ adminSystemSettingsButton.onclick=()=>{
 };
 closeSystemSettingsButton.onclick=()=>closeAdminChildModal(systemSettingsModal);
 saveSystemSettingsButton.onclick=saveSystemSettings;
+const upperHalfRaffleBanner=document.getElementById("upperHalfRaffleBanner"),upperHalfRaffleModal=document.getElementById("upperHalfRaffleModal"),closeUpperHalfRaffleButton=document.getElementById("closeUpperHalfRaffleButton");
+upperHalfRaffleBanner?.addEventListener("click",()=>{raffleResultRevealed=false;renderUpperHalfRaffle();show(upperHalfRaffleModal);});
+upperHalfRaffleBanner?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();upperHalfRaffleBanner.click();}});
+closeUpperHalfRaffleButton?.addEventListener("click",()=>hide(upperHalfRaffleModal));
+raffleTestModeCheck?.addEventListener("change",()=>{const s=raffleTestState();s.enabled=raffleTestModeCheck.checked;s.stage=raffleTestStageSelect.value;s.result=raffleTestResultSelect.value;raffleResultRevealed=false;saveRaffleTestState(s);});
+raffleTestStageSelect?.addEventListener("change",()=>{const s=raffleTestState();s.stage=raffleTestStageSelect.value;s.enabled=raffleTestModeCheck.checked;s.result=raffleTestResultSelect.value;raffleResultRevealed=false;saveRaffleTestState(s);});
+raffleTestResultSelect?.addEventListener("change",()=>{const s=raffleTestState();s.result=raffleTestResultSelect.value;s.enabled=raffleTestModeCheck.checked;s.stage=raffleTestStageSelect.value;raffleResultRevealed=false;saveRaffleTestState(s);});
+raffleTestResetButton?.addEventListener("click",()=>{localStorage.removeItem(RAFFLE_TEST_KEY);raffleResultRevealed=false;loadRaffleTestControls();renderUpperHalfRaffle();alert("抽選会テストをリセットしました。");});
+window.setInterval(()=>{if(raffleCanView())renderUpperHalfRaffle();},1000);
 adminAnnouncementManageButton.onclick=()=>{renderAdminAnnouncements();openAdminChildModal(announcementManageModal);};
 closeAnnouncementManageButton.onclick=()=>closeAdminChildModal(announcementManageModal);
 addAnnouncementButton.onclick=addAnnouncement;
