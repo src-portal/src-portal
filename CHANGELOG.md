@@ -1,3 +1,4 @@
+- Ver.1.9.7: 2026年度上期「SRCありがとう抽選会」を追加。TOPヘッダー直下バナー、10/1 12:00までのカウントダウン、景品告知、本人結果確認、10/2全員発表、伝言板導線、管理者限定公開・端末内テストモードを実装。抽選本番は10/1 12:00以降の最初のアクセスで1回だけFirestoreトランザクションにより確定。
 - Ver.1.9.6a: FITNESS POINT入力ボタンを、開催当日のジム開始時刻（通常19:00）到達後に詳細画面を開いたままでも自動表示するよう修正。30秒ごとの画面判定のみでFirebase追加read/writeなし。
 - Ver.1.9.6: 氏名表示を用途別に変更。TOPとユーザー変更/再設定はnameを維持。参加者・FITNESS POINTランキング・KYRO・伝言板・みんなのおすすめ・管理者メンバー一覧・活動実績CSVはshortName表示。SRC Members一覧/詳細とシーズン活動記録の本人名はfullName表示。内部識別・Firestore保存値は従来のnameを維持。表示変更のみでFirebase追加read/writeなし。
 - Ver.1.9.5a: 管理者メニュー「メンバー管理」に shortName（短縮名）の入力・保存を追加。既存nameは変更せず、shortName/fullNameを編集可能。新規メンバーはshortName/fullNameを登録し、nameにはfullNameと同じ値を保存。表示側の氏名切替は未実施。Firebase追加readなし、保存時のみ対象member document 1 write。
