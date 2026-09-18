@@ -3857,3 +3857,5 @@ body{
 .raffle-banner-live-countdown{position:absolute;left:15.5%;bottom:4.6%;width:43.5%;min-height:23.5%;display:flex;align-items:center;justify-content:center;padding:5px 8px;border-radius:12px;background:#fff;color:#111;font-size:clamp(10px,2.9vw,17px);font-weight:900;text-align:center;line-height:1.25;box-sizing:border-box;z-index:3}
 .raffle-banner-live-countdown strong{font-size:1.35em;color:#e10b18}
 @media(max-width:480px){.raffle-banner.raffle-banner-image{border-radius:16px}.raffle-banner-live-countdown{left:15%;bottom:4.5%;width:44%;padding:3px 5px;border-radius:9px;font-size:clamp(9px,2.75vw,13px)}}
+
+/* Ver.1.9.7b: raffle countdown display omits seconds for a cleaner single-line mobile banner. */
