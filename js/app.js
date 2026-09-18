@@ -2495,6 +2495,15 @@ function renderFitnessPointRecordAction(){
   }
 }
 
+// 開催当日のジム開始時刻（通常19:00）を過ぎたら、
+// 詳細画面を開いたままでもPOINT入力ボタンを自動解禁する。
+// 画面表示だけの更新で、Firebaseへの追加read/writeは発生しない。
+setInterval(()=>{
+  if(currentType!=="gym"||!selectedKey)return;
+  if(detailView?.classList.contains("hidden"))return;
+  renderFitnessPointRecordAction();
+},30000);
+
 function fitnessMachinePoint(){
   return Math.min(3,Math.max(0,Number(document.querySelector('input[name="fitnessPointMachines"]:checked')?.value||0)));
 }
