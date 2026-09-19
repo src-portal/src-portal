@@ -3101,15 +3101,15 @@ function raffleResultHtml(result,testBadge=""){
 }
 function rafflePublishedHtml(testBadge=""){
   const r=raffleResultCache;
-  if(raffleIsTest())return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 抽選結果発表！</div><div class="raffle-winners"><div class="raffle-winner">🎁 筋膜ローラー<br><strong>テスト当選者A</strong></div><div class="raffle-winner">🎧 イヤーカフイヤホン<br><strong>テスト当選者B</strong></div></div><p>ご当選おめでとうございます！</p></div>`;
+  if(raffleIsTest())return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 抽選結果発表！</div><div class="raffle-winners"><div class="raffle-winner raffle-published-winner">🎁 筋膜ローラー<img class="raffle-published-prize-image" src="images/raffle-roller.png" alt="筋膜ローラー"><strong>テスト当選者A</strong></div><div class="raffle-winner raffle-published-winner">🎧 イヤーカフイヤホン<img class="raffle-published-prize-image" src="images/raffle-earbuds.png" alt="イヤーカフイヤホン"><strong>テスト当選者B</strong></div></div><p>ご当選おめでとうございます！</p></div>`;
   if(!r)return `<p class="raffle-lead">抽選結果を読み込んでいます…</p>`;
-  return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 抽選結果発表！</div><div class="raffle-winners"><div class="raffle-winner">🎁 筋膜ローラー<br><strong>${escapeHtml(r.roller?.shortName||r.roller?.name||"")}</strong></div><div class="raffle-winner">🎧 イヤーカフイヤホン<br><strong>${escapeHtml(r.earbuds?.shortName||r.earbuds?.name||"")}</strong></div></div><p>ご当選おめでとうございます！</p></div>`;
+  return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 抽選結果発表！</div><div class="raffle-winners"><div class="raffle-winner raffle-published-winner">🎁 筋膜ローラー<img class="raffle-published-prize-image" src="images/raffle-roller.png" alt="筋膜ローラー"><strong>${escapeHtml(r.roller?.shortName||r.roller?.name||"")}</strong></div><div class="raffle-winner raffle-published-winner">🎧 イヤーカフイヤホン<img class="raffle-published-prize-image" src="images/raffle-earbuds.png" alt="イヤーカフイヤホン"><strong>${escapeHtml(r.earbuds?.shortName||r.earbuds?.name||"")}</strong></div></div><p>ご当選おめでとうございます！</p></div>`;
 }
 function renderUpperHalfRaffle(){
   const banner=document.getElementById("upperHalfRaffleBanner"),countdown=document.getElementById("upperHalfRaffleCountdown"),content=document.getElementById("upperHalfRaffleContent");if(!banner)return;
   const canView=raffleCanView();banner.classList.toggle("hidden",!canView);if(!canView)return;
   const stage=raffleStage();
-  if(stage==="before")countdown.innerHTML=raffleCountdownHtml();else if(stage==="draw")countdown.innerHTML="<strong class=\"raffle-result-ready\">🎁 抽選結果を見る！</strong>";else countdown.innerHTML="<strong>🎉 抽選結果発表！</strong>";
+  if(stage==="before")countdown.innerHTML=raffleCountdownHtml();else if(stage==="draw")countdown.innerHTML="<strong class=\"raffle-result-ready\">🎁 抽選結果を見る！</strong>";else countdown.innerHTML="<strong class=\"raffle-result-ready raffle-published-ready\">🎉 抽選結果発表！</strong>";
   if(stage!=="before"&&!raffleIsTest()&&!raffleResultCache){ensureRaffleDrawn().then(renderUpperHalfRaffle);loadRaffleResult();}
   if(!content)return;
   const testBadge=raffleIsTest()?'<div class="raffle-test-badge">🧪 管理者テストモード</div>':"";
