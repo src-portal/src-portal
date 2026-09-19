@@ -4042,3 +4042,20 @@ body{
   #upperHalfRaffleModal .raffle-date-box{padding:14px 10px}
   #upperHalfRaffleModal .raffle-date-row{gap:4px;font-size:clamp(16px,4.25vw,20px)}
 }
+
+/* Ver.1.9.7j: keep raffle announcement dates on one line on iPhone. */
+#upperHalfRaffleModal .raffle-date-row span{
+  white-space:nowrap;
+  font-size:.96em;
+  letter-spacing:-.04em;
+}
+@media(max-width:390px){
+  #upperHalfRaffleModal .raffle-date-row{
+    gap:3px;
+    font-size:clamp(15px,3.95vw,18px);
+  }
+  #upperHalfRaffleModal .raffle-date-row span{
+    font-size:.94em;
+    letter-spacing:-.055em;
+  }
+}
