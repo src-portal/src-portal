@@ -2985,7 +2985,7 @@ function raffleCountdownHtml(){
   let diff=Math.max(0,RAFFLE_START_MS-Date.now());
   if(raffleIsTest())diff=((7*24+12)*60+34)*60*1000;
   const days=Math.floor(diff/86400000);diff%=86400000;const hours=Math.floor(diff/3600000);diff%=3600000;const mins=Math.floor(diff/60000);
-  return `<span class="raffle-countdown-label">抽選開始まで</span><strong class="raffle-countdown-value">あと ${days}日 ${hours}時間 ${mins}分</strong>`;
+  return `<span class="raffle-countdown-label">抽選開始まで</span><span class="raffle-countdown-value"><span class="raffle-countdown-prefix">あと</span><strong class="raffle-countdown-number">${days}</strong><span class="raffle-countdown-unit">日</span><strong class="raffle-countdown-number">${hours}</strong><span class="raffle-countdown-unit">時間</span><strong class="raffle-countdown-number">${mins}</strong><span class="raffle-countdown-unit">分</span></span>`;
 }
 function raffleActivityNames(){
   const names=new Set();
