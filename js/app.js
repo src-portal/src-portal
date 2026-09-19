@@ -3076,15 +3076,15 @@ async function ensureRaffleDrawn(){
 }
 function testRaffleResult(){
   const result=raffleTestState().result||"lose";
-  if(result==="roller")return {win:true,prize:"筋膜ローラー"};
-  if(result==="earbuds")return {win:true,prize:"イヤーカフイヤホン"};
+  if(result==="roller")return {win:true,prize:"筋膜ローラー",shortName:memberShortName(currentUser||"")};
+  if(result==="earbuds")return {win:true,prize:"イヤーカフイヤホン",shortName:memberShortName(currentUser||"")};
   return {win:false,prize:""};
 }
 function currentRaffleResult(){
   if(raffleIsTest())return testRaffleResult();
   if(!raffleResultCache||!currentUser)return {win:false,prize:""};
-  if(raffleResultCache.roller?.name===currentUser)return {win:true,prize:"筋膜ローラー"};
-  if(raffleResultCache.earbuds?.name===currentUser)return {win:true,prize:"イヤーカフイヤホン"};
+  if(raffleResultCache.roller?.name===currentUser)return {win:true,prize:"筋膜ローラー",shortName:raffleResultCache.roller?.shortName||memberShortName(currentUser)};
+  if(raffleResultCache.earbuds?.name===currentUser)return {win:true,prize:"イヤーカフイヤホン",shortName:raffleResultCache.earbuds?.shortName||memberShortName(currentUser)};
   return {win:false,prize:""};
 }
 function raffleInfoHtml(testBadge=""){
@@ -3093,7 +3093,9 @@ function raffleInfoHtml(testBadge=""){
 function raffleResultHtml(result,testBadge=""){
   if(result.win){
     const prizeImage=result.prize==="筋膜ローラー"?"images/raffle-roller.png":"images/raffle-earbuds.png";
-    return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 おめでとうございます！</div><div class="raffle-result-prize">${escapeHtml(result.prize)}<br><span class="raffle-result-hit">✨ 当選！ ✨</span></div><img class="raffle-result-image" src="${prizeImage}" alt="${escapeHtml(result.prize)}"><p class="raffle-message raffle-delivery-message">賞品は後日お渡しします。</p><p class="raffle-message raffle-brag-message"><strong>賞品を受け取ったら、伝言板でSRCメンバーに自慢してください（笑）</strong></p><button class="raffle-board-button" id="raffleGoBoardButton" type="button">📣 伝言板へ</button></div>`;
+    const winnerShortName=String(result.shortName||memberShortName(currentUser||"")||"");
+    const nameSizeClass=winnerShortName.length>=11?" is-long":winnerShortName.length>=8?" is-medium":"";
+    return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 おめでとうございます！</div><div class="raffle-winner-name${nameSizeClass}">${escapeHtml(winnerShortName)}<span>さん</span></div><div class="raffle-result-prize">${escapeHtml(result.prize)}<br><span class="raffle-result-hit">✨ 当選！ ✨</span></div><img class="raffle-result-image" src="${prizeImage}" alt="${escapeHtml(result.prize)}"><p class="raffle-message raffle-delivery-message">賞品は後日お渡しします。</p><p class="raffle-message raffle-brag-message"><strong>賞品を受け取ったら、伝言板でSRCメンバーに自慢してください（笑）</strong></p><button class="raffle-board-button" id="raffleGoBoardButton" type="button">📣 伝言板へ</button></div>`;
   }
   return `${testBadge}<div class="raffle-result-panel"><div class="raffle-lose-title">😭 残念！今回はハズレ！</div><p class="raffle-message">今回、景品には追いつけませんでした🏃💨<br><strong>でも、動き続ければ次のチャンスがやってきます（笑）</strong><br><strong>KEEP MOVING FORWARD！</strong></p></div>`;
 }
