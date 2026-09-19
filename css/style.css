@@ -3868,7 +3868,7 @@ body{
 .raffle-banner-live-countdown .raffle-countdown-value{display:block;font-size:1.22em;color:#e10b18;white-space:nowrap}
 @media(max-width:480px){.raffle-banner-live-countdown{left:15.3%;bottom:4.6%;width:46.3%;min-height:29.4%;padding:2px 4px;border-radius:9px;font-size:clamp(8px,2.65vw,12px);gap:2px}.raffle-countdown-label{font-size:.92em}.raffle-banner-live-countdown .raffle-countdown-value{font-size:1.16em}}
 
-/* Ver.1.9.7d: Lucky Chance copy, raffle detail transition, admin eligibility/group check */
+/* Ver.1.9.7e: Lucky Chance copy, raffle detail transition, admin eligibility/group check */
 .raffle-banner-title-overlay{position:absolute;left:2.6%;top:25%;width:64%;height:28%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(90deg,rgba(255,238,91,.98),rgba(255,247,185,.98));transform:rotate(-1deg);z-index:2;pointer-events:none}
 .raffle-banner-title-overlay strong{font-size:clamp(20px,5.6vw,36px);font-weight:1000;color:#082c68;line-height:1;text-shadow:0 2px 0 #fff}
 .raffle-banner-title-overlay span{margin-top:5px;font-size:clamp(10px,2.8vw,17px);font-weight:900;color:#7b2b00}
@@ -3880,3 +3880,9 @@ body{
 .raffle-admin-modal-card{max-width:520px}.raffle-admin-row{display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #e8edf3}.raffle-admin-row>div{min-width:0}.raffle-admin-row strong{display:block}.raffle-admin-row small{display:block;margin-top:2px;color:#687385}.raffle-admin-row .admin-input{margin:0;padding:9px}.raffle-admin-row.excluded{opacity:.65}.raffle-admin-row.excluded span{text-align:center;font-weight:900}
 @media(max-width:480px){.raffle-banner-title-overlay{left:2.5%;top:25.5%;width:64.5%;height:27.5%}.raffle-banner-title-overlay strong{font-size:clamp(17px,5.3vw,27px)}.raffle-banner-title-overlay span{font-size:clamp(9px,2.65vw,14px)}.raffle-admin-row{grid-template-columns:minmax(0,1fr) 125px}}
 @media(prefers-reduced-motion:reduce){#upperHalfRaffleModal,#upperHalfRaffleModal .raffle-modal-card{transition:none}}
+
+/* Ver.1.9.7e: use finished Lucky Chance banner artwork directly; only countdown remains live */
+.raffle-banner.raffle-banner-image{aspect-ratio:20/9}
+.raffle-banner-live-countdown{left:15.1%;bottom:13.4%;width:45.0%;min-height:27.0%;padding:3px 8px;border-radius:14px;background:#fff;flex-direction:column;gap:1px;line-height:1.08;white-space:nowrap}
+.raffle-banner-live-countdown .raffle-countdown-value{font-size:1.22em;white-space:nowrap}
+@media(max-width:480px){.raffle-banner-live-countdown{left:15.1%;bottom:13.3%;width:45.1%;min-height:27.2%;padding:2px 4px;border-radius:9px;font-size:clamp(8px,2.65vw,12px);gap:2px}.raffle-countdown-label{font-size:.92em}.raffle-banner-live-countdown .raffle-countdown-value{font-size:1.16em}}
