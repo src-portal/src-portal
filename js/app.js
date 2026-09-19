@@ -3091,7 +3091,10 @@ function raffleInfoHtml(testBadge=""){
   return `${testBadge}<div class="raffle-intro"><p class="raffle-lead"><strong>日々の頑張りを、応援。</strong></p><p class="raffle-intro-copy"><strong>2026年度上期の締めくくりに、<br>SRCメンバー限定のプレゼント抽選を開催します！</strong></p><p class="raffle-winner-count">当選者は <strong>2名！</strong></p><p class="raffle-prize-copy"><strong>素敵な賞品をご用意しました🎉</strong></p></div><div class="raffle-prize-grid"><div class="raffle-prize-card"><img src="images/raffle-roller.png" alt="筋膜ローラー"><div>🎁 筋膜ローラー<br>1名様</div></div><div class="raffle-prize-card"><img src="images/raffle-earbuds.png" alt="イヤーカフイヤホン"><div>🎧 イヤーカフイヤホン<br>1名様</div></div></div><div class="raffle-date-box"><div class="raffle-target-row"><strong>対象：</strong><span>2026年度上期にSRC活動へ参加したメンバー</span></div><div class="raffle-date-row"><strong>抽選開始：</strong><span>2026年10月1日 12:00</span></div><div class="raffle-date-row"><strong>全員発表：</strong><span>2026年10月2日 0:00～</span></div><div class="raffle-result-guide">抽選開始後、SRC Portalを開いて<br><strong>「🎁 抽選結果を見る」</strong>をタップしてください。</div></div>${raffleAdminEligibilityHtml()}`;
 }
 function raffleResultHtml(result,testBadge=""){
-  if(result.win)return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 おめでとうございます！</div><div class="raffle-result-prize">${escapeHtml(result.prize)} 当選！</div><p class="raffle-message">賞品は後日、SRC管理者よりお渡しします。<br><br><strong>賞品を受け取ったら、伝言板でSRCメンバーに自慢してください（笑）</strong></p><button class="raffle-board-button" id="raffleGoBoardButton" type="button">📣 伝言板へ</button></div>`;
+  if(result.win){
+    const prizeImage=result.prize==="筋膜ローラー"?"images/raffle-roller.png":"images/raffle-earbuds.png";
+    return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 おめでとうございます！</div><div class="raffle-result-prize">${escapeHtml(result.prize)}<br><span class="raffle-result-hit">✨ 当選！ ✨</span></div><img class="raffle-result-image" src="${prizeImage}" alt="${escapeHtml(result.prize)}"><p class="raffle-message raffle-delivery-message">賞品は後日お渡しします。</p><p class="raffle-message raffle-brag-message"><strong>賞品を受け取ったら、伝言板でSRCメンバーに自慢してください（笑）</strong></p><button class="raffle-board-button" id="raffleGoBoardButton" type="button">📣 伝言板へ</button></div>`;
+  }
   return `${testBadge}<div class="raffle-result-panel"><div class="raffle-lose-title">😭 残念！今回はハズレ！</div><p class="raffle-message">今回、景品には追いつけませんでした🏃💨<br><strong>でも、動き続ければ次のチャンスがやってきます（笑）</strong><br><strong>KEEP MOVING FORWARD！</strong></p></div>`;
 }
 function rafflePublishedHtml(testBadge=""){
@@ -3104,7 +3107,7 @@ function renderUpperHalfRaffle(){
   const banner=document.getElementById("upperHalfRaffleBanner"),countdown=document.getElementById("upperHalfRaffleCountdown"),content=document.getElementById("upperHalfRaffleContent");if(!banner)return;
   const canView=raffleCanView();banner.classList.toggle("hidden",!canView);if(!canView)return;
   const stage=raffleStage();
-  if(stage==="before")countdown.innerHTML=raffleCountdownHtml();else if(stage==="draw")countdown.innerHTML="<strong>🎁 抽選結果を確認できます！</strong>";else countdown.innerHTML="<strong>🎉 抽選結果発表！</strong>";
+  if(stage==="before")countdown.innerHTML=raffleCountdownHtml();else if(stage==="draw")countdown.innerHTML="<strong class=\"raffle-result-ready\">🎁 抽選結果を見る！</strong>";else countdown.innerHTML="<strong>🎉 抽選結果発表！</strong>";
   if(stage!=="before"&&!raffleIsTest()&&!raffleResultCache){ensureRaffleDrawn().then(renderUpperHalfRaffle);loadRaffleResult();}
   if(!content)return;
   const testBadge=raffleIsTest()?'<div class="raffle-test-badge">🧪 管理者テストモード</div>':"";
