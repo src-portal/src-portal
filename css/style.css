@@ -3859,3 +3859,24 @@ body{
 @media(max-width:480px){.raffle-banner.raffle-banner-image{border-radius:16px}.raffle-banner-live-countdown{left:15%;bottom:4.5%;width:44%;padding:3px 5px;border-radius:9px;font-size:clamp(9px,2.75vw,13px)}}
 
 /* Ver.1.9.7b: raffle countdown display omits seconds for a cleaner single-line mobile banner. */
+
+
+/* Ver.1.9.7c: two-line raffle countdown to prevent mobile wrapping. */
+.raffle-banner.raffle-banner-image{aspect-ratio:12/5}
+.raffle-banner-live-countdown{left:15.4%;bottom:4.7%;width:46.2%;min-height:29.2%;display:flex;flex-direction:column;gap:1px;align-items:center;justify-content:center;padding:3px 8px;border-radius:14px;line-height:1.08;white-space:nowrap}
+.raffle-countdown-label{display:block;font-size:.92em;font-weight:900;color:#111}
+.raffle-banner-live-countdown .raffle-countdown-value{display:block;font-size:1.22em;color:#e10b18;white-space:nowrap}
+@media(max-width:480px){.raffle-banner-live-countdown{left:15.3%;bottom:4.6%;width:46.3%;min-height:29.4%;padding:2px 4px;border-radius:9px;font-size:clamp(8px,2.65vw,12px);gap:2px}.raffle-countdown-label{font-size:.92em}.raffle-banner-live-countdown .raffle-countdown-value{font-size:1.16em}}
+
+/* Ver.1.9.7d: Lucky Chance copy, raffle detail transition, admin eligibility/group check */
+.raffle-banner-title-overlay{position:absolute;left:2.6%;top:25%;width:64%;height:28%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(90deg,rgba(255,238,91,.98),rgba(255,247,185,.98));transform:rotate(-1deg);z-index:2;pointer-events:none}
+.raffle-banner-title-overlay strong{font-size:clamp(20px,5.6vw,36px);font-weight:1000;color:#082c68;line-height:1;text-shadow:0 2px 0 #fff}
+.raffle-banner-title-overlay span{margin-top:5px;font-size:clamp(10px,2.8vw,17px);font-weight:900;color:#7b2b00}
+#upperHalfRaffleModal{opacity:0;transition:opacity .22s ease}
+#upperHalfRaffleModal .raffle-modal-card{opacity:0;transform:scale(.94) translateY(8px);transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .22s ease}
+#upperHalfRaffleModal.raffle-modal-open{opacity:1}
+#upperHalfRaffleModal.raffle-modal-open .raffle-modal-card{opacity:1;transform:scale(1) translateY(0)}
+.raffle-admin-check-button{width:100%;margin:10px 0 2px;border:1px solid #cfd8e3;border-radius:12px;padding:11px;background:#f7f9fb;color:#243b53;font-weight:900}
+.raffle-admin-modal-card{max-width:520px}.raffle-admin-row{display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #e8edf3}.raffle-admin-row>div{min-width:0}.raffle-admin-row strong{display:block}.raffle-admin-row small{display:block;margin-top:2px;color:#687385}.raffle-admin-row .admin-input{margin:0;padding:9px}.raffle-admin-row.excluded{opacity:.65}.raffle-admin-row.excluded span{text-align:center;font-weight:900}
+@media(max-width:480px){.raffle-banner-title-overlay{left:2.5%;top:25.5%;width:64.5%;height:27.5%}.raffle-banner-title-overlay strong{font-size:clamp(17px,5.3vw,27px)}.raffle-banner-title-overlay span{font-size:clamp(9px,2.65vw,14px)}.raffle-admin-row{grid-template-columns:minmax(0,1fr) 125px}}
+@media(prefers-reduced-motion:reduce){#upperHalfRaffleModal,#upperHalfRaffleModal .raffle-modal-card{transition:none}}
