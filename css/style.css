@@ -4075,3 +4075,17 @@ body{
   .raffle-win-title{font-size:20px}
   .raffle-brag-message{font-size:15px}
 }
+
+/* Ver.1.9.7l: enlarge the post-draw banner call-to-action only. */
+.raffle-banner-live-countdown .raffle-result-ready{
+  font-size:1.90em !important;
+  font-weight:1000;
+  letter-spacing:-.035em;
+  line-height:1;
+  white-space:nowrap;
+}
+@media(max-width:480px){
+  .raffle-banner-live-countdown .raffle-result-ready{
+    font-size:1.78em !important;
+  }
+}
