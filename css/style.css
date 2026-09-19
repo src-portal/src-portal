@@ -4089,3 +4089,9 @@ body{
     font-size:1.78em !important;
   }
 }
+
+/* Ver.1.9.7m: winner shortName on the winning screen. */
+.raffle-winner-name{display:table;width:auto;max-width:100%;box-sizing:border-box;margin:12px auto 8px;padding:8px 22px;border-radius:14px;background:#fff0f2;color:#08346f;font-size:clamp(24px,7vw,34px);font-weight:1000;line-height:1.2;white-space:nowrap}
+.raffle-winner-name span{font-size:.58em;margin-left:2px}
+.raffle-winner-name.is-medium{font-size:clamp(21px,6vw,30px);padding-left:16px;padding-right:16px}
+.raffle-winner-name.is-long{font-size:clamp(18px,5.2vw,26px);padding-left:12px;padding-right:12px}
