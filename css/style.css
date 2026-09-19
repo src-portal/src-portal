@@ -4095,3 +4095,19 @@ body{
 .raffle-winner-name span{font-size:.58em;margin-left:2px}
 .raffle-winner-name.is-medium{font-size:clamp(21px,6vw,30px);padding-left:16px;padding-right:16px}
 .raffle-winner-name.is-long{font-size:clamp(18px,5.2vw,26px);padding-left:12px;padding-right:12px}
+
+
+/* Ver.1.9.7n: published banner CTA matches the draw-result CTA; add prize images to the published results. */
+.raffle-banner-live-countdown .raffle-published-ready{
+  font-size:1.90em !important;
+  font-weight:1000;
+  letter-spacing:-.055em;
+  line-height:1;
+  white-space:nowrap;
+}
+.raffle-published-winner{display:flex;flex-direction:column;align-items:center;gap:8px}
+.raffle-published-prize-image{display:block;width:min(78%,240px);height:150px;object-fit:contain;margin:6px auto 2px}
+@media(max-width:480px){
+  .raffle-banner-live-countdown .raffle-published-ready{font-size:1.78em !important}
+  .raffle-published-prize-image{width:min(82%,220px);height:135px}
+}
