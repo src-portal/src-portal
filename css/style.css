@@ -4043,7 +4043,7 @@ body{
   #upperHalfRaffleModal .raffle-date-row{gap:4px;font-size:clamp(16px,4.25vw,20px)}
 }
 
-/* Ver.1.9.7j: keep raffle announcement dates on one line on iPhone. */
+/* Ver.1.9.7k: keep raffle announcement dates on one line on iPhone. */
 #upperHalfRaffleModal .raffle-date-row span{
   white-space:nowrap;
   font-size:.96em;
@@ -4058,4 +4058,20 @@ body{
     font-size:.94em;
     letter-spacing:-.055em;
   }
+}
+
+
+/* Ver.1.9.7k: raffle result readability and winning prize presentation */
+.raffle-result-ready{display:block;font-size:1.38em;font-weight:1000;color:#d20b18;white-space:nowrap;line-height:1.05}
+.raffle-win-title{white-space:nowrap;font-size:clamp(21px,6.2vw,30px);letter-spacing:-.035em}
+.raffle-result-prize{font-size:clamp(22px,6vw,30px);line-height:1.25;margin:16px 0 10px}
+.raffle-result-hit{display:inline-block;color:#e10b18;font-size:1.45em;margin-top:5px}
+.raffle-result-image{display:block;width:min(72%,300px);max-height:260px;object-fit:contain;margin:8px auto 14px}
+.raffle-delivery-message{font-size:17px;font-weight:800;margin:8px 0 16px}
+.raffle-brag-message{font-size:16px;line-height:1.65;margin:0 0 14px}
+.raffle-board-button{font-size:18px;padding:15px}
+@media(max-width:380px){
+  .raffle-result-ready{font-size:1.25em}
+  .raffle-win-title{font-size:20px}
+  .raffle-brag-message{font-size:15px}
 }
