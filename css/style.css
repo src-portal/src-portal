@@ -4140,3 +4140,9 @@ body{
     padding:1px 3px !important;
   }
 }
+
+/* Ver.1.9.7r: move the live banner overlay slightly downward so
+   「抽選開始まで」 stays fully inside the baked white base. */
+.raffle-banner.raffle-banner-image .raffle-banner-live-countdown{
+  transform:translateY(5%) !important;
+}
