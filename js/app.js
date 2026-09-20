@@ -3074,6 +3074,28 @@ async function ensureRaffleDrawn(){
     const snap=await getDoc(RAFFLE_DOC);raffleResultCache=snap.exists()?snap.data():null;
   }catch(e){console.error("raffle draw error",e);}
 }
+
+function runRaffleRehearsal(){
+  if(!isCurrentAdmin())return;
+  const eligible=raffleEligibleMembers();
+  const groupA=eligible.filter(m=>raffleGroupFor(m.name)==="A");
+  const groupB=eligible.filter(m=>raffleGroupFor(m.name)==="B");
+  const ungrouped=eligible.filter(m=>!raffleGroupFor(m.name));
+  if(eligible.length<2){alert("抽選対象者が2名未満のため、リハーサルできません。");return;}
+  if(ungrouped.length||!groupA.length||!groupB.length){
+    alert(ungrouped.length?`グループ未設定の抽選対象者が ${ungrouped.length}名います。\n先に「抽選対象・グループを確認」で設定してください。`:"グループA・Bの両方に1名以上設定してください。");return;
+  }
+  const winnerA=groupA[Math.floor(Math.random()*groupA.length)];
+  const winnerB=groupB[Math.floor(Math.random()*groupB.length)];
+  const rollerFirst=Math.random()<0.5;
+  const roller=rollerFirst?winnerA:winnerB;
+  const earbuds=rollerFirst?winnerB:winnerA;
+  const content=document.getElementById("raffleRehearsalContent");
+  if(!content)return;
+  content.innerHTML=`<div class="raffle-test-badge">🧪 リハーサル結果（本番未保存）</div><p class="raffle-rehearsal-summary">抽選対象 <strong>${eligible.length}名</strong> ／ グループA ${groupA.length}名 ／ グループB ${groupB.length}名</p><div class="raffle-winners raffle-rehearsal-winners"><div class="raffle-winner raffle-published-winner">🎁 筋膜ローラー<img class="raffle-published-prize-image" src="images/raffle-roller.png" alt="筋膜ローラー"><strong>${escapeHtml(memberShortName(roller.name))}</strong><small>（${raffleGroupFor(roller.name)}）</small></div><div class="raffle-winner raffle-published-winner">🎧 イヤーカフイヤホン<img class="raffle-published-prize-image" src="images/raffle-earbuds.png" alt="イヤーカフイヤホン"><strong>${escapeHtml(memberShortName(earbuds.name))}</strong><small>（${raffleGroupFor(earbuds.name)}）</small></div></div><p class="raffle-rehearsal-ok">✓ A・Bから各1名を抽選し、賞品をランダムに割り当てました。</p>`;
+  show(document.getElementById("raffleRehearsalModal"));
+}
+
 function testRaffleResult(){
   const result=raffleTestState().result||"lose";
   if(result==="roller")return {win:true,prize:"筋膜ローラー",shortName:memberShortName(currentUser||"")};
@@ -4875,6 +4897,9 @@ upperHalfRaffleBanner?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key=
 closeUpperHalfRaffleButton?.addEventListener("click",()=>{upperHalfRaffleModal?.classList.remove("raffle-modal-open");window.setTimeout(()=>hide(upperHalfRaffleModal),220);});
 document.getElementById("closeRaffleAdminEligibilityButton")?.addEventListener("click",()=>hide(document.getElementById("raffleAdminEligibilityModal")));
 document.getElementById("saveRaffleGroupsButton")?.addEventListener("click",saveRaffleGroups);
+document.getElementById("raffleRehearsalButton")?.addEventListener("click",runRaffleRehearsal);
+document.getElementById("raffleRehearsalAgainButton")?.addEventListener("click",runRaffleRehearsal);
+document.getElementById("closeRaffleRehearsalButton")?.addEventListener("click",()=>hide(document.getElementById("raffleRehearsalModal")));
 raffleTestModeCheck?.addEventListener("change",()=>{const s=raffleTestState();s.enabled=raffleTestModeCheck.checked;s.stage=raffleTestStageSelect.value;s.result=raffleTestResultSelect.value;raffleResultRevealed=false;saveRaffleTestState(s);});
 raffleTestStageSelect?.addEventListener("change",()=>{const s=raffleTestState();s.stage=raffleTestStageSelect.value;s.enabled=raffleTestModeCheck.checked;s.result=raffleTestResultSelect.value;raffleResultRevealed=false;saveRaffleTestState(s);});
 raffleTestResultSelect?.addEventListener("change",()=>{const s=raffleTestState();s.result=raffleTestResultSelect.value;s.enabled=raffleTestModeCheck.checked;s.stage=raffleTestStageSelect.value;raffleResultRevealed=false;saveRaffleTestState(s);});
