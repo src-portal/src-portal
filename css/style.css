@@ -4111,3 +4111,13 @@ body{
   .raffle-banner-live-countdown .raffle-published-ready{font-size:1.78em !important}
   .raffle-published-prize-image{width:min(82%,220px);height:135px}
 }
+
+
+/* Ver.1.9.7o: admin-only, local rehearsal of the production raffle. */
+.raffle-rehearsal-button{width:100%;margin-top:10px;font-weight:900}
+.raffle-rehearsal-modal-card{width:min(94vw,520px)}
+.raffle-rehearsal-summary{text-align:center;font-size:16px;line-height:1.6;margin:12px 0 16px}
+.raffle-rehearsal-winners{margin:10px 0 14px}
+.raffle-rehearsal-winners .raffle-published-winner small{display:block;margin-top:4px;color:#687385;font-weight:800}
+.raffle-rehearsal-ok{text-align:center;font-size:15px;line-height:1.55;font-weight:900;color:#1f6b3a;margin:12px 0 16px}
+.raffle-rehearsal-note{text-align:center}
