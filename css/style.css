@@ -4111,3 +4111,32 @@ body{
   .raffle-banner-live-countdown .raffle-published-ready{font-size:1.78em !important}
   .raffle-published-prize-image{width:min(82%,220px);height:135px}
 }
+
+/* Ver.1.9.7q: approved banner artwork with baked blank countdown base.
+   Only the live countdown/result text is overlaid by the app. */
+.raffle-banner.raffle-banner-image{
+  aspect-ratio:1992 / 736 !important;
+}
+.raffle-banner.raffle-banner-image .raffle-banner-live-countdown{
+  left:12.55% !important;
+  bottom:5.30% !important;
+  width:46.05% !important;
+  min-height:27.20% !important;
+  background:transparent !important;
+  border-radius:0 !important;
+  padding:2px 8px !important;
+}
+@media(max-width:480px){
+  .raffle-banner.raffle-banner-image{
+    aspect-ratio:1992 / 736 !important;
+  }
+  .raffle-banner.raffle-banner-image .raffle-banner-live-countdown{
+    left:12.55% !important;
+    bottom:5.30% !important;
+    width:46.05% !important;
+    min-height:27.20% !important;
+    background:transparent !important;
+    border-radius:0 !important;
+    padding:1px 3px !important;
+  }
+}
