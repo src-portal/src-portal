@@ -3118,7 +3118,19 @@ function renderUpperHalfRaffle(){
   if(raffleResultRevealed){content.innerHTML=raffleResultHtml(currentRaffleResult(),testBadge);wireRaffleBoardButton();return;}
   content.innerHTML=raffleInfoHtml(testBadge)+'<button class="raffle-result-button" id="raffleRevealButton" type="button">🎁 抽選結果を見る</button>';
   wireRaffleAdminCheckButton();
-  document.getElementById("raffleRevealButton")?.addEventListener("click",()=>{raffleResultRevealed=true;renderUpperHalfRaffle();});
+  document.getElementById("raffleRevealButton")?.addEventListener("click",()=>{
+    const revealContent=document.getElementById("upperHalfRaffleContent");
+    if(!revealContent)return;
+    revealContent.innerHTML=`${testBadge}<div class="raffle-suspense-panel" aria-live="polite"><div class="raffle-suspense-gift">🎁</div><div class="raffle-suspense-text" id="raffleSuspenseText">抽選結果を確認しています…</div><div class="raffle-suspense-dots"><span></span><span></span><span></span></div></div>`;
+    window.setTimeout(()=>{
+      const text=document.getElementById("raffleSuspenseText");
+      if(text)text.textContent="あなたの結果は……";
+    },1300);
+    window.setTimeout(()=>{
+      raffleResultRevealed=true;
+      renderUpperHalfRaffle();
+    },2500);
+  });
 }
 function wireRaffleBoardButton(){document.getElementById("raffleGoBoardButton")?.addEventListener("click",()=>{hide(document.getElementById("upperHalfRaffleModal"));document.getElementById("messageBoardCard")?.click();});}
 
