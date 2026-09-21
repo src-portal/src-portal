@@ -2969,6 +2969,7 @@ const RAFFLE_TEST_KEY="srcUpperHalfRaffle2026Test";
 let raffleResultCache=null;
 let raffleResultLoading=false;
 let raffleResultRevealed=false;
+let raffleRevealAnimating=false;
 function raffleTestState(){try{return JSON.parse(localStorage.getItem(RAFFLE_TEST_KEY)||"{}")||{};}catch{return {};}}
 function saveRaffleTestState(next){localStorage.setItem(RAFFLE_TEST_KEY,JSON.stringify(next));renderUpperHalfRaffle();}
 function loadRaffleTestControls(){
@@ -3116,17 +3117,21 @@ function renderUpperHalfRaffle(){
   if(stage==="before"){content.innerHTML=raffleInfoHtml(testBadge)+`<div class="raffle-date-box" style="text-align:center">${raffleCountdownHtml()}</div>`;wireRaffleAdminCheckButton();return;}
   if(stage==="published"){content.innerHTML=rafflePublishedHtml(testBadge);return;}
   if(raffleResultRevealed){content.innerHTML=raffleResultHtml(currentRaffleResult(),testBadge);wireRaffleBoardButton();return;}
+  // Ver.1.9.7t: keep the suspense screen intact while the 1-second periodic render runs.
+  if(raffleRevealAnimating)return;
   content.innerHTML=raffleInfoHtml(testBadge)+'<button class="raffle-result-button" id="raffleRevealButton" type="button">🎁 抽選結果を見る</button>';
   wireRaffleAdminCheckButton();
   document.getElementById("raffleRevealButton")?.addEventListener("click",()=>{
     const revealContent=document.getElementById("upperHalfRaffleContent");
     if(!revealContent)return;
+    raffleRevealAnimating=true;
     revealContent.innerHTML=`${testBadge}<div class="raffle-suspense-panel" aria-live="polite"><div class="raffle-suspense-gift">🎁</div><div class="raffle-suspense-text" id="raffleSuspenseText">抽選結果を確認しています…</div><div class="raffle-suspense-dots"><span></span><span></span><span></span></div></div>`;
     window.setTimeout(()=>{
       const text=document.getElementById("raffleSuspenseText");
       if(text)text.textContent="あなたの結果は……";
     },1300);
     window.setTimeout(()=>{
+      raffleRevealAnimating=false;
       raffleResultRevealed=true;
       renderUpperHalfRaffle();
     },2500);
@@ -4882,15 +4887,15 @@ adminSystemSettingsButton.onclick=()=>{
 closeSystemSettingsButton.onclick=()=>closeAdminChildModal(systemSettingsModal);
 saveSystemSettingsButton.onclick=saveSystemSettings;
 const upperHalfRaffleBanner=document.getElementById("upperHalfRaffleBanner"),upperHalfRaffleModal=document.getElementById("upperHalfRaffleModal"),closeUpperHalfRaffleButton=document.getElementById("closeUpperHalfRaffleButton");
-upperHalfRaffleBanner?.addEventListener("click",()=>{raffleResultRevealed=false;renderUpperHalfRaffle();show(upperHalfRaffleModal);requestAnimationFrame(()=>upperHalfRaffleModal?.classList.add("raffle-modal-open"));});
+upperHalfRaffleBanner?.addEventListener("click",()=>{raffleRevealAnimating=false;raffleResultRevealed=false;renderUpperHalfRaffle();show(upperHalfRaffleModal);requestAnimationFrame(()=>upperHalfRaffleModal?.classList.add("raffle-modal-open"));});
 upperHalfRaffleBanner?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();upperHalfRaffleBanner.click();}});
 closeUpperHalfRaffleButton?.addEventListener("click",()=>{upperHalfRaffleModal?.classList.remove("raffle-modal-open");window.setTimeout(()=>hide(upperHalfRaffleModal),220);});
 document.getElementById("closeRaffleAdminEligibilityButton")?.addEventListener("click",()=>hide(document.getElementById("raffleAdminEligibilityModal")));
 document.getElementById("saveRaffleGroupsButton")?.addEventListener("click",saveRaffleGroups);
-raffleTestModeCheck?.addEventListener("change",()=>{const s=raffleTestState();s.enabled=raffleTestModeCheck.checked;s.stage=raffleTestStageSelect.value;s.result=raffleTestResultSelect.value;raffleResultRevealed=false;saveRaffleTestState(s);});
-raffleTestStageSelect?.addEventListener("change",()=>{const s=raffleTestState();s.stage=raffleTestStageSelect.value;s.enabled=raffleTestModeCheck.checked;s.result=raffleTestResultSelect.value;raffleResultRevealed=false;saveRaffleTestState(s);});
-raffleTestResultSelect?.addEventListener("change",()=>{const s=raffleTestState();s.result=raffleTestResultSelect.value;s.enabled=raffleTestModeCheck.checked;s.stage=raffleTestStageSelect.value;raffleResultRevealed=false;saveRaffleTestState(s);});
-raffleTestResetButton?.addEventListener("click",()=>{localStorage.removeItem(RAFFLE_TEST_KEY);raffleResultRevealed=false;loadRaffleTestControls();renderUpperHalfRaffle();alert("抽選会テストをリセットしました。");});
+raffleTestModeCheck?.addEventListener("change",()=>{const s=raffleTestState();s.enabled=raffleTestModeCheck.checked;s.stage=raffleTestStageSelect.value;s.result=raffleTestResultSelect.value;raffleRevealAnimating=false;raffleResultRevealed=false;saveRaffleTestState(s);});
+raffleTestStageSelect?.addEventListener("change",()=>{const s=raffleTestState();s.stage=raffleTestStageSelect.value;s.enabled=raffleTestModeCheck.checked;s.result=raffleTestResultSelect.value;raffleRevealAnimating=false;raffleResultRevealed=false;saveRaffleTestState(s);});
+raffleTestResultSelect?.addEventListener("change",()=>{const s=raffleTestState();s.result=raffleTestResultSelect.value;s.enabled=raffleTestModeCheck.checked;s.stage=raffleTestStageSelect.value;raffleRevealAnimating=false;raffleResultRevealed=false;saveRaffleTestState(s);});
+raffleTestResetButton?.addEventListener("click",()=>{localStorage.removeItem(RAFFLE_TEST_KEY);raffleRevealAnimating=false;raffleResultRevealed=false;loadRaffleTestControls();renderUpperHalfRaffle();alert("抽選会テストをリセットしました。");});
 window.setInterval(()=>{if(raffleCanView())renderUpperHalfRaffle();},1000);
 adminAnnouncementManageButton.onclick=()=>{renderAdminAnnouncements();openAdminChildModal(announcementManageModal);};
 closeAnnouncementManageButton.onclick=()=>closeAdminChildModal(announcementManageModal);
