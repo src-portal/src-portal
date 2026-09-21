@@ -3129,12 +3129,12 @@ function renderUpperHalfRaffle(){
     window.setTimeout(()=>{
       const text=document.getElementById("raffleSuspenseText");
       if(text)text.textContent="あなたの結果は……";
-    },1300);
+    },4000);
     window.setTimeout(()=>{
       raffleRevealAnimating=false;
       raffleResultRevealed=true;
       renderUpperHalfRaffle();
-    },2500);
+    },7500);
   });
 }
 function wireRaffleBoardButton(){document.getElementById("raffleGoBoardButton")?.addEventListener("click",()=>{hide(document.getElementById("upperHalfRaffleModal"));document.getElementById("messageBoardCard")?.click();});}
