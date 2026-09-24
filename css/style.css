@@ -4189,3 +4189,25 @@ body{
 @keyframes raffleDotSuspense{0%,100%{opacity:.25;transform:scale(.75)}50%{opacity:1;transform:scale(1.15)}}
 @media(max-width:380px){.raffle-suspense-text{font-size:20px}.raffle-suspense-gift{font-size:58px}}
 @media(prefers-reduced-motion:reduce){.raffle-suspense-gift,.raffle-suspense-dots span{animation:none}}
+
+
+/* Ver.1.9.7w: emphasize the public raffle eligibility condition. */
+#upperHalfRaffleModal .raffle-target-highlight{
+  margin:0 0 15px;
+  padding:12px 12px 13px;
+  border:2px solid #f1c84b;
+  border-radius:14px;
+  background:#fff8d7;
+  text-align:center;
+  color:#172b4d;
+}
+#upperHalfRaffleModal .raffle-target-title{
+  margin-bottom:5px;
+  font-size:clamp(17px,4.2vw,21px);
+  font-weight:1000;
+}
+#upperHalfRaffleModal .raffle-target-text{
+  font-size:clamp(16px,4vw,20px);
+  line-height:1.45;
+  font-weight:900;
+}
