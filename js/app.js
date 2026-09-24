@@ -3007,17 +3007,18 @@ function raffleActivityNames(){
   });
   return names;
 }
+function raffleGroupFor(name){const value=systemSettings.raffleGroups?.[name];return value==="A"||value==="B"||value==="EXCLUDED"?value:"";}
 function raffleEligibilityRows(){
   const active=memberRecords.filter(m=>m.active!==false);
   const activityNames=raffleActivityNames();
   return active.map(member=>{
     const adminExcluded=member.name==="堀部";
     const hasActivity=activityNames.has(member.name);
-    return {member,eligible:hasActivity&&!adminExcluded,reason:adminExcluded?"管理者（抽選対象外）":hasActivity?"対象":"上期の活動実績なし"};
+    const manualExcluded=hasActivity&&!adminExcluded&&raffleGroupFor(member.name)==="EXCLUDED";
+    return {member,eligible:hasActivity&&!adminExcluded&&!manualExcluded,hasActivity,manualExcluded,reason:adminExcluded?"管理者（抽選対象外）":!hasActivity?"上期の活動実績なし":manualExcluded?"手動設定（抽選対象外）":"対象"};
   });
 }
 function raffleEligibleMembers(){return raffleEligibilityRows().filter(row=>row.eligible).map(row=>row.member);}
-function raffleGroupFor(name){const value=systemSettings.raffleGroups?.[name];return value==="A"||value==="B"?value:"";}
 function raffleAdminEligibilityHtml(){
   if(!isCurrentAdmin())return "";
   return '<button class="raffle-admin-check-button" id="raffleAdminCheckButton" type="button">🔐 抽選対象・グループを確認</button>';
@@ -3025,26 +3026,29 @@ function raffleAdminEligibilityHtml(){
 function renderRaffleAdminCheck(){
   const list=document.getElementById("raffleAdminEligibilityList");if(!list)return;
   const rows=raffleEligibilityRows();
-  list.innerHTML=rows.map(({member,eligible,reason})=>{
+  list.innerHTML=rows.map(({member,eligible,hasActivity,manualExcluded,reason})=>{
     const label=escapeHtml(memberShortName(member.name));
-    if(!eligible)return `<div class="raffle-admin-row excluded"><div><strong>${label}</strong><small>対象外：${escapeHtml(reason)}</small></div><span>―</span></div>`;
+    const adminExcluded=member.name==="堀部";
+    if(adminExcluded||!hasActivity)return `<div class="raffle-admin-row excluded"><div><strong>${label}</strong><small>対象外：${escapeHtml(reason)}</small></div><span>―</span></div>`;
     const group=raffleGroupFor(member.name);
-    return `<div class="raffle-admin-row"><div><strong>${label}</strong><small>抽選対象</small></div><select class="admin-input raffle-group-select" data-name="${escapeHtml(member.name)}"><option value=""${group?"":" selected"}>未設定</option><option value="A"${group==="A"?" selected":""}>グループA</option><option value="B"${group==="B"?" selected":""}>グループB</option></select></div>`;
+    const status=manualExcluded?"対象外（手動設定）":"抽選対象";
+    return `<div class="raffle-admin-row${manualExcluded?" excluded":""}"><div><strong>${label}</strong><small>${status}</small></div><select class="admin-input raffle-group-select" data-name="${escapeHtml(member.name)}"><option value=""${group?"":" selected"}>未設定</option><option value="A"${group==="A"?" selected":""}>グループA</option><option value="B"${group==="B"?" selected":""}>グループB</option><option value="EXCLUDED"${group==="EXCLUDED"?" selected":""}>対象外</option></select></div>`;
   }).join("");
   const eligible=rows.filter(row=>row.eligible).length,excluded=rows.length-eligible;
   const summary=document.getElementById("raffleAdminEligibilitySummary");if(summary)summary.textContent=`抽選対象 ${eligible}名 ／ 対象外 ${excluded}名`;
 }
 async function saveRaffleGroups(){
-  const eligible=raffleEligibleMembers();const groups={};
+  const rows=raffleEligibilityRows();const groups={};
   document.querySelectorAll("#raffleAdminEligibilityList .raffle-group-select").forEach(select=>{if(select.value)groups[select.dataset.name]=select.value;});
-  const missing=eligible.filter(member=>!groups[member.name]);
-  const a=eligible.filter(member=>groups[member.name]==="A"),b=eligible.filter(member=>groups[member.name]==="B");
-  if(missing.length){alert(`グループ未設定の抽選対象者が ${missing.length}名います。`);return;}
+  const candidates=rows.filter(row=>row.hasActivity&&row.member.name!=="堀部").map(row=>row.member);
+  const missing=candidates.filter(member=>!groups[member.name]);
+  const a=candidates.filter(member=>groups[member.name]==="A"),b=candidates.filter(member=>groups[member.name]==="B"),excluded=candidates.filter(member=>groups[member.name]==="EXCLUDED");
+  if(missing.length){alert(`グループ未設定の対象候補者が ${missing.length}名います。`);return;}
   if(!a.length||!b.length){alert("グループA・Bの両方に1名以上設定してください。");return;}
   try{
     await setDoc(doc(db,"settings","system"),{raffleGroups:groups,updatedAt:serverTimestamp()},{merge:true});
     systemSettings.raffleGroups=groups;renderRaffleAdminCheck();
-    alert(`抽選グループを保存しました。\nグループA ${a.length}名 ／ グループB ${b.length}名`);
+    alert(`抽選グループを保存しました。\nグループA ${a.length}名 ／ グループB ${b.length}名 ／ 対象外 ${excluded.length}名`);
   }catch(e){console.error(e);alert("抽選グループの保存に失敗しました。Firestoreルールを確認してください。");}
 }
 function wireRaffleAdminCheckButton(){document.getElementById("raffleAdminCheckButton")?.addEventListener("click",()=>{renderRaffleAdminCheck();show(document.getElementById("raffleAdminEligibilityModal"));});}
