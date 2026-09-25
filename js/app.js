@@ -4334,8 +4334,26 @@ function exportActivityCsv(){
       item.total+=1;
     });
   });
+  // Ver.1.9.7y: イベント参加実績とKYRO累積距離を同じ一覧で比較できるようにする。
+  // KYROだけ活動しているメンバーも一覧から漏れないよう、KYROデータ保有者を集計対象へ加える。
+  memberRecords.forEach(member=>{
+    const distance=Number(member?.kyroDistanceKm);
+    if(member?.kyroMember&&Number.isFinite(distance)&&!participantSummary.has(member.name)){
+      participantSummary.set(member.name,{name:member.name,run:0,gym:0,other:0,total:0});
+    }
+  });
   const orderMap=new Map(memberRecords.map((m,index)=>[m.name,index]));
-  const summaryRows=[...participantSummary.values()].sort((a,b)=>
+  const memberMap=new Map(memberRecords.map(member=>[member.name,member]));
+  const summaryRows=[...participantSummary.values()].map(item=>{
+    const member=memberMap.get(item.name);
+    const distance=Number(member?.kyroDistanceKm);
+    const rank=Number(member?.kyroDistanceRank);
+    return {
+      ...item,
+      kyroDistanceKm:member?.kyroMember&&Number.isFinite(distance)?distance:null,
+      kyroRank:member?.kyroMember&&Number.isFinite(rank)&&rank>0?rank:null
+    };
+  }).sort((a,b)=>
     b.total-a.total||
     (orderMap.has(a.name)?orderMap.get(a.name):99999)-(orderMap.has(b.name)?orderMap.get(b.name):99999)||
     a.name.localeCompare(b.name,"ja")
@@ -4351,14 +4369,16 @@ function exportActivityCsv(){
       row.participants.map(memberShortName).join("、")
     ].map(activityCsvEscape).join(",")),
     "",
-    ["参加者別参加回数"].map(activityCsvEscape).join(","),
-    ["参加者","ラン＆ウォーク","ジム","その他","合計"].map(activityCsvEscape).join(","),
+    ["参加者別参加回数・KYRO実績"].map(activityCsvEscape).join(","),
+    ["参加者","ラン＆ウォーク","ジム","その他","イベント参加回数","KYRO累計km","KYROランク"].map(activityCsvEscape).join(","),
     ...summaryRows.map(item=>[
       memberShortName(item.name),
       item.run,
       item.gym,
       item.other,
-      item.total
+      item.total,
+      item.kyroDistanceKm===null?"":item.kyroDistanceKm.toFixed(2),
+      item.kyroRank===null?"":`${item.kyroRank}位`
     ].map(activityCsvEscape).join(","))
   ];
   // Excelで日本語が文字化けしにくいUTF-8 BOM付きCSV
