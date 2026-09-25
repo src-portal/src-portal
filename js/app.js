@@ -4319,6 +4319,28 @@ function exportActivityCsv(){
     alert("指定期間に書き出せる活動実績がありません。\n（開催済み・参加者1名以上・中止以外が対象です）");
     return;
   }
+  // Ver.1.9.7x: イベント別明細に加え、指定期間の参加者別参加回数を同じCSVの後半へ出力する。
+  // 既に端末へ読み込み済みのrowsだけを集計するため、Firestore追加read/writeは発生しない。
+  const participantSummary=new Map();
+  rows.forEach(row=>{
+    row.participants.forEach(name=>{
+      if(!participantSummary.has(name)){
+        participantSummary.set(name,{name,run:0,gym:0,other:0,total:0});
+      }
+      const item=participantSummary.get(name);
+      if(row.type==="ラン＆ウォーク")item.run+=1;
+      else if(row.type==="ジム")item.gym+=1;
+      else item.other+=1;
+      item.total+=1;
+    });
+  });
+  const orderMap=new Map(memberRecords.map((m,index)=>[m.name,index]));
+  const summaryRows=[...participantSummary.values()].sort((a,b)=>
+    b.total-a.total||
+    (orderMap.has(a.name)?orderMap.get(a.name):99999)-(orderMap.has(b.name)?orderMap.get(b.name):99999)||
+    a.name.localeCompare(b.name,"ja")
+  );
+
   const lines=[
     ["開催日","種別","イベント名","参加人数","参加者"].map(activityCsvEscape).join(","),
     ...rows.map(row=>[
@@ -4327,6 +4349,16 @@ function exportActivityCsv(){
       row.title,
       row.count,
       row.participants.map(memberShortName).join("、")
+    ].map(activityCsvEscape).join(",")),
+    "",
+    ["参加者別参加回数"].map(activityCsvEscape).join(","),
+    ["参加者","ラン＆ウォーク","ジム","その他","合計"].map(activityCsvEscape).join(","),
+    ...summaryRows.map(item=>[
+      memberShortName(item.name),
+      item.run,
+      item.gym,
+      item.other,
+      item.total
     ].map(activityCsvEscape).join(","))
   ];
   // Excelで日本語が文字化けしにくいUTF-8 BOM付きCSV
