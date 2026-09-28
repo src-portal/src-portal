@@ -4351,7 +4351,8 @@ function exportActivityCsv(){
     return {
       ...item,
       kyroDistanceKm:member?.kyroMember&&Number.isFinite(distance)?distance:null,
-      kyroRank:member?.kyroMember&&Number.isFinite(rank)&&rank>0?rank:null
+      kyroRank:member?.kyroMember&&Number.isFinite(rank)&&rank>0?rank:null,
+      lastActiveAt:member?.lastActiveAt||null
     };
   }).sort((a,b)=>
     b.total-a.total||
@@ -4370,7 +4371,7 @@ function exportActivityCsv(){
     ].map(activityCsvEscape).join(",")),
     "",
     ["参加者別参加回数・KYRO実績"].map(activityCsvEscape).join(","),
-    ["参加者","ラン＆ウォーク","ジム","その他","イベント参加回数","KYRO累計km","KYROランク"].map(activityCsvEscape).join(","),
+    ["参加者","ラン＆ウォーク","ジム","その他","イベント参加回数","KYRO累計km","KYROランク","最終利用"].map(activityCsvEscape).join(","),
     ...summaryRows.map(item=>[
       memberShortName(item.name),
       item.run,
@@ -4378,7 +4379,8 @@ function exportActivityCsv(){
       item.other,
       item.total,
       item.kyroDistanceKm===null?"":item.kyroDistanceKm.toFixed(2),
-      item.kyroRank===null?"":`${item.kyroRank}位`
+      item.kyroRank===null?"":`${item.kyroRank}位`,
+      formatLastActiveAt(item.lastActiveAt)
     ].map(activityCsvEscape).join(","))
   ];
   // Excelで日本語が文字化けしにくいUTF-8 BOM付きCSV
