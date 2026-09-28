@@ -4352,6 +4352,8 @@ function exportActivityCsv(){
       ...item,
       kyroDistanceKm:member?.kyroMember&&Number.isFinite(distance)?distance:null,
       kyroRank:member?.kyroMember&&Number.isFinite(rank)&&rank>0?rank:null,
+      // Ver.1.9.7za: KYRO順位1〜21位を21〜1ptへ変換。順位なしは0pt。
+      kyroPoint:member?.kyroMember&&Number.isFinite(rank)&&rank>=1&&rank<=21?22-rank:0,
       lastActiveAt:member?.lastActiveAt||null
     };
   }).sort((a,b)=>
@@ -4371,7 +4373,7 @@ function exportActivityCsv(){
     ].map(activityCsvEscape).join(",")),
     "",
     ["参加者別参加回数・KYRO実績"].map(activityCsvEscape).join(","),
-    ["参加者","ラン＆ウォーク","ジム","その他","イベント参加回数","KYRO累計km","KYROランク","最終利用"].map(activityCsvEscape).join(","),
+    ["参加者","ラン＆ウォーク","ジム","その他","イベント参加回数","KYRO累計km","KYROランク","KYROポイント","最終利用"].map(activityCsvEscape).join(","),
     ...summaryRows.map(item=>[
       memberShortName(item.name),
       item.run,
@@ -4380,6 +4382,7 @@ function exportActivityCsv(){
       item.total,
       item.kyroDistanceKm===null?"":item.kyroDistanceKm.toFixed(2),
       item.kyroRank===null?"":`${item.kyroRank}位`,
+      item.kyroPoint,
       formatLastActiveAt(item.lastActiveAt)
     ].map(activityCsvEscape).join(","))
   ];
