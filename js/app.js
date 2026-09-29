@@ -2838,6 +2838,16 @@ const myActivityGrid=document.getElementById("myActivityGrid");
 const myActivityActiveDays=document.getElementById("myActivityActiveDays");
 const myActivityRunCount=document.getElementById("myActivityRunCount");
 const myActivityGymCount=document.getElementById("myActivityGymCount");
+const myActivityPersonalRunCount=document.getElementById("myActivityPersonalRunCount");
+const myActivityPersonalWalkCount=document.getElementById("myActivityPersonalWalkCount");
+const myActivityPersonalFitnessCount=document.getElementById("myActivityPersonalFitnessCount");
+const myActivityPersonalOtherCount=document.getElementById("myActivityPersonalOtherCount");
+const myActivityStampModal=document.getElementById("myActivityStampModal");
+const closeMyActivityStampModalButton=document.getElementById("closeMyActivityStampModalButton");
+const myActivityStampTitle=document.getElementById("myActivityStampTitle");
+const myActivityStampSrc=document.getElementById("myActivityStampSrc");
+const myActivityStampOptions=document.getElementById("myActivityStampOptions");
+const saveMyActivityStampButton=document.getElementById("saveMyActivityStampButton");
 const raffleTestModeCheck=document.getElementById("raffleTestModeCheck");
 const raffleTestStageSelect=document.getElementById("raffleTestStageSelect");
 const raffleTestResultSelect=document.getElementById("raffleTestResultSelect");
@@ -3538,6 +3548,11 @@ function seasonActivityStats(season){
 }
 
 let myActivityMonthOffset=0;
+const myActivityPersonalCache=new Map();
+let myActivityLoadedMonthKey="";
+let myActivitySelectedDate="";
+let myActivitySelectedTypes=new Set();
+const MY_ACTIVITY_TYPES=["run","walk","fitness","other"];
 function myActivityCanView(){
   const visibility=systemSettings.features?.myActivityVisibility||"admin";
   return visibility==="public"||isCurrentAdmin();
@@ -3546,7 +3561,37 @@ function myActivityMonthInfo(offset=0){
   const now=new Date();
   const base=new Date(now.getFullYear(),now.getMonth()+offset,1,12,0,0);
   const year=base.getFullYear(),month=base.getMonth();
-  return {year,month,start:toKey(year,month,1),end:toKey(year,month,new Date(year,month+1,0).getDate())};
+  return {year,month,monthKey:`${year}-${String(month+1).padStart(2,"0")}`,start:toKey(year,month,1),end:toKey(year,month,new Date(year,month+1,0).getDate())};
+}
+function myActivityCurrentMember(){
+  return memberRecords.find(member=>member.name===currentUser&&member.active!==false)||null;
+}
+function myActivityDocRef(info){
+  const member=myActivityCurrentMember();
+  return member?.id?doc(db,"myActivity",member.id,"months",info.monthKey):null;
+}
+function normalizeMyActivityPersonal(raw){
+  const out={};
+  if(!raw||typeof raw!=="object")return out;
+  Object.entries(raw).forEach(([date,types])=>{
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Array.isArray(types))return;
+    const clean=[...new Set(types.filter(type=>MY_ACTIVITY_TYPES.includes(type)))];
+    if(clean.length)out[date]=clean;
+  });
+  return out;
+}
+async function loadMyActivityMonth(info,{force=false}={}){
+  const ref=myActivityDocRef(info);
+  if(!ref){myActivityLoadedMonthKey=info.monthKey;myActivityPersonalCache.set(info.monthKey,{});return;}
+  if(!force&&myActivityPersonalCache.has(info.monthKey)){myActivityLoadedMonthKey=info.monthKey;return;}
+  try{
+    const snap=await getDocFromServer(ref);
+    myActivityPersonalCache.set(info.monthKey,snap.exists()?normalizeMyActivityPersonal(snap.data()?.activities):{});
+  }catch(e){
+    console.error("MY ACTIVITY read error",e);
+    if(!myActivityPersonalCache.has(info.monthKey))myActivityPersonalCache.set(info.monthKey,{});
+    alert("MY ACTIVITYの読み込みに失敗しました。通信状態を確認してください。");
+  }finally{myActivityLoadedMonthKey=info.monthKey;}
 }
 function myActivitySrcData(info){
   const todayKey=todayKeyJST();
@@ -3578,35 +3623,109 @@ function renderMyActivityCalendar(){
   if(!myActivityGrid)return;
   const info=myActivityMonthInfo(myActivityMonthOffset);
   const data=myActivitySrcData(info);
+  const personal=myActivityPersonalCache.get(info.monthKey)||{};
   myActivityMonthLabel.textContent=`${info.year}年${info.month+1}月`;
   myActivityGrid.innerHTML="";
   const firstBlank=(new Date(info.year,info.month,1).getDay()+6)%7;
   for(let i=0;i<firstBlank;i++){
     const blankCell=document.createElement("div");blankCell.className="my-activity-day my-activity-day-blank";myActivityGrid.appendChild(blankCell);
   }
+  const today=todayKeyJST();
   const days=new Date(info.year,info.month+1,0).getDate();
   for(let day=1;day<=days;day++){
     const key=toKey(info.year,info.month,day);
-    const cell=document.createElement("div");cell.className="my-activity-day";
-    if(key===todayKeyJST())cell.classList.add("today");
+    const cell=document.createElement("button");cell.type="button";cell.className="my-activity-day";
+    if(key===today)cell.classList.add("today");
+    if(key>today){cell.classList.add("future");cell.disabled=true;}
     const stamps=[];
     if(data.runDates.has(key))stamps.push('<span class="my-activity-stamp run my-activity-src-stamp" title="SRC ラン＆ウォーク">🏃<i class="my-activity-src-dot" aria-hidden="true"></i></span>');
     if(data.gymDates.has(key))stamps.push('<span class="my-activity-stamp gym my-activity-src-stamp" title="SRC フィットネス">🏋️<i class="my-activity-src-dot" aria-hidden="true"></i></span>');
+    (personal[key]||[]).forEach(type=>{
+      const icon={run:"🏃",walk:"🚶",fitness:"🏋️",other:"✨"}[type]||"";
+      if(icon)stamps.push(`<span class="my-activity-stamp personal" title="個人活動">${icon}</span>`);
+    });
     cell.innerHTML=`<span class="my-activity-date">${day}</span><span class="my-activity-stamps">${stamps.join("")}</span>`;
+    if(key<=today)cell.addEventListener("click",()=>openMyActivityStamp(key));
     myActivityGrid.appendChild(cell);
   }
-  const activeDates=new Set([...data.runDates,...data.gymDates]);
+  const personalDates=Object.keys(personal).filter(date=>date>=info.start&&date<=info.end&&date<=today&&(personal[date]||[]).length);
+  const activeDates=new Set([...data.runDates,...data.gymDates,...personalDates]);
   myActivityActiveDays.textContent=`${activeDates.size}日`;
   myActivityRunCount.textContent=`${data.runDates.size}回`;
   myActivityGymCount.textContent=`${data.gymDates.size}回`;
+  const countType=type=>Object.values(personal).filter(types=>Array.isArray(types)&&types.includes(type)).length;
+  if(myActivityPersonalRunCount)myActivityPersonalRunCount.textContent=`${countType("run")}回`;
+  if(myActivityPersonalWalkCount)myActivityPersonalWalkCount.textContent=`${countType("walk")}回`;
+  if(myActivityPersonalFitnessCount)myActivityPersonalFitnessCount.textContent=`${countType("fitness")}回`;
+  if(myActivityPersonalOtherCount)myActivityPersonalOtherCount.textContent=`${countType("other")}回`;
   const current=myActivityMonthInfo(0);
   myActivityNextMonth.disabled=info.start>=current.start;
 }
-function openMyActivity(){
+async function openMyActivity(){
   if(!myActivityCanView())return;
   myActivityMonthOffset=0;
+  const info=myActivityMonthInfo(0);
+  await loadMyActivityMonth(info,{force:true});
   renderMyActivityCalendar();
   show(myActivityModal);
+}
+async function changeMyActivityMonth(delta){
+  const nextOffset=myActivityMonthOffset+delta;
+  if(nextOffset>0)return;
+  myActivityMonthOffset=nextOffset;
+  const info=myActivityMonthInfo(myActivityMonthOffset);
+  await loadMyActivityMonth(info);
+  renderMyActivityCalendar();
+}
+function openMyActivityStamp(dateKey){
+  if(!dateKey||dateKey>todayKeyJST())return;
+  const info=myActivityMonthInfo(myActivityMonthOffset);
+  const personal=myActivityPersonalCache.get(info.monthKey)||{};
+  myActivitySelectedDate=dateKey;
+  myActivitySelectedTypes=new Set(personal[dateKey]||[]);
+  const [y,m,d]=dateKey.split("-").map(Number);
+  if(myActivityStampTitle)myActivityStampTitle.textContent=`${m}月${d}日のMY ACTIVITY`;
+  const src=myActivitySrcData(info),srcLabels=[];
+  if(src.runDates.has(dateKey))srcLabels.push('🏃<i class="my-activity-src-dot" aria-hidden="true"></i> SRC ラン＆ウォーク');
+  if(src.gymDates.has(dateKey))srcLabels.push('🏋️<i class="my-activity-src-dot" aria-hidden="true"></i> SRC フィットネス');
+  if(myActivityStampSrc){
+    myActivityStampSrc.innerHTML=srcLabels.length?`<strong>SRC活動</strong><div>${srcLabels.join("　")}</div>`:"";
+    myActivityStampSrc.classList.toggle("hidden",!srcLabels.length);
+  }
+  renderMyActivityStampOptions();
+  show(myActivityStampModal);
+}
+function renderMyActivityStampOptions(){
+  myActivityStampOptions?.querySelectorAll("[data-activity]").forEach(button=>{
+    button.classList.toggle("selected",myActivitySelectedTypes.has(button.dataset.activity));
+    button.setAttribute("aria-pressed",myActivitySelectedTypes.has(button.dataset.activity)?"true":"false");
+  });
+}
+async function saveMyActivityStamp(){
+  if(!myActivitySelectedDate||myActivitySelectedDate>todayKeyJST())return;
+  const info=myActivityMonthInfo(myActivityMonthOffset);
+  const ref=myActivityDocRef(info),member=myActivityCurrentMember();
+  if(!ref||!member){alert("現在のメンバー情報を確認できません。いったんMY ACTIVITYを閉じて、ユーザー設定を確認してください。");return;}
+  const current={...(myActivityPersonalCache.get(info.monthKey)||{})};
+  const before=JSON.stringify([...(current[myActivitySelectedDate]||[])].sort());
+  const afterTypes=MY_ACTIVITY_TYPES.filter(type=>myActivitySelectedTypes.has(type));
+  const after=JSON.stringify([...afterTypes].sort());
+  if(before===after){hide(myActivityStampModal);return;}
+  if(afterTypes.length)current[myActivitySelectedDate]=afterTypes;else delete current[myActivitySelectedDate];
+  saveMyActivityStampButton.disabled=true;
+  saveMyActivityStampButton.textContent="保存中...";
+  try{
+    await setDoc(ref,{memberId:member.id,memberName:member.name,month:info.monthKey,activities:current,updatedAt:serverTimestamp()},{merge:true});
+    myActivityPersonalCache.set(info.monthKey,current);
+    hide(myActivityStampModal);
+    renderMyActivityCalendar();
+  }catch(e){
+    console.error("MY ACTIVITY save error",e);
+    alert("MY ACTIVITYの保存に失敗しました。通信状態を確認してください。");
+  }finally{
+    saveMyActivityStampButton.disabled=false;
+    saveMyActivityStampButton.textContent="保存する";
+  }
 }
 
 function renderSeasonActivity(){
@@ -5038,8 +5157,17 @@ closeSystemSettingsButton.onclick=()=>closeAdminChildModal(systemSettingsModal);
 saveSystemSettingsButton.onclick=saveSystemSettings;
 myActivityCard?.addEventListener("click",openMyActivity);
 closeMyActivityModalButton?.addEventListener("click",()=>hide(myActivityModal));
-myActivityPrevMonth?.addEventListener("click",()=>{myActivityMonthOffset-=1;renderMyActivityCalendar();});
-myActivityNextMonth?.addEventListener("click",()=>{if(myActivityMonthOffset<0){myActivityMonthOffset+=1;renderMyActivityCalendar();}});
+myActivityPrevMonth?.addEventListener("click",()=>changeMyActivityMonth(-1));
+myActivityNextMonth?.addEventListener("click",()=>changeMyActivityMonth(1));
+closeMyActivityStampModalButton?.addEventListener("click",()=>hide(myActivityStampModal));
+myActivityStampOptions?.addEventListener("click",event=>{
+  const button=event.target.closest("[data-activity]");
+  if(!button)return;
+  const type=button.dataset.activity;
+  if(myActivitySelectedTypes.has(type))myActivitySelectedTypes.delete(type);else myActivitySelectedTypes.add(type);
+  renderMyActivityStampOptions();
+});
+saveMyActivityStampButton?.addEventListener("click",saveMyActivityStamp);
 
 const upperHalfRaffleBanner=document.getElementById("upperHalfRaffleBanner"),upperHalfRaffleModal=document.getElementById("upperHalfRaffleModal"),closeUpperHalfRaffleButton=document.getElementById("closeUpperHalfRaffleButton");
 upperHalfRaffleBanner?.addEventListener("click",()=>{raffleRevealAnimating=false;raffleResultRevealed=false;renderUpperHalfRaffle();show(upperHalfRaffleModal);requestAnimationFrame(()=>upperHalfRaffleModal?.classList.add("raffle-modal-open"));});
