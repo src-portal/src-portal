@@ -102,7 +102,8 @@ async function refreshPortalDataFromServer(){
     },
     features:{
       seasonActivityVisibility:systemData.features?.seasonActivityVisibility==="public"?"public":"admin",
-      upperHalfRaffleVisibility:systemData.features?.upperHalfRaffleVisibility==="public"?"public":"admin"
+      upperHalfRaffleVisibility:systemData.features?.upperHalfRaffleVisibility==="public"?"public":"admin",
+      myActivityVisibility:systemData.features?.myActivityVisibility==="public"?"public":"admin"
     },
     raffleGroups:systemData.raffleGroups&&typeof systemData.raffleGroups==="object"?systemData.raffleGroups:{}
   };
@@ -256,7 +257,7 @@ let selectedEvent=null;
 const defaultSystemSettings={
   run:{time:"19:00",place:"落合公園",mapUrl:"https://www.google.com/maps?q=35.2705363,136.9915385"},
   gym:{time:"19:00",place:"サンフロッグ春日井",minParticipants:3,mapUrl:"https://maps.app.goo.gl/1eCRggPsgc3Z2HMKA",calendarUrl:"https://www.spofure-kasugai.or.jp/sports/pool/calendar/"},
-  features:{seasonActivityVisibility:"admin",upperHalfRaffleVisibility:"admin"}
+  features:{seasonActivityVisibility:"admin",upperHalfRaffleVisibility:"admin",myActivityVisibility:"admin"}
 };
 let systemSettings=JSON.parse(JSON.stringify(defaultSystemSettings));
 let requiredMembers=systemSettings.gym.minParticipants;
@@ -294,6 +295,7 @@ function setOnline(t){connectionCard.classList.remove("offline");connectionCard.
     "adminKyroModal",
     "adminKyroImportModal",
     "seasonActivityModal",
+    "myActivityModal",
     "fitnessPointModal",
     "fitnessPointRecordModal",
     "kyroDistanceListModal"
@@ -586,7 +588,8 @@ onSnapshot(doc(db,"settings","system"),snap=>{
     },
     features:{
       seasonActivityVisibility:data.features?.seasonActivityVisibility==="public"?"public":"admin",
-      upperHalfRaffleVisibility:data.features?.upperHalfRaffleVisibility==="public"?"public":"admin"
+      upperHalfRaffleVisibility:data.features?.upperHalfRaffleVisibility==="public"?"public":"admin",
+      myActivityVisibility:data.features?.myActivityVisibility==="public"?"public":"admin"
     },
     raffleGroups:data.raffleGroups&&typeof data.raffleGroups==="object"?data.raffleGroups:{}
   };
@@ -1521,7 +1524,7 @@ function renderDashboard(){
 
 }
 
-function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="フィットネストレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderGymQuestCard();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity();renderUpperHalfRaffle()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
+function setType(type){currentType=type;gymTab.classList.toggle("active",type==="gym");runTab.classList.toggle("active",type==="run");const eventTimeRow=eventTime.closest("div");if(type==="gym"){eventTitle.textContent="フィットネストレーニング";eventSummary.textContent="😊 一緒に行ける方募集中！";const safePlace=escapeHtml(systemSettings.gym.place);const mapUrl=String(systemSettings.gym.mapUrl||"").trim();const safeMapUrl=/^https?:\/\//i.test(mapUrl)?escapeHtml(mapUrl):"";const placeLink=safeMapUrl?`<a class="gym-location-link" href="${safeMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${safePlace}</a>`:`<span>📍 ${safePlace}</span>`;const url=String(systemSettings.gym.calendarUrl||"").trim();const safeUrl=/^https?:\/\//i.test(url)?escapeHtml(url):"";const calendarLink=safeUrl?`（<a class="gym-calendar-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 休場日を確認</a>）`:"";eventPlace.innerHTML=`${placeLink}${calendarLink}<span class="gym-summary-time">🕖 ${escapeHtml(systemSettings.gym.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="補助条件";ruleValue.textContent=`${requiredMembers}名集まれば利用料300円/人補助`}else{eventTitle.textContent="ラン＆ウォーク";eventSummary.textContent="イベント管理で登録された開催日を表示します。";const runMapUrl=String(systemSettings.run.mapUrl||"").trim();const safeRunMapUrl=/^https?:\/\//i.test(runMapUrl)?escapeHtml(runMapUrl):"";const runPlaceHtml=safeRunMapUrl?`<a class="run-location-link" href="${safeRunMapUrl}" target="_blank" rel="noopener noreferrer">📍 ${escapeHtml(systemSettings.run.place)}</a>`:`<span>📍 ${escapeHtml(systemSettings.run.place)}</span>`;eventPlace.innerHTML=`${runPlaceHtml}<span class="run-summary-time">🕖 ${escapeHtml(systemSettings.run.time)}〜</span>`;if(eventTimeRow)eventTimeRow.style.display="none";ruleTitle.textContent="開催状態";ruleValue.textContent="管理者がイベントごとに設定"}renderAll()}function renderAll(){renderCalendar();renderLegend();renderNextPlan();renderGymQuestCard();renderReminder();renderNextEventPublic();renderAnnouncementsPublic();renderMessageBoard();renderRecommendationPreview();renderDashboard();renderSeasonActivity();renderMyActivity();renderUpperHalfRaffle()}function renderLegend(){calendarLegend.innerHTML=currentType==="gym"?'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-one"></span>あと2</span><span><span class="dot dot-warning"></span>あと1</span><span><span class="dot dot-confirmed"></span>補助対象</span><span>⭐ 自分</span>':'<span><span class="dot dot-today"></span>今日</span><span><span class="dot dot-confirmed"></span>開催予定</span><span><span class="dot dot-cancelled"></span>中止</span><span>⭐ 自分</span>'}
 
 
 function eventsByDate(dateStr,type=currentType){
@@ -2822,7 +2825,19 @@ const settingsGymMinParticipants=document.getElementById("settingsGymMinParticip
 const settingsGymMapUrl=document.getElementById("settingsGymMapUrl");
 const settingsGymCalendarUrl=document.getElementById("settingsGymCalendarUrl");
 const settingsSeasonActivityVisibility=document.getElementById("settingsSeasonActivityVisibility");
+const settingsMyActivityVisibility=document.getElementById("settingsMyActivityVisibility");
 const settingsRaffleVisibility=document.getElementById("settingsRaffleVisibility");
+const myActivityCard=document.getElementById("myActivityCard");
+const myActivityAdminBadge=document.getElementById("myActivityAdminBadge");
+const myActivityModal=document.getElementById("myActivityModal");
+const closeMyActivityModalButton=document.getElementById("closeMyActivityModalButton");
+const myActivityPrevMonth=document.getElementById("myActivityPrevMonth");
+const myActivityNextMonth=document.getElementById("myActivityNextMonth");
+const myActivityMonthLabel=document.getElementById("myActivityMonthLabel");
+const myActivityGrid=document.getElementById("myActivityGrid");
+const myActivityActiveDays=document.getElementById("myActivityActiveDays");
+const myActivityRunCount=document.getElementById("myActivityRunCount");
+const myActivityGymCount=document.getElementById("myActivityGymCount");
 const raffleTestModeCheck=document.getElementById("raffleTestModeCheck");
 const raffleTestStageSelect=document.getElementById("raffleTestStageSelect");
 const raffleTestResultSelect=document.getElementById("raffleTestResultSelect");
@@ -3522,6 +3537,78 @@ function seasonActivityStats(season){
   };
 }
 
+let myActivityMonthOffset=0;
+function myActivityCanView(){
+  const visibility=systemSettings.features?.myActivityVisibility||"admin";
+  return visibility==="public"||isCurrentAdmin();
+}
+function myActivityMonthInfo(offset=0){
+  const now=new Date();
+  const base=new Date(now.getFullYear(),now.getMonth()+offset,1,12,0,0);
+  const year=base.getFullYear(),month=base.getMonth();
+  return {year,month,start:toKey(year,month,1),end:toKey(year,month,new Date(year,month+1,0).getDate())};
+}
+function myActivitySrcData(info){
+  const todayKey=todayKeyJST();
+  const runDates=new Set();
+  const gymDates=new Set();
+  eventRecords.forEach(event=>{
+    const date=String(event.date||"");
+    if(event.type!=="run"||event.status==="cancelled"||date<info.start||date>info.end||date>todayKey)return;
+    if(getNames("run",date).includes(currentUser))runDates.add(date);
+  });
+  Object.keys(attendance).forEach(id=>{
+    if(!id.startsWith("gym_"))return;
+    const date=id.slice(4);
+    if(date<info.start||date>info.end||date>todayKey)return;
+    if((attendance[id]||[]).includes(currentUser))gymDates.add(date);
+  });
+  return {runDates,gymDates};
+}
+function renderMyActivity(){
+  if(!myActivityCard)return;
+  const visibility=systemSettings.features?.myActivityVisibility||"admin";
+  const canView=myActivityCanView();
+  myActivityCard.classList.toggle("hidden",!canView);
+  myActivityAdminBadge?.classList.toggle("hidden",visibility!=="admin");
+  if(!canView&&myActivityModal)hide(myActivityModal);
+  if(canView&&myActivityModal&&!myActivityModal.classList.contains("hidden"))renderMyActivityCalendar();
+}
+function renderMyActivityCalendar(){
+  if(!myActivityGrid)return;
+  const info=myActivityMonthInfo(myActivityMonthOffset);
+  const data=myActivitySrcData(info);
+  myActivityMonthLabel.textContent=`${info.year}年${info.month+1}月`;
+  myActivityGrid.innerHTML="";
+  const firstBlank=(new Date(info.year,info.month,1).getDay()+6)%7;
+  for(let i=0;i<firstBlank;i++){
+    const blankCell=document.createElement("div");blankCell.className="my-activity-day my-activity-day-blank";myActivityGrid.appendChild(blankCell);
+  }
+  const days=new Date(info.year,info.month+1,0).getDate();
+  for(let day=1;day<=days;day++){
+    const key=toKey(info.year,info.month,day);
+    const cell=document.createElement("div");cell.className="my-activity-day";
+    if(key===todayKeyJST())cell.classList.add("today");
+    const stamps=[];
+    if(data.runDates.has(key))stamps.push('<span class="my-activity-stamp run" title="SRC ラン＆ウォーク">🏃</span>');
+    if(data.gymDates.has(key))stamps.push('<span class="my-activity-stamp gym" title="SRC フィットネス">🏋️</span>');
+    cell.innerHTML=`<span class="my-activity-date">${day}</span><span class="my-activity-stamps">${stamps.join("")}</span>`;
+    myActivityGrid.appendChild(cell);
+  }
+  const activeDates=new Set([...data.runDates,...data.gymDates]);
+  myActivityActiveDays.textContent=`${activeDates.size}日`;
+  myActivityRunCount.textContent=`${data.runDates.size}回`;
+  myActivityGymCount.textContent=`${data.gymDates.size}回`;
+  const current=myActivityMonthInfo(0);
+  myActivityNextMonth.disabled=info.start>=current.start;
+}
+function openMyActivity(){
+  if(!myActivityCanView())return;
+  myActivityMonthOffset=0;
+  renderMyActivityCalendar();
+  show(myActivityModal);
+}
+
 function renderSeasonActivity(){
   if(!seasonActivityCard)return;
   const visibility=systemSettings.features?.seasonActivityVisibility||"admin";
@@ -3586,6 +3673,7 @@ function applySystemSettingsToInputs(){
   if(settingsSeasonActivityVisibility){
     settingsSeasonActivityVisibility.value=systemSettings.features?.seasonActivityVisibility||"admin";
   }
+  if(settingsMyActivityVisibility)settingsMyActivityVisibility.value=systemSettings.features?.myActivityVisibility||"admin";
   if(settingsRaffleVisibility)settingsRaffleVisibility.value=systemSettings.features?.upperHalfRaffleVisibility||"admin";
   loadRaffleTestControls();
 }
@@ -3601,6 +3689,7 @@ async function saveSystemSettings(){
   const calendarUrl=settingsGymCalendarUrl.value.trim();
   const seasonActivityVisibility=settingsSeasonActivityVisibility?.value==="public"?"public":"admin";
   const upperHalfRaffleVisibility=settingsRaffleVisibility?.value==="public"?"public":"admin";
+  const myActivityVisibility=settingsMyActivityVisibility?.value==="public"?"public":"admin";
 
   if(!runPlace||!gymPlace||!Number.isInteger(minParticipants)||minParticipants<1||(runMapUrl&&!/^https?:\/\//i.test(runMapUrl))||(gymMapUrl&&!/^https?:\/\//i.test(gymMapUrl))||(calendarUrl&&!/^https?:\/\//i.test(calendarUrl))){
     systemSettingsError.classList.remove("hidden");
@@ -3612,7 +3701,7 @@ async function saveSystemSettings(){
     await setDoc(doc(db,"settings","system"),{
       run:{time:runTime,place:runPlace,mapUrl:runMapUrl},
       gym:{time:gymTime,place:gymPlace,minParticipants,mapUrl:gymMapUrl,calendarUrl},
-      features:{seasonActivityVisibility,upperHalfRaffleVisibility},
+      features:{seasonActivityVisibility,upperHalfRaffleVisibility,myActivityVisibility},
       updatedAt:serverTimestamp()
     },{merge:true});
     closeAdminChildModal(systemSettingsModal);
@@ -4947,6 +5036,11 @@ adminSystemSettingsButton.onclick=()=>{
 };
 closeSystemSettingsButton.onclick=()=>closeAdminChildModal(systemSettingsModal);
 saveSystemSettingsButton.onclick=saveSystemSettings;
+myActivityCard?.addEventListener("click",openMyActivity);
+closeMyActivityModalButton?.addEventListener("click",()=>hide(myActivityModal));
+myActivityPrevMonth?.addEventListener("click",()=>{myActivityMonthOffset-=1;renderMyActivityCalendar();});
+myActivityNextMonth?.addEventListener("click",()=>{if(myActivityMonthOffset<0){myActivityMonthOffset+=1;renderMyActivityCalendar();}});
+
 const upperHalfRaffleBanner=document.getElementById("upperHalfRaffleBanner"),upperHalfRaffleModal=document.getElementById("upperHalfRaffleModal"),closeUpperHalfRaffleButton=document.getElementById("closeUpperHalfRaffleButton");
 upperHalfRaffleBanner?.addEventListener("click",()=>{raffleRevealAnimating=false;raffleResultRevealed=false;renderUpperHalfRaffle();show(upperHalfRaffleModal);requestAnimationFrame(()=>upperHalfRaffleModal?.classList.add("raffle-modal-open"));});
 upperHalfRaffleBanner?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();upperHalfRaffleBanner.click();}});
