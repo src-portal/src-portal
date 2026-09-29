@@ -4230,3 +4230,26 @@ body{
 .my-activity-src-stamp .my-activity-src-dot{margin:0 0 0 1px;align-self:flex-start;margin-top:2px}
 .my-activity-summary-row span{display:inline-flex;align-items:center;min-width:0}
 .my-activity-src-legend{margin:7px 3px 0;text-align:right;font-size:11px;color:#718395}
+
+
+/* Ver.1.9.7ze: MY ACTIVITY 個人活動スタンプ */
+.my-activity-day:not(.my-activity-day-blank){appearance:none;width:100%;font:inherit;color:inherit;cursor:pointer}
+.my-activity-day.future{cursor:default;opacity:.55}
+.my-activity-day:disabled{color:inherit}
+.my-activity-summary-divider{height:8px;border-top:2px solid #d5e0e9;margin-top:7px}
+.my-activity-stamp-modal-card{max-width:500px}
+.my-activity-stamp-modal-card .modal-header{display:grid;grid-template-columns:minmax(0,1fr) 34px;align-items:start;gap:12px}
+.my-activity-stamp-modal-card .modal-header h2{margin:0;min-width:0;padding-top:2px;line-height:1.35}
+.my-activity-stamp-modal-card .modal-header .modal-header-close-button{justify-self:end;margin-left:0}
+.my-activity-stamp-lead{text-align:center;color:#52677b;font-weight:700;margin:14px 0 10px}
+.my-activity-stamp-src{padding:10px 12px;margin:10px 0;border-radius:12px;background:#f2f7fc;border:1px solid #d8e5f0;color:#314d67;font-size:13px;line-height:1.7}
+.my-activity-stamp-src strong{display:block;color:#17324d;margin-bottom:2px}
+.my-activity-stamp-src div{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.my-activity-stamp-src div>*{display:inline-flex;align-items:center}
+.my-activity-stamp-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 10px}
+.my-activity-stamp-option{min-height:88px;border:2px solid #dce5ed;border-radius:14px;background:#fff;color:#314d67;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px 4px}
+.my-activity-stamp-option-icon{font-size:30px;line-height:1}
+.my-activity-stamp-option.selected{border-color:#4b86b4;background:#edf6fd;box-shadow:0 0 0 2px rgba(75,134,180,.10) inset}
+.my-activity-stamp-option.selected::after{content:"✓";font-size:12px;line-height:1;color:#2c6c9e}
+.my-activity-other-note{font-size:12px;line-height:1.5;color:#718395;margin:8px 2px 14px;text-align:center}
+@media(max-width:430px){.my-activity-stamp-options{grid-template-columns:repeat(2,minmax(0,1fr))}.my-activity-stamp-option{min-height:82px}}
