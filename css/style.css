@@ -4221,7 +4221,7 @@ body{
 @media(max-width:380px){.my-activity-day{min-height:52px;padding:4px 2px}.my-activity-stamps{font-size:17px}.my-activity-nav{grid-template-columns:64px 1fr 64px}.my-activity-nav strong{font-size:18px}}
 
 
-/* Ver.1.9.7zc: MY ACTIVITY close position and SRC marker */
+/* Ver.1.9.7zd: MY ACTIVITY close position and SRC marker */
 .my-activity-modal-card .modal-header{display:grid;grid-template-columns:minmax(0,1fr) 34px;align-items:start;gap:12px}
 .my-activity-modal-card .modal-header h2{margin:0;min-width:0;padding-top:2px;line-height:1.35}
 .my-activity-modal-card .modal-header .modal-header-close-button{justify-self:end;margin-left:0}
