@@ -1,3 +1,10 @@
+# Ver.1.9.7zc
+
+- MY ACTIVITY画面の閉じるボタンを他のモーダルと同様に右端へ配置。
+- SRC活動のスタンプと月間集計に小さな青丸マークを追加。
+- 「青丸＝SRC活動」の凡例を追加。
+- Firebase reads / writes の追加なし。
+
 # Ver.1.9.7zb
 
 - MY ACTIVITY 第1段階を追加。

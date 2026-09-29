@@ -1,3 +1,8 @@
+Ver.1.9.7zc
+- MY ACTIVITYの閉じるボタンを右端へ統一
+- SRC活動に小さな青丸マークを追加
+- Firebase追加reads/writesなし
+
 Ver.1.9.7zb
 2026-09-29
 
