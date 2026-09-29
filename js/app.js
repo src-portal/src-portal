@@ -3665,7 +3665,7 @@ async function openMyActivity(){
   if(!myActivityCanView())return;
   myActivityMonthOffset=0;
   const info=myActivityMonthInfo(0);
-  await loadMyActivityMonth(info,{force:true});
+  await loadMyActivityMonth(info);
   renderMyActivityCalendar();
   show(myActivityModal);
 }
