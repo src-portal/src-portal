@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRC Portal</title>
-<link rel="stylesheet" href="css/style.css?v=1.9.7za">
+<link rel="stylesheet" href="css/style.css?v=1.9.7zb">
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
   <link rel="apple-touch-icon" href="images/icon-192.png">
@@ -123,6 +123,14 @@
       </div>
     </button>
 
+    <button class="my-activity-card hidden" id="myActivityCard" type="button" aria-label="MY ACTIVITYを開く">
+      <span class="my-activity-card-main">
+        <span class="my-activity-card-heading"><span class="section-label">📅 MY ACTIVITY</span><span class="season-activity-admin-badge hidden" id="myActivityAdminBadge">管理者確認中</span></span>
+        <span class="my-activity-card-copy">自分の活動をカレンダーで振り返る</span>
+      </span>
+      <span class="my-activity-card-chevron">›</span>
+    </button>
+
     <button class="kyro-mini-card" id="kyroMiniCard" type="button" aria-label="SRC-KYRO情報を開く">
       <span class="kyro-mini-content">
         <span class="kyro-mini-heading">
@@ -168,10 +176,10 @@
   </main>
   <footer class="app-footer">
   <div class="footer-product-name">SRC Portal</div>
-  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.7za</button>
+  <button class="version-admin-trigger" id="versionAdminTrigger" type="button">Version 1.9.7zb</button>
   <div class="official-release-label">Official Release</div>
   <div class="release-date">2026.07.31</div>
-  <div class="build-info" id="buildInfo">Build 2026/09/28 1.9.7za JST</div>
+  <div class="build-info" id="buildInfo">Build 2026/09/29 1.9.7zb JST</div>
   <div class="credit">Admin mode / Firebase connected</div>
 </footer>
 </div>
@@ -232,6 +240,30 @@
       <span>来館 +1 / 有酸素10分 +1 / 柔軟 +1 / マシン最大 +3 / BONUS QUEST +1〜2</span>
       <span>1回 最大8pt</span>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="myActivityModal">
+  <div class="modal-card my-activity-modal-card">
+    <div class="modal-header">
+      <h2>📅 MY ACTIVITY</h2>
+      <button class="modal-header-close-button" id="closeMyActivityModalButton" type="button" aria-label="閉じる"></button>
+    </div>
+    <p class="my-activity-lead">自分の活動を振り返るカレンダー</p>
+    <div class="my-activity-nav">
+      <button id="myActivityPrevMonth" type="button" aria-label="前の月">‹ 前</button>
+      <strong id="myActivityMonthLabel">----</strong>
+      <button id="myActivityNextMonth" type="button" aria-label="次の月">次 ›</button>
+    </div>
+    <div class="my-activity-weekdays"><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span><span>日</span></div>
+    <div class="my-activity-grid" id="myActivityGrid"></div>
+    <section class="my-activity-summary">
+      <h3>今月のMY ACTIVITY</h3>
+      <div class="my-activity-days">活動した日 <strong id="myActivityActiveDays">0日</strong></div>
+      <div class="my-activity-summary-row"><span>🏃 SRC ラン＆ウォーク</span><strong id="myActivityRunCount">0回</strong></div>
+      <div class="my-activity-summary-row"><span>🏋️ SRC フィットネス</span><strong id="myActivityGymCount">0回</strong></div>
+    </section>
+    <p class="my-activity-note">※この版ではSRC活動への参加実績を自動表示します。個人活動スタンプは次の段階で追加予定です。</p>
   </div>
 </div>
 
@@ -578,7 +610,7 @@
 
       <section class="help-section">
         <h3>ℹ️ バージョン情報</h3>
-        <p><strong>SRC Portal<br>Version 1.9.7za<br>Official Release<br>2026.09.28</strong></p>
+        <p><strong>SRC Portal<br>Version 1.9.7zb<br>Official Release<br>2026.09.29</strong></p>
       </section>
     </div>
 </div></div>
@@ -1102,6 +1134,12 @@ Gear,100.86"></textarea>
         <option value="public">全員公開</option>
       </select>
       <p class="settings-note">初期状態は「管理者のみ」です。管理者は実データによる集計結果を確認できます。</p>
+      <label class="admin-form-label" for="settingsMyActivityVisibility">MY ACTIVITY</label>
+      <select id="settingsMyActivityVisibility" class="admin-input">
+        <option value="admin">管理者のみ</option>
+        <option value="public">全員公開</option>
+      </select>
+      <p class="settings-note">第1段階ではSRC活動への参加実績を自動表示します。個人活動スタンプの保存はまだ行いません。</p>
       <label class="admin-form-label" for="settingsRaffleVisibility">上期 SRCラッキーチャンス</label>
       <select id="settingsRaffleVisibility" class="admin-input">
         <option value="admin">管理者のみ</option>
@@ -1164,7 +1202,7 @@ Gear,100.86"></textarea>
   </div>
 </div>
 
-<script type="module" src="js/app.js?v=1.9.7za"></script>
+<script type="module" src="js/app.js?v=1.9.7zb"></script>
   <div class="app-toast hidden" id="appToast" role="status" aria-live="polite"></div>
 </body>
 </html>
