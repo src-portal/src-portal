@@ -3590,8 +3590,8 @@ function renderMyActivityCalendar(){
     const cell=document.createElement("div");cell.className="my-activity-day";
     if(key===todayKeyJST())cell.classList.add("today");
     const stamps=[];
-    if(data.runDates.has(key))stamps.push('<span class="my-activity-stamp run" title="SRC ラン＆ウォーク">🏃</span>');
-    if(data.gymDates.has(key))stamps.push('<span class="my-activity-stamp gym" title="SRC フィットネス">🏋️</span>');
+    if(data.runDates.has(key))stamps.push('<span class="my-activity-stamp run my-activity-src-stamp" title="SRC ラン＆ウォーク">🏃<i class="my-activity-src-dot" aria-hidden="true"></i></span>');
+    if(data.gymDates.has(key))stamps.push('<span class="my-activity-stamp gym my-activity-src-stamp" title="SRC フィットネス">🏋️<i class="my-activity-src-dot" aria-hidden="true"></i></span>');
     cell.innerHTML=`<span class="my-activity-date">${day}</span><span class="my-activity-stamps">${stamps.join("")}</span>`;
     myActivityGrid.appendChild(cell);
   }
