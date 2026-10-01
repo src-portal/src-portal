@@ -2993,6 +2993,8 @@ const RAFFLE_DOC=doc(db,"settings","upperHalfRaffle2026");
 const RAFFLE_TEST_KEY="srcUpperHalfRaffle2026Test";
 let raffleResultCache=null;
 let raffleResultLoading=false;
+let raffleResultLoadAttempted=false;
+let raffleResultLoadError=false;
 // Ver.1.9.7zh: prevent overlapping raffle draw transactions/renders after the live start time.
 let raffleDrawPromise=null;
 let raffleDrawRetryAfter=0;
@@ -3080,11 +3082,26 @@ async function saveRaffleGroups(){
   }catch(e){console.error(e);alert("抽選グループの保存に失敗しました。Firestoreルールを確認してください。");}
 }
 function wireRaffleAdminCheckButton(){document.getElementById("raffleAdminCheckButton")?.addEventListener("click",()=>{renderRaffleAdminCheck();show(document.getElementById("raffleAdminEligibilityModal"));});}
-async function loadRaffleResult(){
+async function loadRaffleResult({force=false}={}){
   if(raffleIsTest())return;
   if(raffleResultCache||raffleResultLoading)return;
+  if(raffleResultLoadAttempted&&!force)return;
   raffleResultLoading=true;
-  try{const snap=await getDoc(RAFFLE_DOC);raffleResultCache=snap.exists()?snap.data():null;}catch(e){console.error("raffle result read error",e);}finally{raffleResultLoading=false;renderUpperHalfRaffle();}
+  raffleResultLoadAttempted=true;
+  raffleResultLoadError=false;
+  try{
+    // Draw result is shared data. Read the confirmed server value once instead of
+    // repeatedly accepting a stale/missing local cache entry.
+    const snap=await getDocFromServer(RAFFLE_DOC);
+    raffleResultCache=snap.exists()?snap.data():null;
+    if(!raffleResultCache)raffleResultLoadError=true;
+  }catch(e){
+    console.error("raffle result read error",e);
+    raffleResultLoadError=true;
+  }finally{
+    raffleResultLoading=false;
+    renderUpperHalfRaffle();
+  }
 }
 async function ensureRaffleDrawn(){
   if(raffleIsTest()||Date.now()<RAFFLE_START_MS||raffleResultCache)return;
@@ -3143,7 +3160,10 @@ function raffleResultHtml(result,testBadge=""){
 function rafflePublishedHtml(testBadge=""){
   const r=raffleResultCache;
   if(raffleIsTest())return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 抽選結果発表！</div><div class="raffle-winners"><div class="raffle-winner raffle-published-winner">🎁 筋膜ローラー<img class="raffle-published-prize-image" src="images/raffle-roller.png" alt="筋膜ローラー"><strong>テスト当選者A</strong></div><div class="raffle-winner raffle-published-winner">🎧 イヤーカフイヤホン<img class="raffle-published-prize-image" src="images/raffle-earbuds.png" alt="イヤーカフイヤホン"><strong>テスト当選者B</strong></div></div><p>ご当選おめでとうございます！</p></div>`;
-  if(!r)return `<p class="raffle-lead">抽選結果を読み込んでいます…</p>`;
+  if(!r){
+    if(raffleResultLoading)return `<p class="raffle-lead">抽選結果を読み込んでいます…</p>`;
+    return `<div class="raffle-result-panel"><p class="raffle-lead">抽選結果を取得できませんでした。</p><button class="raffle-result-button" id="raffleReloadResultButton" type="button">🔄 抽選結果を再読み込み</button></div>`;
+  }
   return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 抽選結果発表！</div><div class="raffle-winners"><div class="raffle-winner raffle-published-winner">🎁 筋膜ローラー<img class="raffle-published-prize-image" src="images/raffle-roller.png" alt="筋膜ローラー"><strong>${escapeHtml(r.roller?.shortName||r.roller?.name||"")}</strong></div><div class="raffle-winner raffle-published-winner">🎧 イヤーカフイヤホン<img class="raffle-published-prize-image" src="images/raffle-earbuds.png" alt="イヤーカフイヤホン"><strong>${escapeHtml(r.earbuds?.shortName||r.earbuds?.name||"")}</strong></div></div><p>ご当選おめでとうございます！</p></div>`;
 }
 function renderUpperHalfRaffle(){
@@ -3153,11 +3173,15 @@ function renderUpperHalfRaffle(){
   if(stage==="before")countdown.innerHTML=raffleCountdownHtml();else if(stage==="draw")countdown.innerHTML="<strong class=\"raffle-result-ready\">🎁 抽選結果を見る！</strong>";else countdown.innerHTML="<strong class=\"raffle-result-ready raffle-published-ready\">🎉 抽選結果発表！</strong>";
   // Ver.1.9.7zh emergency stabilization: the live draw is already confirmed and stored.
   // After the draw start, clients only read the saved result; they must not start/retry a draw transaction.
-  if(stage!=="before"&&!raffleIsTest()&&!raffleResultCache&&!raffleResultLoading){loadRaffleResult();}
+  if(stage!=="before"&&!raffleIsTest()&&!raffleResultCache&&!raffleResultLoading&&!raffleResultLoadAttempted){loadRaffleResult();}
   if(!content)return;
   const testBadge=raffleIsTest()?'<div class="raffle-test-badge">🧪 管理者テストモード</div>':"";
   if(stage==="before"){content.innerHTML=raffleInfoHtml(testBadge)+`<div class="raffle-date-box" style="text-align:center">${raffleCountdownHtml()}</div>`;wireRaffleAdminCheckButton();return;}
-  if(stage==="published"){content.innerHTML=rafflePublishedHtml(testBadge);return;}
+  if(stage==="published"){
+    content.innerHTML=rafflePublishedHtml(testBadge);
+    document.getElementById("raffleReloadResultButton")?.addEventListener("click",()=>loadRaffleResult({force:true}));
+    return;
+  }
   if(raffleResultRevealed){content.innerHTML=raffleResultHtml(currentRaffleResult(),testBadge);wireRaffleBoardButton();return;}
   // Ver.1.9.7t: keep the suspense screen intact while the 1-second periodic render runs.
   if(raffleRevealAnimating)return;
