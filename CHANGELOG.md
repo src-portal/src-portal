@@ -1,3 +1,7 @@
+## Ver.1.9.7zi
+- 緊急キャッシュ更新版。index.html の CSS/JavaScript キャッシュ識別子と画面内Version/Build表示を1.9.7ziへ更新。
+- 抽選ロジック、保存済み抽選結果、認証、MY ACTIVITYには変更なし。
+
 ## Ver.1.9.7zg
 - 緊急修正：SRCラッキーチャンス抽選処理の同一端末での多重起動を防止。
 - Firestore/通信エラー時の連続再試行を抑制。
