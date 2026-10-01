@@ -2993,7 +2993,7 @@ const RAFFLE_DOC=doc(db,"settings","upperHalfRaffle2026");
 const RAFFLE_TEST_KEY="srcUpperHalfRaffle2026Test";
 let raffleResultCache=null;
 let raffleResultLoading=false;
-// Ver.1.9.7zg: prevent overlapping raffle draw transactions/renders after the live start time.
+// Ver.1.9.7zh: prevent overlapping raffle draw transactions/renders after the live start time.
 let raffleDrawPromise=null;
 let raffleDrawRetryAfter=0;
 let raffleResultRevealed=false;
@@ -3151,7 +3151,9 @@ function renderUpperHalfRaffle(){
   const canView=raffleCanView();banner.classList.toggle("hidden",!canView);if(!canView)return;
   const stage=raffleStage();
   if(stage==="before")countdown.innerHTML=raffleCountdownHtml();else if(stage==="draw")countdown.innerHTML="<strong class=\"raffle-result-ready\">🎁 抽選結果を見る！</strong>";else countdown.innerHTML="<strong class=\"raffle-result-ready raffle-published-ready\">🎉 抽選結果発表！</strong>";
-  if(stage!=="before"&&!raffleIsTest()&&!raffleResultCache&&!raffleDrawPromise&&Date.now()>=raffleDrawRetryAfter){ensureRaffleDrawn().then(()=>{if(raffleResultCache)renderUpperHalfRaffle();});}
+  // Ver.1.9.7zh emergency stabilization: the live draw is already confirmed and stored.
+  // After the draw start, clients only read the saved result; they must not start/retry a draw transaction.
+  if(stage!=="before"&&!raffleIsTest()&&!raffleResultCache&&!raffleResultLoading){loadRaffleResult();}
   if(!content)return;
   const testBadge=raffleIsTest()?'<div class="raffle-test-badge">🧪 管理者テストモード</div>':"";
   if(stage==="before"){content.innerHTML=raffleInfoHtml(testBadge)+`<div class="raffle-date-box" style="text-align:center">${raffleCountdownHtml()}</div>`;wireRaffleAdminCheckButton();return;}
@@ -5190,7 +5192,12 @@ raffleTestModeCheck?.addEventListener("change",()=>{const s=raffleTestState();s.
 raffleTestStageSelect?.addEventListener("change",()=>{const s=raffleTestState();s.stage=raffleTestStageSelect.value;s.enabled=raffleTestModeCheck.checked;s.result=raffleTestResultSelect.value;raffleRevealAnimating=false;raffleResultRevealed=false;saveRaffleTestState(s);});
 raffleTestResultSelect?.addEventListener("change",()=>{const s=raffleTestState();s.result=raffleTestResultSelect.value;s.enabled=raffleTestModeCheck.checked;s.stage=raffleTestStageSelect.value;raffleRevealAnimating=false;raffleResultRevealed=false;saveRaffleTestState(s);});
 raffleTestResetButton?.addEventListener("click",()=>{localStorage.removeItem(RAFFLE_TEST_KEY);raffleRevealAnimating=false;raffleResultRevealed=false;loadRaffleTestControls();renderUpperHalfRaffle();alert("抽選会テストをリセットしました。");});
-window.setInterval(()=>{if(raffleCanView())renderUpperHalfRaffle();},1000);
+// Ver.1.9.7zh: the 1-second repaint is needed only for the pre-draw countdown/test mode.
+// After 12:00, avoid repeatedly rebuilding the raffle DOM on every client.
+window.setInterval(()=>{
+  if(!raffleCanView())return;
+  if(raffleStage()==="before"||raffleIsTest())renderUpperHalfRaffle();
+},1000);
 adminAnnouncementManageButton.onclick=()=>{renderAdminAnnouncements();openAdminChildModal(announcementManageModal);};
 closeAnnouncementManageButton.onclick=()=>closeAdminChildModal(announcementManageModal);
 addAnnouncementButton.onclick=addAnnouncement;
