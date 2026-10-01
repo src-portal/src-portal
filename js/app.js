@@ -2996,8 +2996,6 @@ let raffleResultLoading=false;
 let raffleResultLoadAttempted=false;
 let raffleResultLoadError=false;
 // Ver.1.9.7zh: prevent overlapping raffle draw transactions/renders after the live start time.
-let raffleDrawPromise=null;
-let raffleDrawRetryAfter=0;
 let raffleResultRevealed=false;
 let raffleRevealAnimating=false;
 function raffleTestState(){try{return JSON.parse(localStorage.getItem(RAFFLE_TEST_KEY)||"{}")||{};}catch{return {};}}
@@ -3103,35 +3101,9 @@ async function loadRaffleResult({force=false}={}){
     renderUpperHalfRaffle();
   }
 }
-async function ensureRaffleDrawn(){
-  if(raffleIsTest()||Date.now()<RAFFLE_START_MS||raffleResultCache)return;
-  // Only one draw transaction may be active in this browser at a time.
-  if(raffleDrawPromise)return raffleDrawPromise;
-  // If Firestore/network just failed, do not hammer the server on every 1-second render.
-  if(Date.now()<raffleDrawRetryAfter)return;
-  raffleDrawPromise=(async()=>{
-    const eligible=raffleEligibleMembers();
-    if(eligible.length<2){console.error("raffle: eligible members are fewer than 2");raffleDrawRetryAfter=Date.now()+15000;return;}
-    try{
-      await runTransaction(db,async tx=>{
-        const snap=await tx.get(RAFFLE_DOC);if(snap.exists())return;
-        const groupA=eligible.filter(m=>raffleGroupFor(m.name)==="A").map(m=>({name:m.name,shortName:memberShortName(m.name)}));
-        const groupB=eligible.filter(m=>raffleGroupFor(m.name)==="B").map(m=>({name:m.name,shortName:memberShortName(m.name)}));
-        if(!groupA.length||!groupB.length||groupA.length+groupB.length!==eligible.length)throw new Error("raffle groups are not completely configured");
-        const winnerA=groupA[Math.floor(Math.random()*groupA.length)];
-        const winnerB=groupB[Math.floor(Math.random()*groupB.length)];
-        const rollerFirst=Math.random()<0.5;
-        const roller=rollerFirst?winnerA:winnerB;
-        const earbuds=rollerFirst?winnerB:winnerA;
-        tx.set(RAFFLE_DOC,{drawn:true,roller,earbuds,eligibleCount:eligible.length,groupACount:groupA.length,groupBCount:groupB.length,drawnAt:serverTimestamp(),startAt:"2026-10-01T12:00:00+09:00",publishAt:"2026-10-02T00:00:00+09:00"});
-      });
-      const snap=await getDoc(RAFFLE_DOC);raffleResultCache=snap.exists()?snap.data():null;
-      if(!raffleResultCache)raffleDrawRetryAfter=Date.now()+15000;
-    }catch(e){console.error("raffle draw error",e);raffleDrawRetryAfter=Date.now()+15000;}
-    finally{raffleDrawPromise=null;}
-  })();
-  return raffleDrawPromise;
-}
+// Ver.1.9.7zk safety lock:
+// The 2026 upper-half raffle has already been drawn and saved.
+// Production clients are read-only for the saved result; automatic draw/re-draw code is intentionally removed.
 function testRaffleResult(){
   const result=raffleTestState().result||"lose";
   if(result==="roller")return {win:true,prize:"筋膜ローラー",shortName:memberShortName(currentUser||"")};
