@@ -3086,9 +3086,10 @@ function raffleAdminSavedResultHtml(){
   if(!status||!button)return;
   if(raffleAdminDrawBusy){status.textContent="抽選結果を保存しています…";button.disabled=true;return;}
   if(raffleResultCache){
-    const roller=raffleResultCache.roller?.shortName||raffleResultCache.roller?.name||"確認必要";
-    const earbuds=raffleResultCache.earbuds?.shortName||raffleResultCache.earbuds?.name||"確認必要";
-    status.innerHTML=`✅ 抽選結果保存済み<br>🎁 筋膜ローラー：<strong>${escapeHtml(roller)}</strong><br>🎧 イヤーカフイヤホン：<strong>${escapeHtml(earbuds)}</strong>`;
+    const saved=raffleResultCache.roller?.name&&raffleResultCache.earbuds?.name&&raffleResultCache.groupAWinner?.name&&raffleResultCache.groupBWinner?.name;
+    status.innerHTML=saved
+      ?`✅ 正式抽選 完了<br>✅ Firestore保存 完了<br>✅ サーバー再取得・保存確認 完了<br>🔒 当選結果は10/6 0:00まで非公開`
+      :`⚠️ 保存済みデータの確認が必要です。再抽選せず、Firestoreを確認してください。`;
     button.textContent="✅ 抽選済み（再抽選不可）";button.disabled=true;return;
   }
   status.textContent=raffleAdminResultChecked?"保存済みの抽選結果はありません。":"保存済み結果を確認しています…";
@@ -3140,7 +3141,7 @@ async function executeOfficialRaffle(){
         earbuds:{name:earbuds.name,shortName:memberShortName(earbuds.name)},
         groupAWinner:{name:winnerA.name,shortName:memberShortName(winnerA.name)},
         groupBWinner:{name:winnerB.name,shortName:memberShortName(winnerB.name)},
-        drawnAt:serverTimestamp(),drawVersion:"1.9.7zl",
+        drawnAt:serverTimestamp(),drawVersion:"1.9.7zm",
         individualRevealAt:"2026-10-05T12:00:00+09:00",
         publicRevealAt:"2026-10-06T00:00:00+09:00"
       });
@@ -3180,7 +3181,7 @@ async function loadRaffleResult({force=false}={}){
     renderUpperHalfRaffle();
   }
 }
-// Ver.1.9.7zl: production clients never draw. Only the admin-only explicit button can create the result once; member clients are read-only.
+// Ver.1.9.7zm: production clients never draw. Only the admin-only explicit button can create the result once; member clients are read-only.
 function testRaffleResult(){
   const result=raffleTestState().result||"lose";
   if(result==="roller")return {win:true,prize:"筋膜ローラー",shortName:memberShortName(currentUser||"")};
@@ -3220,7 +3221,7 @@ function renderUpperHalfRaffle(){
   const canView=raffleCanView();banner.classList.toggle("hidden",!canView);if(!canView)return;
   const stage=raffleStage();
   if(stage==="before")countdown.innerHTML=raffleCountdownHtml();else if(stage==="draw")countdown.innerHTML="<strong class=\"raffle-result-ready\">🎁 抽選結果を見る！</strong>";else countdown.innerHTML="<strong class=\"raffle-result-ready raffle-published-ready\">🎉 抽選結果発表！</strong>";
-  // Ver.1.9.7zl: after the public time, member clients only read the pre-saved result. No client-side draw or automatic retry.
+  // Ver.1.9.7zm: after the public time, member clients only read the pre-saved result. No client-side draw or automatic retry.
   if(stage!=="before"&&!raffleIsTest()&&!raffleResultCache&&!raffleResultLoading&&!raffleResultLoadAttempted){loadRaffleResult();}
   if(!content)return;
   const testBadge=raffleIsTest()?'<div class="raffle-test-badge">🧪 管理者テストモード</div>':"";
