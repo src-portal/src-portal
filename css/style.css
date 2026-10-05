@@ -4258,3 +4258,6 @@ body{
 /* Ver.1.9.7zo: calendar participant count / SNS capture mode */
 .sns-calendar-mode-button{width:100%;margin:-4px 0 10px;border:1px solid #cbd7e3;border-radius:12px;background:#f7f9fb;color:#27445f;padding:8px 10px;font-size:12px;font-weight:900}
 .sns-calendar-mode-button.active{background:#eaf3ff;border-color:#8bb9ef;color:#0f5fc8}
+
+/* Ver.1.9.7zu: SNS掲載モード - フィットネス活動なしの日付をグレー表示 */
+.day-cell.sns-gym-no-activity .day-number{color:#9aa5b1}
