@@ -4253,3 +4253,8 @@ body{
 .my-activity-stamp-option.selected::after{content:"✓";font-size:12px;line-height:1;color:#2c6c9e}
 .my-activity-other-note{font-size:12px;line-height:1.5;color:#718395;margin:8px 2px 14px;text-align:center}
 @media(max-width:430px){.my-activity-stamp-options{grid-template-columns:repeat(2,minmax(0,1fr))}.my-activity-stamp-option{min-height:82px}}
+
+
+/* Ver.1.9.7zo: calendar participant count / SNS capture mode */
+.sns-calendar-mode-button{width:100%;margin:-4px 0 10px;border:1px solid #cbd7e3;border-radius:12px;background:#f7f9fb;color:#27445f;padding:8px 10px;font-size:12px;font-weight:900}
+.sns-calendar-mode-button.active{background:#eaf3ff;border-color:#8bb9ef;color:#0f5fc8}
