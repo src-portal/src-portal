@@ -3009,6 +3009,7 @@ function recommendationDateLabel(value){
 
 const RAFFLE_START_MS=Date.parse("2026-10-05T12:00:00+09:00");
 const RAFFLE_PUBLISH_MS=Date.parse("2026-10-06T00:00:00+09:00");
+const RAFFLE_TOP_END_MS=Date.parse("2026-10-13T00:00:00+09:00");
 const RAFFLE_DOC=doc(db,"settings","upperHalfRaffle2026");
 const RAFFLE_TEST_KEY="srcUpperHalfRaffle2026Test";
 let raffleResultCache=null;
@@ -3238,7 +3239,11 @@ function rafflePublishedHtml(testBadge=""){
 }
 function renderUpperHalfRaffle(){
   const banner=document.getElementById("upperHalfRaffleBanner"),countdown=document.getElementById("upperHalfRaffleCountdown"),content=document.getElementById("upperHalfRaffleContent");if(!banner)return;
-  const canView=raffleCanView();banner.classList.toggle("hidden",!canView);if(!canView)return;
+  const canView=raffleCanView();
+  // Ver.1.9.7zr: TOPのラッキーチャンスは2026/10/13 0:00(JST)で終了。抽選データは削除しない。
+  const topVisible=canView&&Date.now()<RAFFLE_TOP_END_MS;
+  banner.classList.toggle("hidden",!topVisible);
+  if(!canView)return;
   const stage=raffleStage();
   if(stage==="before")countdown.innerHTML=raffleCountdownHtml();else if(stage==="draw")countdown.innerHTML="<strong class=\"raffle-result-ready\">🎁 抽選結果を見る！</strong>";else countdown.innerHTML="<strong class=\"raffle-result-ready raffle-published-ready\">🎉 抽選結果発表！</strong>";
   // Ver.1.9.7zm: after the public time, member clients only read the pre-saved result. No client-side draw or automatic retry.
@@ -5282,8 +5287,17 @@ myActivityStampOptions?.addEventListener("click",event=>{
 saveMyActivityStampButton?.addEventListener("click",saveMyActivityStamp);
 
 const upperHalfRaffleBanner=document.getElementById("upperHalfRaffleBanner"),upperHalfRaffleModal=document.getElementById("upperHalfRaffleModal"),closeUpperHalfRaffleButton=document.getElementById("closeUpperHalfRaffleButton");
+const adminRaffleHistoryButton=document.getElementById("adminRaffleHistoryButton");
 upperHalfRaffleBanner?.addEventListener("click",()=>{raffleRevealAnimating=false;raffleResultRevealed=false;renderUpperHalfRaffle();show(upperHalfRaffleModal);requestAnimationFrame(()=>upperHalfRaffleModal?.classList.add("raffle-modal-open"));});
 upperHalfRaffleBanner?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();upperHalfRaffleBanner.click();}});
+adminRaffleHistoryButton?.addEventListener("click",()=>{
+  if(!isCurrentAdmin())return;
+  raffleRevealAnimating=false;raffleResultRevealed=false;
+  hide(document.getElementById("adminMenuModal"));
+  renderUpperHalfRaffle();
+  show(upperHalfRaffleModal);
+  requestAnimationFrame(()=>upperHalfRaffleModal?.classList.add("raffle-modal-open"));
+});
 closeUpperHalfRaffleButton?.addEventListener("click",()=>{upperHalfRaffleModal?.classList.remove("raffle-modal-open");window.setTimeout(()=>hide(upperHalfRaffleModal),220);});
 document.getElementById("closeRaffleAdminEligibilityButton")?.addEventListener("click",()=>hide(document.getElementById("raffleAdminEligibilityModal")));
 document.getElementById("saveRaffleGroupsButton")?.addEventListener("click",saveRaffleGroups);
@@ -5295,6 +5309,8 @@ raffleTestResetButton?.addEventListener("click",()=>{localStorage.removeItem(RAF
 // Ver.1.9.7zh: the 1-second repaint is needed only for the pre-draw countdown/test mode.
 // After 12:00, avoid repeatedly rebuilding the raffle DOM on every client.
 window.setInterval(()=>{
+  // TOP終了時刻をまたいで開きっぱなしでも、バナーだけを自動で隠す（Firestore read/writeなし）。
+  if(Date.now()>=RAFFLE_TOP_END_MS)upperHalfRaffleBanner?.classList.add("hidden");
   if(!raffleCanView())return;
   if(raffleStage()==="before"||raffleIsTest())renderUpperHalfRaffle();
 },1000);
