@@ -1625,8 +1625,8 @@ function renderCalendar(){
             ? "あと2"
             : "";
 
-      // Ver.1.9.7zp: フィットネスも3段表示（日付 / 参加人数 / 補助状況）。
-      note=`👤${count}`;
+      // Ver.1.9.7zq: フィットネスは参加者が1人以上のときだけ人数を表示。
+      note=count>0?`👤${count}`:"";
       eventLabel=gymStatus?`<span class="calendar-event-label gym-status-label">${gymStatus}</span>`:"";
 
       cell.onclick=()=>openDetail(key);
