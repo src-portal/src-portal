@@ -268,6 +268,7 @@ let returnToAdminMenuAfterSetup=false;
 let pendingInviteMember=null;
 let setupAdminLongPressTimer=null;
 let currentUser=localStorage.getItem(storageUserKey)||"",attendance={},attendanceStatuses={},attendanceQuestSelections={},attendancePointRecords={},selectedSameDayUser="",gymQuestTargetKey="",gymQuestSelectedId="";
+let snsCalendarMode=false;
 let memberInvitationMigrationStarted=false;
 let memberProfileDateMigrationStarted=false;
 let lastActiveUpdatedMemberId="";
@@ -1565,9 +1566,24 @@ function moveToMonth(year,month){
   hide(monthJumpModal);
 }
 
+const snsCalendarModeButton=document.getElementById("snsCalendarModeButton");
+if(snsCalendarModeButton){
+  snsCalendarModeButton.onclick=()=>{
+    if(!isCurrentAdmin())return;
+    snsCalendarMode=!snsCalendarMode;
+    renderCalendar();
+  };
+}
+
 function renderCalendar(){
   calendarGrid.innerHTML="";
   calendarTitle.textContent=`${currentYear}年${currentMonth+1}月 ▼`;
+  if(snsCalendarModeButton){
+    const admin=isCurrentAdmin();
+    snsCalendarModeButton.classList.toggle("hidden",!admin);
+    snsCalendarModeButton.classList.toggle("active",admin&&snsCalendarMode);
+    snsCalendarModeButton.textContent=snsCalendarMode?"📷 SNS掲載モード ON":"📷 SNS掲載モード";
+  }
 
   for(let i=0;i<blank(currentYear,currentMonth);i++){
     const empty=document.createElement("div");
@@ -1587,10 +1603,10 @@ function renderCalendar(){
     const cell=document.createElement("button");
     cell.type="button";
     cell.className="day-cell";
-    if(isPastKey(key))cell.classList.add("past-day");
+    if(isPastKey(key)&&!snsCalendarMode)cell.classList.add("past-day");
 
     if(isToday(currentYear,currentMonth,d))cell.classList.add("today");
-    if(currentUser&&names.includes(currentUser))cell.classList.add("me");
+    if(currentUser&&names.includes(currentUser)&&!snsCalendarMode)cell.classList.add("me");
 
     let note="";
     let eventLabel="";
@@ -1628,7 +1644,7 @@ function renderCalendar(){
           note="中止";
         }else{
           cell.classList.add("confirmed");
-          note="開催";
+          note=`開催 👤${count}`;
         }
 
         eventLabel=`<span class="calendar-event-label">${escapeHtml(calendarEventTitle)}</span>`;
@@ -1636,7 +1652,7 @@ function renderCalendar(){
       }
     }
 
-    const me=currentUser&&names.includes(currentUser)
+    const me=currentUser&&names.includes(currentUser)&&!snsCalendarMode
       ? '<span class="my-day-star">⭐</span>'
       : "";
     cell.innerHTML=`<span class="day-number">${me}${d}</span><span class="day-note">${note}</span>${eventLabel}`;
