@@ -3100,7 +3100,7 @@ async function ensureRaffleHistorySnapshot(){
       drawnAt:result.drawnAt||null,drawVersion:result.drawVersion||"",
       individualRevealAt:result.individualRevealAt||"2026-10-05T12:00:00+09:00",
       publicRevealAt:result.publicRevealAt||"2026-10-06T00:00:00+09:00",
-      savedAt:serverTimestamp(),snapshotVersion:"1.9.7zs"
+      savedAt:serverTimestamp(),snapshotVersion:"1.9.7zt"
     };
     await setDoc(RAFFLE_HISTORY_DOC,payload);
     const verified=await getDocFromServer(RAFFLE_HISTORY_DOC);
@@ -3293,10 +3293,37 @@ function rafflePublishedHtml(testBadge=""){
   }
   return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 抽選結果発表！</div><div class="raffle-winners"><div class="raffle-winner raffle-published-winner">🎁 筋膜ローラー<img class="raffle-published-prize-image" src="images/raffle-roller.png" alt="筋膜ローラー"><strong>${escapeHtml(r.roller?.shortName||r.roller?.name||"")}</strong></div><div class="raffle-winner raffle-published-winner">🎧 イヤーカフイヤホン<img class="raffle-published-prize-image" src="images/raffle-earbuds.png" alt="イヤーカフイヤホン"><strong>${escapeHtml(r.earbuds?.shortName||r.earbuds?.name||"")}</strong></div></div><p>ご当選おめでとうございます！</p>${raffleHistoryMode?raffleAdminEligibilityHtml():""}</div>`;
 }
+function raffleHistoryDateText(value){
+  if(!value)return "―";
+  try{
+    const d=typeof value.toDate==="function"?value.toDate():new Date(value);
+    if(Number.isNaN(d.getTime()))return "―";
+    return new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(d);
+  }catch(e){return "―";}
+}
+function raffleHistoryWinner(snapshot,key,fallbackLabel){
+  const winner=snapshot?.winners?.[key];
+  if(!winner)return `<div class="raffle-winner"><strong>${fallbackLabel}</strong><br>記録なし</div>`;
+  return `<div class="raffle-winner"><strong>${fallbackLabel}</strong><br>${escapeHtml(winner.shortName||winner.name||"")}</div>`;
+}
+function raffleHistoryHtml(){
+  const h=raffleHistorySnapshotCache;
+  if(!h)return '<div class="raffle-result-panel"><p class="raffle-lead">保存済み抽選履歴を取得できませんでした。</p></div>';
+  const rows=Array.isArray(h.members)?h.members:[];
+  const eligible=rows.filter(row=>row.eligible).length;
+  const excluded=rows.length-eligible;
+  return `<div class="raffle-result-panel raffle-history-panel"><div class="raffle-win-title">🎁 確定した抽選履歴</div><h3>${escapeHtml(h.title||"2026年度 上期 SRCラッキーチャンス")}</h3><div class="raffle-date-box"><div><strong>正式抽選：</strong>${escapeHtml(raffleHistoryDateText(h.drawnAt))}</div><div><strong>抽選対象：</strong>${eligible}名</div><div><strong>対象外：</strong>${excluded}名</div></div><div class="raffle-winners">${raffleHistoryWinner(h,"roller","🎁 筋膜ローラー")}${raffleHistoryWinner(h,"earbuds","🎧 イヤーカフイヤホン")}</div><button class="raffle-admin-check-button" id="raffleAdminCheckButton" type="button">🔐 抽選対象・グループを確認</button><p class="settings-note">この画面は管理者専用の確定履歴です。TOPのラッキーチャンス表示終了後も確認できます。</p></div>`;
+}
+function renderRaffleHistory(){
+  const content=document.getElementById("upperHalfRaffleContent");
+  if(!content||!isCurrentAdmin())return;
+  content.innerHTML=raffleHistoryHtml();
+  wireRaffleAdminCheckButton();
+}
 function renderUpperHalfRaffle(){
   const banner=document.getElementById("upperHalfRaffleBanner"),countdown=document.getElementById("upperHalfRaffleCountdown"),content=document.getElementById("upperHalfRaffleContent");if(!banner)return;
   const canView=raffleCanView();
-  // Ver.1.9.7zs: TOPのラッキーチャンスは2026/10/13 0:00(JST)で終了。抽選データは削除しない。
+  // Ver.1.9.7zt: TOPのラッキーチャンスは2026/10/13 0:00(JST)で終了。抽選データは削除しない。
   const topVisible=canView&&Date.now()<RAFFLE_TOP_END_MS;
   banner.classList.toggle("hidden",!topVisible);
   if(!canView)return;
@@ -5354,8 +5381,7 @@ adminRaffleHistoryButton?.addEventListener("click",async()=>{
   hide(document.getElementById("adminMenuModal"));
   const ok=await ensureRaffleHistorySnapshot();
   if(!ok){show(document.getElementById("adminMenuModal"));return;}
-  if(!raffleResultCache){try{const snap=await getDocFromServer(RAFFLE_DOC);raffleResultCache=snap.exists()?snap.data():null;}catch(e){console.error(e);}}
-  renderUpperHalfRaffle();
+  renderRaffleHistory();
   show(upperHalfRaffleModal);
   requestAnimationFrame(()=>upperHalfRaffleModal?.classList.add("raffle-modal-open"));
 });
