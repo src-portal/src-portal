@@ -3011,6 +3011,7 @@ const RAFFLE_START_MS=Date.parse("2026-10-05T12:00:00+09:00");
 const RAFFLE_PUBLISH_MS=Date.parse("2026-10-06T00:00:00+09:00");
 const RAFFLE_TOP_END_MS=Date.parse("2026-10-13T00:00:00+09:00");
 const RAFFLE_DOC=doc(db,"settings","upperHalfRaffle2026");
+const RAFFLE_HISTORY_DOC=doc(db,"settings","upperHalfRaffle2026History");
 const RAFFLE_TEST_KEY="srcUpperHalfRaffle2026Test";
 let raffleResultCache=null;
 let raffleResultLoading=false;
@@ -3018,6 +3019,8 @@ let raffleResultLoadAttempted=false;
 let raffleResultLoadError=false;
 let raffleAdminResultChecked=false;
 let raffleAdminDrawBusy=false;
+let raffleHistorySnapshotCache=null;
+let raffleHistoryMode=false;
 // Ver.1.9.7zh: prevent overlapping raffle draw transactions/renders after the live start time.
 let raffleResultRevealed=false;
 let raffleRevealAnimating=false;
@@ -3074,8 +3077,58 @@ function raffleAdminEligibilityHtml(){
   if(!isCurrentAdmin())return "";
   return '<button class="raffle-admin-check-button" id="raffleAdminCheckButton" type="button">🔐 抽選対象・グループを確認</button>';
 }
+function currentRaffleHistorySnapshot(){
+  const rows=raffleEligibilityRows();
+  return rows.map(({member,eligible,hasActivity,manualExcluded,reason})=>({
+    name:member.name,shortName:memberShortName(member.name),eligible,hasActivity,manualExcluded,reason,
+    group:raffleGroupFor(member.name)||""
+  }));
+}
+async function ensureRaffleHistorySnapshot(){
+  if(!isCurrentAdmin())return false;
+  try{
+    const existing=await getDocFromServer(RAFFLE_HISTORY_DOC);
+    if(existing.exists()){raffleHistorySnapshotCache=existing.data();return true;}
+    const resultSnap=await getDocFromServer(RAFFLE_DOC);
+    if(!resultSnap.exists()){alert("正式な抽選結果が確認できないため、履歴を保存できません。");return false;}
+    const result=resultSnap.data();
+    const members=currentRaffleHistorySnapshot();
+    const payload={
+      raffleId:"2026-upper-half",title:"2026年度 上期 SRCラッキーチャンス",
+      members,
+      winners:{roller:result.roller||null,earbuds:result.earbuds||null,groupA:result.groupAWinner||null,groupB:result.groupBWinner||null},
+      drawnAt:result.drawnAt||null,drawVersion:result.drawVersion||"",
+      individualRevealAt:result.individualRevealAt||"2026-10-05T12:00:00+09:00",
+      publicRevealAt:result.publicRevealAt||"2026-10-06T00:00:00+09:00",
+      savedAt:serverTimestamp(),snapshotVersion:"1.9.7zs"
+    };
+    await setDoc(RAFFLE_HISTORY_DOC,payload);
+    const verified=await getDocFromServer(RAFFLE_HISTORY_DOC);
+    if(!verified.exists())throw new Error("RAFFLE_HISTORY_VERIFY_FAILED");
+    raffleHistorySnapshotCache=verified.data();
+    return true;
+  }catch(e){console.error("raffle history snapshot error",e);alert("抽選履歴の保存・確認に失敗しました。再度開いて確認してください。");return false;}
+}
 function renderRaffleAdminCheck(){
   const list=document.getElementById("raffleAdminEligibilityList");if(!list)return;
+  const saveButton=document.getElementById("saveRaffleGroupsButton");
+  const drawBox=document.getElementById("raffleAdminDrawBox");
+  const note=document.getElementById("raffleAdminEligibilityNote");
+  if(raffleHistoryMode&&raffleHistorySnapshotCache){
+    const rows=Array.isArray(raffleHistorySnapshotCache.members)?raffleHistorySnapshotCache.members:[];
+    list.innerHTML=rows.map(row=>{
+      const label=escapeHtml(row.shortName||row.name||"");
+      const group=row.group==="A"?"グループA":row.group==="B"?"グループB":row.group==="EXCLUDED"?"対象外":"―";
+      const status=row.eligible?"抽選対象":`対象外：${escapeHtml(row.reason||"")}`;
+      return `<div class="raffle-admin-row${row.eligible?"":" excluded"}"><div><strong>${label}</strong><small>${status}</small></div><strong>${group}</strong></div>`;
+    }).join("");
+    const eligible=rows.filter(row=>row.eligible).length,excluded=rows.length-eligible;
+    const summary=document.getElementById("raffleAdminEligibilitySummary");if(summary)summary.textContent=`【保存済み履歴】抽選対象 ${eligible}名 ／ 対象外 ${excluded}名`;
+    if(note)note.textContent="正式抽選時の抽選対象・対象外・グループ構成を固定保存した履歴です。現在のメンバー設定を変更しても、この履歴は変わりません。";
+    if(saveButton)saveButton.classList.add("hidden");
+    if(drawBox)drawBox.classList.add("hidden");
+    return;
+  }
   const rows=raffleEligibilityRows();
   list.innerHTML=rows.map(({member,eligible,hasActivity,manualExcluded,reason})=>{
     const label=escapeHtml(memberShortName(member.name));
@@ -3087,6 +3140,9 @@ function renderRaffleAdminCheck(){
   }).join("");
   const eligible=rows.filter(row=>row.eligible).length,excluded=rows.length-eligible;
   const summary=document.getElementById("raffleAdminEligibilitySummary");if(summary)summary.textContent=`抽選対象 ${eligible}名 ／ 対象外 ${excluded}名`;
+  if(note)note.textContent="活動実績は、上期のラン＆ウォーク・ジム・その他イベントへの実参加、またはKYRO累計走行距離0km超で判定します。活動実績があるメンバーはグループA・B・対象外を設定できます。堀部は抽選対象外です。一般メンバーにはこの画面は表示されません。";
+  if(saveButton)saveButton.classList.remove("hidden");
+  if(drawBox)drawBox.classList.remove("hidden");
 }
 async function saveRaffleGroups(){
   const rows=raffleEligibilityRows();const groups={};
@@ -3180,7 +3236,7 @@ async function executeOfficialRaffle(){
     raffleAdminDrawBusy=false;raffleAdminResultChecked=true;raffleAdminSavedResultHtml();
   }
 }
-function wireRaffleAdminCheckButton(){document.getElementById("raffleAdminCheckButton")?.addEventListener("click",()=>{renderRaffleAdminCheck();show(document.getElementById("raffleAdminEligibilityModal"));checkRaffleAdminSavedResult();});}
+function wireRaffleAdminCheckButton(){document.getElementById("raffleAdminCheckButton")?.addEventListener("click",()=>{renderRaffleAdminCheck();show(document.getElementById("raffleAdminEligibilityModal"));if(!raffleHistoryMode)checkRaffleAdminSavedResult();});}
 async function loadRaffleResult({force=false}={}){
   if(raffleIsTest())return;
   if(raffleResultCache||raffleResultLoading)return;
@@ -3235,12 +3291,12 @@ function rafflePublishedHtml(testBadge=""){
     if(raffleResultLoading)return `<p class="raffle-lead">抽選結果を読み込んでいます…</p>`;
     return `<div class="raffle-result-panel"><p class="raffle-lead">抽選結果を取得できませんでした。</p><button class="raffle-result-button" id="raffleReloadResultButton" type="button">🔄 抽選結果を再読み込み</button></div>`;
   }
-  return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 抽選結果発表！</div><div class="raffle-winners"><div class="raffle-winner raffle-published-winner">🎁 筋膜ローラー<img class="raffle-published-prize-image" src="images/raffle-roller.png" alt="筋膜ローラー"><strong>${escapeHtml(r.roller?.shortName||r.roller?.name||"")}</strong></div><div class="raffle-winner raffle-published-winner">🎧 イヤーカフイヤホン<img class="raffle-published-prize-image" src="images/raffle-earbuds.png" alt="イヤーカフイヤホン"><strong>${escapeHtml(r.earbuds?.shortName||r.earbuds?.name||"")}</strong></div></div><p>ご当選おめでとうございます！</p></div>`;
+  return `${testBadge}<div class="raffle-result-panel"><div class="raffle-win-title">🎉 抽選結果発表！</div><div class="raffle-winners"><div class="raffle-winner raffle-published-winner">🎁 筋膜ローラー<img class="raffle-published-prize-image" src="images/raffle-roller.png" alt="筋膜ローラー"><strong>${escapeHtml(r.roller?.shortName||r.roller?.name||"")}</strong></div><div class="raffle-winner raffle-published-winner">🎧 イヤーカフイヤホン<img class="raffle-published-prize-image" src="images/raffle-earbuds.png" alt="イヤーカフイヤホン"><strong>${escapeHtml(r.earbuds?.shortName||r.earbuds?.name||"")}</strong></div></div><p>ご当選おめでとうございます！</p>${raffleHistoryMode?raffleAdminEligibilityHtml():""}</div>`;
 }
 function renderUpperHalfRaffle(){
   const banner=document.getElementById("upperHalfRaffleBanner"),countdown=document.getElementById("upperHalfRaffleCountdown"),content=document.getElementById("upperHalfRaffleContent");if(!banner)return;
   const canView=raffleCanView();
-  // Ver.1.9.7zr: TOPのラッキーチャンスは2026/10/13 0:00(JST)で終了。抽選データは削除しない。
+  // Ver.1.9.7zs: TOPのラッキーチャンスは2026/10/13 0:00(JST)で終了。抽選データは削除しない。
   const topVisible=canView&&Date.now()<RAFFLE_TOP_END_MS;
   banner.classList.toggle("hidden",!topVisible);
   if(!canView)return;
@@ -3254,6 +3310,7 @@ function renderUpperHalfRaffle(){
   if(stage==="published"){
     content.innerHTML=rafflePublishedHtml(testBadge);
     document.getElementById("raffleReloadResultButton")?.addEventListener("click",()=>loadRaffleResult({force:true}));
+    wireRaffleAdminCheckButton();
     return;
   }
   if(stage==="draw"&&!raffleIsTest()&&!raffleResultCache){
@@ -5288,12 +5345,16 @@ saveMyActivityStampButton?.addEventListener("click",saveMyActivityStamp);
 
 const upperHalfRaffleBanner=document.getElementById("upperHalfRaffleBanner"),upperHalfRaffleModal=document.getElementById("upperHalfRaffleModal"),closeUpperHalfRaffleButton=document.getElementById("closeUpperHalfRaffleButton");
 const adminRaffleHistoryButton=document.getElementById("adminRaffleHistoryButton");
-upperHalfRaffleBanner?.addEventListener("click",()=>{raffleRevealAnimating=false;raffleResultRevealed=false;renderUpperHalfRaffle();show(upperHalfRaffleModal);requestAnimationFrame(()=>upperHalfRaffleModal?.classList.add("raffle-modal-open"));});
+upperHalfRaffleBanner?.addEventListener("click",()=>{raffleHistoryMode=false;raffleRevealAnimating=false;raffleResultRevealed=false;renderUpperHalfRaffle();show(upperHalfRaffleModal);requestAnimationFrame(()=>upperHalfRaffleModal?.classList.add("raffle-modal-open"));});
 upperHalfRaffleBanner?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();upperHalfRaffleBanner.click();}});
-adminRaffleHistoryButton?.addEventListener("click",()=>{
+adminRaffleHistoryButton?.addEventListener("click",async()=>{
   if(!isCurrentAdmin())return;
+  raffleHistoryMode=true;
   raffleRevealAnimating=false;raffleResultRevealed=false;
   hide(document.getElementById("adminMenuModal"));
+  const ok=await ensureRaffleHistorySnapshot();
+  if(!ok){show(document.getElementById("adminMenuModal"));return;}
+  if(!raffleResultCache){try{const snap=await getDocFromServer(RAFFLE_DOC);raffleResultCache=snap.exists()?snap.data():null;}catch(e){console.error(e);}}
   renderUpperHalfRaffle();
   show(upperHalfRaffleModal);
   requestAnimationFrame(()=>upperHalfRaffleModal?.classList.add("raffle-modal-open"));
