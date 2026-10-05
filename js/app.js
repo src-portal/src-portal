@@ -1617,13 +1617,17 @@ function renderCalendar(){
       if(count===2)cell.classList.add("warn");
       if(count>=requiredMembers)cell.classList.add("confirmed");
 
-      note=count>=requiredMembers
+      const gymStatus=count>=requiredMembers
         ? "補助"
         : count===2
           ? "あと1"
           : count===1
             ? "あと2"
             : "";
+
+      // Ver.1.9.7zp: フィットネスも3段表示（日付 / 参加人数 / 補助状況）。
+      note=`👤${count}`;
+      eventLabel=gymStatus?`<span class="calendar-event-label gym-status-label">${gymStatus}</span>`:"";
 
       cell.onclick=()=>openDetail(key);
     }else{
