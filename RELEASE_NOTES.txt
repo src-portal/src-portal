@@ -1,4 +1,5 @@
-Ver.1.9.7zw — ヘルプに「MY ACTIVITY」の利用方法を追加。既存機能・Firestore処理は変更なし。
+Ver.1.9.7zx — 新規メンバーのFirestore IDを自動生成に変更し、日本語氏名による「_」ID衝突・既存ドキュメント上書きを防止。既存メンバー・登録データの自動変更なし。
+Ver.1.9.7zx — ヘルプに「MY ACTIVITY」の利用方法を追加。既存機能・Firestore処理は変更なし。
 
 Ver.1.9.7zv
 - SNS掲載モードボタンの状態表示を明確化。OFF時は「📷 SNS掲載モード OFF」、ON時は「📷 SNS掲載モード ON」と表示。
