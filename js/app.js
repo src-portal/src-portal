@@ -1612,7 +1612,7 @@ function renderCalendar(){
     let eventLabel="";
 
     if(currentType==="gym"){
-      // Ver.1.9.7zv: SNS掲載モードでは、活動が無かった日（参加者0人）の日付をグレー表示。
+      // Ver.1.9.7zw: SNS掲載モードでは、活動が無かった日（参加者0人）の日付をグレー表示。
       if(snsCalendarMode&&count===0)cell.classList.add("sns-gym-no-activity");
       // Gym: any date can be selected. 3 participants qualifies for the subsidy.
       if(count===1)cell.classList.add("one");
@@ -3325,7 +3325,7 @@ function renderRaffleHistory(){
 function renderUpperHalfRaffle(){
   const banner=document.getElementById("upperHalfRaffleBanner"),countdown=document.getElementById("upperHalfRaffleCountdown"),content=document.getElementById("upperHalfRaffleContent");if(!banner)return;
   const canView=raffleCanView();
-  // Ver.1.9.7zv: TOPのラッキーチャンスは2026/10/13 0:00(JST)で終了。抽選データは削除しない。
+  // Ver.1.9.7zw: TOPのラッキーチャンスは2026/10/13 0:00(JST)で終了。抽選データは削除しない。
   const topVisible=canView&&Date.now()<RAFFLE_TOP_END_MS;
   banner.classList.toggle("hidden",!topVisible);
   if(!canView)return;
