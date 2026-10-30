@@ -1612,7 +1612,7 @@ function renderCalendar(){
     let eventLabel="";
 
     if(currentType==="gym"){
-      // Ver.1.9.7zw: SNS掲載モードでは、活動が無かった日（参加者0人）の日付をグレー表示。
+      // Ver.1.9.7zx: SNS掲載モードでは、活動が無かった日（参加者0人）の日付をグレー表示。
       if(snsCalendarMode&&count===0)cell.classList.add("sns-gym-no-activity");
       // Gym: any date can be selected. 3 participants qualifies for the subsidy.
       if(count===1)cell.classList.add("one");
@@ -3325,7 +3325,7 @@ function renderRaffleHistory(){
 function renderUpperHalfRaffle(){
   const banner=document.getElementById("upperHalfRaffleBanner"),countdown=document.getElementById("upperHalfRaffleCountdown"),content=document.getElementById("upperHalfRaffleContent");if(!banner)return;
   const canView=raffleCanView();
-  // Ver.1.9.7zw: TOPのラッキーチャンスは2026/10/13 0:00(JST)で終了。抽選データは削除しない。
+  // Ver.1.9.7zx: TOPのラッキーチャンスは2026/10/13 0:00(JST)で終了。抽選データは削除しない。
   const topVisible=canView&&Date.now()<RAFFLE_TOP_END_MS;
   banner.classList.toggle("hidden",!topVisible);
   if(!canView)return;
@@ -5266,10 +5266,8 @@ async function moveMember(member,index,direction){
   }
 }
 
-function makeMemberId(name){
-  const base=name.trim().toLowerCase().replace(/[\s　]+/g,"_").replace(/[()（）]/g,"").replace(/[^a-z0-9_\-]/g,"");
-  return base || `member_${Date.now()}`;
-}
+// 新規メンバーは氏名からIDを生成しない。日本語の氏名が「_」に衝突するのを防ぐ。
+// 既存メンバーのIDは一切変更しない。
 
 async function getNextMemberOrder(){
   try{
@@ -5310,10 +5308,12 @@ async function addMember(){
     alert("同じ名前のメンバーがすでに登録されています。");
     return;
   }
-  const id=makeMemberId(name);
+  // Firestoreの自動IDを新規採番し、既存ドキュメントを上書きしない。
+  const newMemberRef=doc(collection(db,"members"));
+  const id=newMemberRef.id;
   const order=await getNextMemberOrder();
   try{
-    await setDoc(doc(db,"members",id),{
+    await setDoc(newMemberRef,{
       name,
       shortName,
       fullName,
@@ -5328,7 +5328,7 @@ async function addMember(){
       lastActiveAt:null,
       invitedAt:serverTimestamp(),
       updatedAt:serverTimestamp()
-    },{merge:true});
+    });
     const addedMember={id,name,shortName,fullName,inviteCode,inviteStatus:"pending",active:true};
     newMemberShortNameInput.value="";
     newMemberFullNameInput.value="";
