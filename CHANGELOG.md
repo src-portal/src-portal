@@ -1,3 +1,5 @@
+Ver.1.9.7zw — ヘルプに「MY ACTIVITY」の利用方法を追加。既存機能・Firestore処理は変更なし。
+
 ## Ver.1.9.7zv
 - SNS掲載モードボタンをON/OFF状態が分かる表示に変更。
 
