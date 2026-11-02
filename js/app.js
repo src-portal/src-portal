@@ -2332,7 +2332,88 @@ async function saveSameDayStatus(status){
   hide(sameDayStatusModal);
 }
 
+// Ver.1.9.7zy: 過去の参加記録を管理者のみ修正（POINT/QUESTは変更しない）。
+const pastAttendanceEditButton=document.createElement("button");
+pastAttendanceEditButton.type="button";
+pastAttendanceEditButton.textContent="✏️ 参加記録を修正";
+pastAttendanceEditButton.className="hidden";
+pastAttendanceEditButton.style.cssText="display:block;width:100%;margin:12px 0;padding:12px;border:1px solid #a9c9f5;border-radius:12px;background:#eaf3ff;color:#1263be;font-weight:bold;cursor:pointer";
+participantList.insertAdjacentElement("afterend",pastAttendanceEditButton);
+const pastAttendanceEditModal=document.createElement("div");
+pastAttendanceEditModal.className="modal hidden";
+pastAttendanceEditModal.id="pastAttendanceEditModal";
+pastAttendanceEditModal.innerHTML=`<div class="modal-content" style="max-width:460px;max-height:85vh;overflow:auto;padding:22px"><h3>✏️ 過去の参加記録を修正</h3><p id="pastAttendanceEditLead"></p><div id="pastAttendanceEditNames" style="max-height:45vh;overflow:auto"></div><p style="font-size:12px;color:#666">※参加記録のみ変更します。フィットネスPOINT・QUESTは変更しません。</p><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px"><button type="button" id="pastAttendanceEditCancel">閉じる</button><button type="button" id="pastAttendanceEditSave">変更を保存</button></div></div>`;
+document.body.appendChild(pastAttendanceEditModal);
+const pastAttendanceEditNames=pastAttendanceEditModal.querySelector("#pastAttendanceEditNames");
+const pastAttendanceEditSave=pastAttendanceEditModal.querySelector("#pastAttendanceEditSave");
+const pastAttendanceEditCancel=pastAttendanceEditModal.querySelector("#pastAttendanceEditCancel");
+let pastAttendanceEditTarget=null;
+function closePastAttendanceEdit(){hide(pastAttendanceEditModal);pastAttendanceEditTarget=null;}
+pastAttendanceEditCancel.onclick=closePastAttendanceEdit;
+pastAttendanceEditModal.onclick=event=>{if(event.target===pastAttendanceEditModal)closePastAttendanceEdit();};
+pastAttendanceEditButton.onclick=()=>{
+  if(!isCurrentAdmin()||!selectedKey||!isPastKey(selectedKey))return;
+  if(currentType==="run"){
+    const ev=primaryEventForDate(selectedKey,"run");
+    if(!ev||ev.status==="cancelled")return;
+  }
+  pastAttendanceEditTarget={type:currentType,key:selectedKey};
+  const existing=new Set(getNames(currentType,selectedKey));
+  pastAttendanceEditModal.querySelector("#pastAttendanceEditLead").textContent=`${fmt(selectedKey)}｜${currentType==="gym"?"フィットネストレーニング":"ラン＆ウォーク"}`;
+  pastAttendanceEditNames.replaceChildren();
+  memberRecords.filter(m=>m.active!==false).forEach(member=>{
+    const label=document.createElement("label");
+    label.style.cssText="display:flex;align-items:center;gap:10px;padding:9px;border-bottom:1px solid #eee;cursor:pointer";
+    const input=document.createElement("input");
+    input.type="checkbox";input.value=member.name;input.checked=existing.has(member.name);
+    label.append(input,document.createTextNode(member.fullName||member.shortName||member.name));
+    pastAttendanceEditNames.appendChild(label);
+  });
+  show(pastAttendanceEditModal);
+};
+pastAttendanceEditSave.onclick=async()=>{
+  const target=pastAttendanceEditTarget;
+  if(!target||!isCurrentAdmin()||!isPastKey(target.key))return;
+  if(target.type==="run"){
+    const ev=primaryEventForDate(target.key,"run");
+    if(!ev||ev.status==="cancelled"){alert("中止または未登録のイベントは修正できません。");return;}
+  }
+  const chosen=new Set([...pastAttendanceEditNames.querySelectorAll('input[type="checkbox"]:checked')].map(el=>el.value));
+  const allowed=new Set(memberRecords.filter(m=>m.active!==false).map(m=>m.name));
+  if([...chosen].some(name=>!allowed.has(name)))return;
+  const ref=eventPath(target.type,target.key);
+  pastAttendanceEditSave.disabled=true;
+  try{
+    const result=await runTransaction(db,async transaction=>{
+      const snapshot=await transaction.get(ref);
+      const data=snapshot.exists()?snapshot.data()||{}:{};
+      const original=Array.isArray(data.participants)?data.participants:[];
+      // 非アクティブ会員など、選択肢に出さない既存参加者は保持する。
+      const next=[...new Set([...original.filter(name=>!allowed.has(name)),...chosen])];
+      const removed=original.filter(name=>!next.includes(name));
+      if(target.type==="gym"&&removed.some(name=>data.pointRecords?.[name])){
+        throw new Error("POINT記録がある参加者は削除できません。先にPOINT記録を確認してください。");
+      }
+      if(original.length===next.length&&original.every(name=>next.includes(name)))return false;
+      transaction.set(ref,{type:target.type,date:target.key,participants:next,updatedAt:serverTimestamp()},{merge:true});
+      return true;
+    });
+    closePastAttendanceEdit();
+    if(result)alert("参加記録を更新しました。参加人数・活動記録へ反映されます。");
+    else alert("変更はありませんでした。");
+  }catch(error){console.error("past attendance edit failed",error);alert("保存できませんでした。"+(error?.message||""));}
+  finally{pastAttendanceEditSave.disabled=false;}
+};
+function updatePastAttendanceEditButton(){
+  const past=Boolean(selectedKey&&isPastKey(selectedKey));
+  const ev=currentType==="run"?primaryEventForDate(selectedKey,"run"):null;
+  const available=past&&isCurrentAdmin()&&(currentType==="gym"||(currentType==="run"&&ev&&ev.status!=="cancelled"));
+  pastAttendanceEditButton.classList.toggle("hidden",!available);
+  pastAttendanceEditButton.style.display=available?"block":"none";
+}
+
 function openDetail(key){selectedKey=key;hide(homeView);show(detailView);renderDetail();window.scrollTo({top:0,behavior:"smooth"})}function renderDetail(){
+  updatePastAttendanceEditButton();
   fitnessPointRecordButton?.classList.add("hidden");
   const ev=currentType==="run"
     ? primaryEventForDate(selectedKey,"run")
