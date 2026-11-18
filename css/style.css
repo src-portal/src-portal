@@ -4261,3 +4261,6 @@ body{
 
 /* Ver.1.9.7zv: SNS掲載モード - フィットネス活動なしの日付をグレー表示 */
 .day-cell.sns-gym-no-activity .day-number{color:#9aa5b1}
+
+/* Message board: posting timestamp (display only) */
+.message-board-posted-at{margin-top:7px;color:var(--muted);font-size:11px;font-weight:500}
